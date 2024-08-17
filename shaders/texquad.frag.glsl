@@ -13,7 +13,7 @@ void main() {
 	out_color = vec4(v_uv, 0., 1.);
 
 
-	out_color = texture(u_tex, v_uv);
+	out_color = mix(out_color, texture(u_tex, v_uv), 0.5);
 
     
     // a grid:

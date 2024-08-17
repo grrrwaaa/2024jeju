@@ -53,6 +53,8 @@ let pointer = {
     vel: [0, 0],
 }
 
+let show = 0
+
 
 let screen_dim = [1920, 1080]
 let win_div = 2
@@ -524,18 +526,18 @@ window.draw = function() {
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	gl.enable(gl.DEPTH_TEST)
 
-	// if (showLayer >= 0 && showLayer < 5) {
-	// 	if (showCacheQueue && texcache.length) {
-	// 		cache_tex[showLayer].bind()
-	// 	} else {
-	// 		record_gbo.bind(showLayer)
-	// 	}
-	// } else {
-	// 	lighting_gbo.bind()
-	// }
-
-    
-
+    switch(show) {
+        case 1:
+        floor_gbo.bind(); break;
+        case 2:
+        wallL_gbo.bind(); break;
+        case 3:
+        wallR_gbo.bind(); break;
+        case 4:
+        wallF_gbo.bind(); break;
+        default:
+        record_gbo.bind();
+    }
 	shaderman.shaders.show.begin()
 	quad_vao.bind().draw()
 
@@ -601,7 +603,14 @@ window.onkey = function(key, scan, down, mod) {
 				break;
 			}
 			
-			case 290: { // F1
+			case 290: 
+            case 291:
+            case 292:
+            case 293:
+            case 294:
+            case 295:
+            { // F1
+                show = key - 290
 				break;
 			}
 			default: console.log(key, scan, down, mod)
