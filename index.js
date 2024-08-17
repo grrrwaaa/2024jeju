@@ -29,10 +29,15 @@ let pause = 0
 
 let final_dim = [1920, 1080]
 let win_div = 2
+let export_div = 1
 let SDquant = 8
 let win_dim = [
 	Math.ceil(final_dim[0]/win_div/SDquant)*SDquant,
 	Math.ceil(final_dim[1]/win_div/SDquant)*SDquant,
+]
+let export_dim = [
+    Math.ceil(final_dim[0]/export_div/SDquant)*SDquant,
+	Math.ceil(final_dim[1]/export_div/SDquant)*SDquant,
 ]
 
 let window = new Window({
@@ -40,10 +45,22 @@ let window = new Window({
 	dim: win_dim,
 	//CONTEXT_VERSION_MAJOR: 4, // need gl 4.3 for compute shaders
 	//CONTEXT_VERSION_MINOR: 3,
+    sync: true,
 })
 
 const shaderman = new Shaderman(gl)
 const quad_vao = glutils.createVao(gl, glutils.makeQuad3D())
+
+let mipmap = true
+let export_gbo = glutils.makeGbuffer(gl, ...export_dim, [
+    { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // color
+    // { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // depth
+    // { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // normal
+    // { float: true, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // flow
+    // { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // sd
+])
+let export_gbo_prev = export_gbo.clone(gl)
+
 
 // restore state:
 let state = {
@@ -165,7 +182,7 @@ window.draw = function() {
 	let { dim } = this;
 
 	if (Math.floor(this.t+this.dt) > Math.floor(this.t)) {
-	    console.log(`fps ${1/this.dt} ${state.dt} frame ${state.frame} `)
+	    console.log(`realfps ${1/this.dt} state.frame ${state.frame} `)
         params = new Function(fs.readFileSync("params.js", "utf-8"))({})
 	}
 
@@ -177,8 +194,41 @@ window.draw = function() {
 	let { t, dt, frame, nav } = state;
 
 	if (!pause) {
-		
+		// animate
 	}
+
+    // run computes, update buffers
+
+    // render
+    {
+        let tmp = export_gbo_prev
+        export_gbo_prev = export_gbo
+        export_gbo = tmp
+    }
+    export_gbo.begin() 
+    {
+        const { width, height, data } = export_gbo
+        const dim = [width, height]
+
+        gl.viewport(0, 0, ...dim);
+        gl.clearColor(0., 0., 0., 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.DEPTH_TEST)
+
+        // bind previous
+		export_gbo_prev.bind(0, 0)
+
+        gl.depthMask(false)
+        shaderman.shaders.bg.begin()
+        quad_vao.bind().draw()
+        gl.depthMask(true)
+
+
+        gl.disable(gl.BLEND)
+        gl.enable(gl.DEPTH_TEST)
+        gl.depthMask(true)
+    }
+    export_gbo.end()
 
 	//////////////
 
@@ -197,9 +247,10 @@ window.draw = function() {
 	// 	lighting_gbo.bind()
 	// }
 
-	// shaderman.shaders.show.begin()
-	// if (showLed) led_vao.bind().draw() 
-	// else quad_vao.bind().draw()
+    
+
+	shaderman.shaders.show.begin()
+	quad_vao.bind().draw()
 
 	// every few seconds, save all our state
 	if (!pause) {
@@ -265,5 +316,7 @@ window.onkey = function(key, scan, down, mod) {
 	}	
 }
 
-Window.syncfps = 60
+// pick one:
+//Window.syncfps = 60 // use sleep to maintain FPS
+Window.sync = true // sync to refresh
 Window.animate()
