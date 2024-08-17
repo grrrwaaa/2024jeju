@@ -108,6 +108,18 @@ let record_gbo = glutils.makeGbuffer(gl, ...record_dim, [
 ])
 //let record_gbo_prev = record_gbo.clone(gl)
 
+let floor_gbo = glutils.makeGbuffer(gl, ...res_floor, [
+    { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // color
+])
+let wallL_gbo = glutils.makeGbuffer(gl, ...res_wallL, [
+    { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // color
+])
+let wallR_gbo = glutils.makeGbuffer(gl, ...res_wallR, [
+    { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // color
+])
+let wallF_gbo = glutils.makeGbuffer(gl, ...res_wallF, [
+    { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // color
+])
 
 // restore state:
 let state = {
@@ -250,7 +262,7 @@ console.log("my IPv4 IPs", ips)
 
 
 // floor geometry:
-let floor_vao, far_wall_vao, left_wall_vao, right_wall_vao
+let floor_vao, far_wall_vao, near_wall_vao, left_wall_vao, right_wall_vao
 
 {
     let geom = glutils.makeQuad3D({ min: 0 })
@@ -268,6 +280,16 @@ let floor_vao, far_wall_vao, left_wall_vao, right_wall_vao
     mat4.translate(modelmatrix, modelmatrix, [0, 0, -1])
     glutils.geomTransform(geom, modelmatrix)
     far_wall_vao = glutils.createVao(gl, geom)
+}
+
+{
+    let geom = glutils.makeQuad3D({ min: 0 })
+    let modelmatrix = mat4.create()
+    mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y, config.meters.z])
+    mat4.rotateY(modelmatrix, modelmatrix, Math.PI)
+    mat4.translate(modelmatrix, modelmatrix, [-1, 0, 0])
+    glutils.geomTransform(geom, modelmatrix)
+    near_wall_vao = glutils.createVao(gl, geom)
 }
 {
     let geom = glutils.makeQuad3D({ min: 0 })
@@ -417,6 +439,40 @@ window.draw = function() {
     //     record_gbo = tmp
     // }
 
+    {
+        let fbo = floor_gbo
+        fbo.begin()
+        const { width, height, data } = fbo
+        const dim = [width, height]
+
+        gl.viewport(0, 0, ...dim);
+        gl.clearColor(0., 0., 0., 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.DEPTH_TEST)
+
+        test_tex.bind()
+        shaderman.shaders.show.begin()
+        quad_vao.bind().draw()
+
+        fbo.end()
+    }
+
+    for (fbo of [wallF_gbo, wallL_gbo, wallR_gbo]) {
+        fbo.begin()
+        const { width, height, data } = fbo
+        const dim = [width, height]
+
+        gl.viewport(0, 0, ...dim);
+        gl.clearColor(0., 0., 0., 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.DEPTH_TEST)
+
+        test_tex.bind()
+        shaderman.shaders.show.begin()
+        quad_vao.bind().draw()
+
+        fbo.end()
+    }
 
     // render as a 3D preview
     record_gbo.begin() 
@@ -444,11 +500,16 @@ window.draw = function() {
         .uniform("u_projmatrix", nav.projmatrix)
         .uniform("u_viewmatrix", nav.viewmatrix)
         .uniform("u_modelmatrix", modelmatrix)
-        test_tex.bind()
+        floor_gbo.bind()
         floor_vao.bind().draw()
+        wallF_gbo.bind()
         far_wall_vao.bind().draw()
+        wallL_gbo.bind()
         left_wall_vao.bind().draw()
+        wallF_gbo.bind()
         right_wall_vao.bind().draw()
+        // wallF_gbo.bind()
+        // near_wall_vao.bind().draw()
 
         gl.disable(gl.BLEND)
         gl.enable(gl.DEPTH_TEST)
