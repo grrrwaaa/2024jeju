@@ -18,6 +18,18 @@ const gl = require('gles3.js'),
 const { inherits } = require("util");
 
 const {
+	pngfile2base64string,
+	pngfile2texture, 
+	base64string2pngfile, 
+	base64string2data,
+	texturedata2base64string, 
+	texturedata2png, 
+	texture2base64string, 
+	base64string2texture,
+	png2tex, jpg2tex,
+} = require("./pngtools");
+
+const {
     quat_rotate,
     quat_unrotate,
     quat_rotation_to,
@@ -35,6 +47,12 @@ for (let path of [restore_path, export_image_path, export_path]) {
 }
 
 let pause = 0
+let pointer = {
+    buttons: [0, 0, 0],
+    pos: [0, 0],
+    vel: [0, 0],
+}
+
 
 let screen_dim = [1920, 1080]
 let win_div = 2
@@ -100,7 +118,10 @@ let state = {
 
     nav: {
         viewmatrix: mat4.create(),
-        projmatrix: mat4.create()
+        projmatrix: mat4.create(),
+
+        looky: Math.PI,
+        lookx: 0,
     }
 } 
 
@@ -228,6 +249,112 @@ console.log("my IPv4 IPs", ips)
 // look for a matching ip in the config
 
 
+// floor geometry:
+let floor_vao, far_wall_vao, left_wall_vao, right_wall_vao
+
+{
+    let geom = glutils.makeQuad3D({ min: 0 })
+    let modelmatrix = mat4.create()
+    mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y, config.meters.z])
+    mat4.rotateX(modelmatrix, modelmatrix, -Math.PI/2)
+    mat4.translate(modelmatrix, modelmatrix, [0, 0, 0])
+    glutils.geomTransform(geom, modelmatrix)
+    floor_vao = glutils.createVao(gl, geom)
+}
+{
+    let geom = glutils.makeQuad3D({ min: 0 })
+    let modelmatrix = mat4.create()
+    mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y, config.meters.z])
+    mat4.translate(modelmatrix, modelmatrix, [0, 0, -1])
+    glutils.geomTransform(geom, modelmatrix)
+    far_wall_vao = glutils.createVao(gl, geom)
+}
+{
+    let geom = glutils.makeQuad3D({ min: 0 })
+    let geom2 = glutils.makeQuad3D({ min: 0 })
+
+    let modelmatrix = mat4.create()
+    let texmatrix = mat3.create()
+    let ytotal = 2160, ywall = 1080, ygable = 725, yroof = 355
+
+    // wall:
+    mat3.identity(texmatrix)
+    mat3.scale(texmatrix, texmatrix, [1, ywall/ytotal])
+    glutils.geomTexTransform(geom, texmatrix)
+    mat4.identity(modelmatrix)
+    mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y0, config.meters.z])
+    mat4.rotateY(modelmatrix, modelmatrix, Math.PI/2)
+    glutils.geomTransform(geom, modelmatrix)
+
+    // gable:
+    mat3.identity(texmatrix)
+    mat3.translate(texmatrix, texmatrix, [0, ywall/ytotal])
+    mat3.scale(texmatrix, texmatrix, [1, ygable/ytotal])
+    glutils.geomTexTransform(geom2, texmatrix)
+    mat4.identity(modelmatrix)
+    mat4.translate(modelmatrix, modelmatrix, [0, config.meters.y0, 0])
+    mat4.rotateZ(modelmatrix, modelmatrix, -config.meters.a_gable)
+    mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y_gable, config.meters.z])
+    mat4.rotateY(modelmatrix, modelmatrix, Math.PI/2)
+    glutils.geomTransform(geom2, modelmatrix)
+
+    glutils.geomAppend(geom, geom2)
+    left_wall_vao = glutils.createVao(gl, geom)
+}
+
+{
+    let geom = glutils.makeQuad3D({ min: 0 })
+    let geom2 = glutils.makeQuad3D({ min: 0 })
+    let geom3 = glutils.makeQuad3D({ min: 0 })
+
+    let modelmatrix = mat4.create()
+    let texmatrix = mat3.create()
+    let ytotal = 2160, ywall = 1080, ygable = 725, yroof = 355
+
+    // wall
+    mat3.identity(texmatrix)
+    mat3.scale(texmatrix, texmatrix, [1, ywall/ytotal])
+    glutils.geomTexTransform(geom, texmatrix)
+    mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y0, config.meters.z])
+    mat4.translate(modelmatrix, modelmatrix, [1, 0, -1])
+    mat4.rotateY(modelmatrix, modelmatrix, -Math.PI/2)
+    glutils.geomTransform(geom, modelmatrix)
+
+    // gable:
+    mat3.identity(texmatrix)
+    mat3.translate(texmatrix, texmatrix, [0, ywall/ytotal])
+    mat3.scale(texmatrix, texmatrix, [1, ygable/ytotal])
+    glutils.geomTexTransform(geom2, texmatrix)
+    mat4.identity(modelmatrix)
+    mat4.translate(modelmatrix, modelmatrix, [config.meters.x, config.meters.y0, 0])
+    mat4.rotateZ(modelmatrix, modelmatrix, config.meters.a_gable)
+    mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y_gable, config.meters.z])
+    mat4.translate(modelmatrix, modelmatrix, [0, 0, -1])
+    mat4.rotateY(modelmatrix, modelmatrix, -Math.PI/2)
+    glutils.geomTransform(geom2, modelmatrix)
+
+    // roof:
+    mat3.identity(texmatrix)
+    mat3.translate(texmatrix, texmatrix, [0, (ywall+ygable)/ytotal])
+    mat3.scale(texmatrix, texmatrix, [1, yroof/ytotal])
+    glutils.geomTexTransform(geom3, texmatrix)
+    mat4.identity(modelmatrix)
+    mat4.translate(modelmatrix, modelmatrix, [config.meters.x_top, config.meters.y, 0])
+    mat4.rotateZ(modelmatrix, modelmatrix, Math.PI/2)
+    mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.w_top, config.meters.z])
+    mat4.translate(modelmatrix, modelmatrix, [0, -1, -1])
+    mat4.rotateY(modelmatrix, modelmatrix, -Math.PI/2)
+    glutils.geomTransform(geom3, modelmatrix)
+
+    glutils.geomAppend(geom, geom2)
+    glutils.geomAppend(geom, geom3)
+    right_wall_vao = glutils.createVao(gl, geom)
+}
+
+
+let test_tex = png2tex(gl, "stars.png", true)
+
+
 window.draw = function() {
 	let { dim } = this;
 
@@ -256,6 +383,12 @@ window.draw = function() {
         let NEAR = 0.01
         let FAR = 300
         let hs = 0, vs = 0
+
+        if (pointer.buttons[0]){ 
+            state.nav.looky += pointer.vel[0]
+            state.nav.lookx = -pointer.pos[1]/3
+        }
+
 		// mat4.frustum(nav.projmatrix, 
 		// 	aspect*fov*NEAR*(-hs-1), 
 		// 	aspect*fov*NEAR*(-hs+1), 
@@ -263,12 +396,15 @@ window.draw = function() {
 		// 	fov*NEAR*(-vs+1), 
 		// 	NEAR, FAR)
         mat4.perspective(nav.projmatrix, fov, aspect, NEAR, FAR)
-        
+
+        let a = t/5
         let eye_height = 1.6
         mat4.identity(nav.viewmatrix)
         mat4.translate(nav.viewmatrix, nav.viewmatrix, [0, 0, -config.meters.x/2])
-        mat4.rotateY(nav.viewmatrix, nav.viewmatrix, t/5)
-        mat4.translate(nav.viewmatrix, nav.viewmatrix, [-config.meters.x/2, -eye_height, config.meters.z/2])
+        mat4.rotateX(nav.viewmatrix, nav.viewmatrix, state.nav.lookx)
+        mat4.translate(nav.viewmatrix, nav.viewmatrix, [0, -eye_height, 0])
+        mat4.rotateY(nav.viewmatrix, nav.viewmatrix, state.nav.looky)
+        mat4.translate(nav.viewmatrix, nav.viewmatrix, [-config.meters.x/2, 0, config.meters.z/2])
         
     }
 
@@ -302,97 +438,17 @@ window.draw = function() {
         gl.depthMask(true)
 
         let modelmatrix = mat4.create()
-        {
-            // draw floor:
-            mat4.identity(modelmatrix)
-            mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y, config.meters.z])
-            mat4.rotateX(modelmatrix, modelmatrix, -Math.PI/2)
-            mat4.translate(modelmatrix, modelmatrix, [0, 0, 0])
-            shaderman.shaders.texquad.begin()
-            .uniform("u_projmatrix", nav.projmatrix)
-            .uniform("u_viewmatrix", nav.viewmatrix)
-            .uniform("u_modelmatrix", modelmatrix)
-            quad_unit_vao.bind().draw()
-        }
-        {
-            // far wall:
-            mat4.identity(modelmatrix)
-            mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y, config.meters.z])
-            mat4.translate(modelmatrix, modelmatrix, [0, 0, -1])
-            //mat4.rotateY(modelmatrix, modelmatrix, -Math.PI/2)
-            shaderman.shaders.texquad.begin()
-            .uniform("u_projmatrix", nav.projmatrix)
-            .uniform("u_viewmatrix", nav.viewmatrix)
-            .uniform("u_modelmatrix", modelmatrix)
-            quad_unit_vao.bind().draw()
-        }
-        {
-            // left wall:
-            mat4.identity(modelmatrix)
-            mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y0, config.meters.z])
-            mat4.rotateY(modelmatrix, modelmatrix, Math.PI/2)
-            shaderman.shaders.texquad.begin()
-            .uniform("u_projmatrix", nav.projmatrix)
-            .uniform("u_viewmatrix", nav.viewmatrix)
-            .uniform("u_modelmatrix", modelmatrix)
-            quad_unit_vao.bind().draw()
-        }
-        {
-            // right wall:
-            mat4.identity(modelmatrix)
-            mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y0, config.meters.z])
-            mat4.translate(modelmatrix, modelmatrix, [1, 0, -1])
-            mat4.rotateY(modelmatrix, modelmatrix, -Math.PI/2)
-            shaderman.shaders.texquad.begin()
-            .uniform("u_projmatrix", nav.projmatrix)
-            .uniform("u_viewmatrix", nav.viewmatrix)
-            .uniform("u_modelmatrix", modelmatrix)
-            quad_unit_vao.bind().draw()
-        }
-
-        {
-            // left gable:
-            mat4.identity(modelmatrix)
-            mat4.translate(modelmatrix, modelmatrix, [0, config.meters.y0, 0])
-            mat4.rotateZ(modelmatrix, modelmatrix, -config.meters.a_gable)
-            mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y_gable, config.meters.z])
-            mat4.rotateY(modelmatrix, modelmatrix, Math.PI/2)
-            shaderman.shaders.texquad.begin()
-            .uniform("u_projmatrix", nav.projmatrix)
-            .uniform("u_viewmatrix", nav.viewmatrix)
-            .uniform("u_modelmatrix", modelmatrix)
-            quad_unit_vao.bind().draw()
-        }
-        {
-            // right gable:
-            mat4.identity(modelmatrix)
-            mat4.translate(modelmatrix, modelmatrix, [config.meters.x, config.meters.y0, 0])
-            mat4.rotateZ(modelmatrix, modelmatrix, config.meters.a_gable)
-            mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y_gable, config.meters.z])
-            mat4.translate(modelmatrix, modelmatrix, [0, 0, -1])
-            mat4.rotateY(modelmatrix, modelmatrix, -Math.PI/2)
-            shaderman.shaders.texquad.begin()
-            .uniform("u_projmatrix", nav.projmatrix)
-            .uniform("u_viewmatrix", nav.viewmatrix)
-            .uniform("u_modelmatrix", modelmatrix)
-            quad_unit_vao.bind().draw()
-        }
 
         
-        {
-            // top ceiling:
-            mat4.identity(modelmatrix)
-            mat4.translate(modelmatrix, modelmatrix, [config.meters.x_top, 0, 0])
-            mat4.scale(modelmatrix, modelmatrix, [config.meters.w_top, config.meters.y, config.meters.z])
-            mat4.translate(modelmatrix, modelmatrix, [0, 1, 0])
-            mat4.rotateX(modelmatrix, modelmatrix, -Math.PI/2)
-            shaderman.shaders.texquad.begin()
-            .uniform("u_projmatrix", nav.projmatrix)
-            .uniform("u_viewmatrix", nav.viewmatrix)
-            .uniform("u_modelmatrix", modelmatrix)
-            quad_unit_vao.bind().draw()
-        }
-
+        shaderman.shaders.texquad.begin()
+        .uniform("u_projmatrix", nav.projmatrix)
+        .uniform("u_viewmatrix", nav.viewmatrix)
+        .uniform("u_modelmatrix", modelmatrix)
+        test_tex.bind()
+        floor_vao.bind().draw()
+        far_wall_vao.bind().draw()
+        left_wall_vao.bind().draw()
+        right_wall_vao.bind().draw()
 
         gl.disable(gl.BLEND)
         gl.enable(gl.DEPTH_TEST)
@@ -429,11 +485,20 @@ window.draw = function() {
 }
 
 window.onpointermove = function(sx, sy) {
-	
+    if (pointer.buttons[0]){ 
+
+	    console.log(pointer.vel)
+    }
+    pointer.vel[0] = sx - pointer.pos[0]
+    pointer.vel[1] = sy - pointer.pos[1]
+    pointer.pos[0] = sx
+    pointer.pos[1] = sy
 }
 
-window.onpointerbutton = function(button, action, mods) {
-	//console.log(button, action, mods)
+window.onpointerbutton = function(button, action, mod) {
+    let shift = mod % 2
+	let ctrl = Math.floor(mod/2) % 2
+    pointer.buttons[button] = action
 }
 
 window.onkey = function(key, scan, down, mod) {
