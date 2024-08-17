@@ -17,6 +17,15 @@ const gl = require('gles3.js'),
 	Shaderman = require('shaderman.js');
 const { inherits } = require("util");
 
+const {
+    quat_rotate,
+    quat_unrotate,
+    quat_rotation_to,
+    quat_fromAxisAngle,
+	wrap, wrap_relative, 
+    vec3_wrap, vec3_wrap_relative,
+} = glutils
+
 const scriptname = __filename.slice(__dirname.length + 1, -3)
 let export_path = path.join(__dirname, "export")
 let export_image_path = path.join(__dirname, "export", "images")
@@ -27,18 +36,19 @@ for (let path of [restore_path, export_image_path, export_path]) {
 
 let pause = 0
 
-let final_dim = [1920, 1080]
+let screen_dim = [1920, 1080]
 let win_div = 2
-let export_div = 1
+let record_div = 1
 let SDquant = 8
 let win_dim = [
-	Math.ceil(final_dim[0]/win_div/SDquant)*SDquant,
-	Math.ceil(final_dim[1]/win_div/SDquant)*SDquant,
+	Math.ceil(screen_dim[0]/win_div/SDquant)*SDquant,
+	Math.ceil(screen_dim[1]/win_div/SDquant)*SDquant,
 ]
-let export_dim = [
-    Math.ceil(final_dim[0]/export_div/SDquant)*SDquant,
-	Math.ceil(final_dim[1]/export_div/SDquant)*SDquant,
+let record_dim = [
+    Math.ceil(screen_dim[0]/record_div/SDquant)*SDquant,
+	Math.ceil(screen_dim[1]/record_div/SDquant)*SDquant,
 ]
+console.log("record_dim", record_dim)
 
 // these are the final output resolutions
 // (why are the render resolutions they used different?)
@@ -68,16 +78,17 @@ let window = new Window({
 
 const shaderman = new Shaderman(gl)
 const quad_vao = glutils.createVao(gl, glutils.makeQuad3D())
+const quad_unit_vao = glutils.createVao(gl, glutils.makeQuad3D({ min: 0 }))
 
 let mipmap = true
-let export_gbo = glutils.makeGbuffer(gl, ...export_dim, [
+let record_gbo = glutils.makeGbuffer(gl, ...record_dim, [
     { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // color
     // { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // depth
     // { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // normal
     // { float: true, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // flow
     // { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // sd
 ])
-let export_gbo_prev = export_gbo.clone(gl)
+//let record_gbo_prev = record_gbo.clone(gl)
 
 
 // restore state:
@@ -87,6 +98,10 @@ let state = {
 	t: 0,
 	dt: 1/60,
 
+    nav: {
+        viewmatrix: mat4.create(),
+        projmatrix: mat4.create()
+    }
 } 
 
 function json_sanitizer(key, value) {
@@ -138,17 +153,17 @@ function saveAllState(sync) {
 // 		particle_tex3d.writeFileSync(particles_restore_path)
 
 // 	// save gbo textures:
-// 	export_gbo.begin()
+// 	record_gbo.begin()
 // 	.readPixels(0)
 // 	.readPixels(1)
 // 	.readPixels(2)
 // 	.readPixels(3)
 // 	.end()
-// 	fs.writeFileSync(`${restore_path}/color.bin`, Buffer.from(export_gbo.data[0].buffer))
-// 	fs.writeFileSync(`${restore_path}/depth.bin`, Buffer.from(export_gbo.data[1].buffer))
-// 	fs.writeFileSync(`${restore_path}/normal.bin`, Buffer.from(export_gbo.data[2].buffer))
-// 	fs.writeFileSync(`${restore_path}/flow.bin`, Buffer.from(export_gbo.data[3].buffer))
-// 	fs.writeFileSync(`${restore_path}/sd.bin`, Buffer.from(export_gbo.data[3].buffer))
+// 	fs.writeFileSync(`${restore_path}/color.bin`, Buffer.from(record_gbo.data[0].buffer))
+// 	fs.writeFileSync(`${restore_path}/depth.bin`, Buffer.from(record_gbo.data[1].buffer))
+// 	fs.writeFileSync(`${restore_path}/normal.bin`, Buffer.from(record_gbo.data[2].buffer))
+// 	fs.writeFileSync(`${restore_path}/flow.bin`, Buffer.from(record_gbo.data[3].buffer))
+// 	fs.writeFileSync(`${restore_path}/sd.bin`, Buffer.from(record_gbo.data[3].buffer))
 
 	// save other state:
 	//fs.writeFileSync(`${restore_path}/state.json`, JSON.stringify(state, json_sanitizer, "    "))
@@ -167,17 +182,17 @@ function restoreAllState() {
 		// surface_tex3d_prev.readFileSync(surface_restore_path)
 
 		// // do this first to ensure the data buffers exist:
-		// export_gbo.begin()
+		// record_gbo.begin()
 		// .readPixels(0)
 		// .readPixels(1)
 		// .readPixels(2)
 		// .readPixels(3)
 		// .end()
-		// export_gbo.data[0].buffer = fs.readFileSync(`${restore_path}/color.bin`).buffer
-		// export_gbo.data[1].buffer = fs.readFileSync(`${restore_path}/depth.bin`).buffer
-		// export_gbo.data[2].buffer = fs.readFileSync(`${restore_path}/normal.bin`).buffer
-		// export_gbo.data[3].buffer = fs.readFileSync(`${restore_path}/flow.bin`).buffer
-		// export_gbo.data[3].buffer = fs.readFileSync(`${restore_path}/sd.bin`).buffer
+		// record_gbo.data[0].buffer = fs.readFileSync(`${restore_path}/color.bin`).buffer
+		// record_gbo.data[1].buffer = fs.readFileSync(`${restore_path}/depth.bin`).buffer
+		// record_gbo.data[2].buffer = fs.readFileSync(`${restore_path}/normal.bin`).buffer
+		// record_gbo.data[3].buffer = fs.readFileSync(`${restore_path}/flow.bin`).buffer
+		// record_gbo.data[3].buffer = fs.readFileSync(`${restore_path}/sd.bin`).buffer
 	
 		//other state:
         let state_path = `${restore_path}/state.json`
@@ -232,17 +247,45 @@ window.draw = function() {
 		// animate
 	}
 
+    // update camera:
+    {
+        const { width, height, data } = record_gbo
+        let aspect = width/height
+        let fov = 1.4 // radians
+
+        let NEAR = 0.01
+        let FAR = 300
+        let hs = 0, vs = 0
+		// mat4.frustum(nav.projmatrix, 
+		// 	aspect*fov*NEAR*(-hs-1), 
+		// 	aspect*fov*NEAR*(-hs+1), 
+		// 	fov*NEAR*(-vs-1), 
+		// 	fov*NEAR*(-vs+1), 
+		// 	NEAR, FAR)
+        mat4.perspective(nav.projmatrix, fov, aspect, NEAR, FAR)
+        
+        let eye_height = 1.6
+        mat4.identity(nav.viewmatrix)
+        mat4.translate(nav.viewmatrix, nav.viewmatrix, [0, 0, -config.meters.x/2])
+        mat4.rotateY(nav.viewmatrix, nav.viewmatrix, t/5)
+        mat4.translate(nav.viewmatrix, nav.viewmatrix, [-config.meters.x/2, -eye_height, config.meters.z/2])
+        
+    }
+
     // run computes, update buffers
 
     // render
+    // {
+    //     let tmp = record_gbo_prev
+    //     record_gbo_prev = record_gbo
+    //     record_gbo = tmp
+    // }
+
+
+    // render as a 3D preview
+    record_gbo.begin() 
     {
-        let tmp = export_gbo_prev
-        export_gbo_prev = export_gbo
-        export_gbo = tmp
-    }
-    export_gbo.begin() 
-    {
-        const { width, height, data } = export_gbo
+        const { width, height, data } = record_gbo
         const dim = [width, height]
 
         gl.viewport(0, 0, ...dim);
@@ -251,19 +294,111 @@ window.draw = function() {
         gl.enable(gl.DEPTH_TEST)
 
         // bind previous
-		export_gbo_prev.bind(0, 0)
+		//record_gbo_prev.bind(0, 0)
 
         gl.depthMask(false)
         shaderman.shaders.bg.begin()
         quad_vao.bind().draw()
         gl.depthMask(true)
 
+        let modelmatrix = mat4.create()
+        {
+            // draw floor:
+            mat4.identity(modelmatrix)
+            mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y, config.meters.z])
+            mat4.rotateX(modelmatrix, modelmatrix, -Math.PI/2)
+            mat4.translate(modelmatrix, modelmatrix, [0, 0, 0])
+            shaderman.shaders.texquad.begin()
+            .uniform("u_projmatrix", nav.projmatrix)
+            .uniform("u_viewmatrix", nav.viewmatrix)
+            .uniform("u_modelmatrix", modelmatrix)
+            quad_unit_vao.bind().draw()
+        }
+        {
+            // far wall:
+            mat4.identity(modelmatrix)
+            mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y, config.meters.z])
+            mat4.translate(modelmatrix, modelmatrix, [0, 0, -1])
+            //mat4.rotateY(modelmatrix, modelmatrix, -Math.PI/2)
+            shaderman.shaders.texquad.begin()
+            .uniform("u_projmatrix", nav.projmatrix)
+            .uniform("u_viewmatrix", nav.viewmatrix)
+            .uniform("u_modelmatrix", modelmatrix)
+            quad_unit_vao.bind().draw()
+        }
+        {
+            // left wall:
+            mat4.identity(modelmatrix)
+            mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y0, config.meters.z])
+            mat4.rotateY(modelmatrix, modelmatrix, Math.PI/2)
+            shaderman.shaders.texquad.begin()
+            .uniform("u_projmatrix", nav.projmatrix)
+            .uniform("u_viewmatrix", nav.viewmatrix)
+            .uniform("u_modelmatrix", modelmatrix)
+            quad_unit_vao.bind().draw()
+        }
+        {
+            // right wall:
+            mat4.identity(modelmatrix)
+            mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y0, config.meters.z])
+            mat4.translate(modelmatrix, modelmatrix, [1, 0, -1])
+            mat4.rotateY(modelmatrix, modelmatrix, -Math.PI/2)
+            shaderman.shaders.texquad.begin()
+            .uniform("u_projmatrix", nav.projmatrix)
+            .uniform("u_viewmatrix", nav.viewmatrix)
+            .uniform("u_modelmatrix", modelmatrix)
+            quad_unit_vao.bind().draw()
+        }
+
+        {
+            // left gable:
+            mat4.identity(modelmatrix)
+            mat4.translate(modelmatrix, modelmatrix, [0, config.meters.y0, 0])
+            mat4.rotateZ(modelmatrix, modelmatrix, -config.meters.a_gable)
+            mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y_gable, config.meters.z])
+            mat4.rotateY(modelmatrix, modelmatrix, Math.PI/2)
+            shaderman.shaders.texquad.begin()
+            .uniform("u_projmatrix", nav.projmatrix)
+            .uniform("u_viewmatrix", nav.viewmatrix)
+            .uniform("u_modelmatrix", modelmatrix)
+            quad_unit_vao.bind().draw()
+        }
+        {
+            // right gable:
+            mat4.identity(modelmatrix)
+            mat4.translate(modelmatrix, modelmatrix, [config.meters.x, config.meters.y0, 0])
+            mat4.rotateZ(modelmatrix, modelmatrix, config.meters.a_gable)
+            mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y_gable, config.meters.z])
+            mat4.translate(modelmatrix, modelmatrix, [0, 0, -1])
+            mat4.rotateY(modelmatrix, modelmatrix, -Math.PI/2)
+            shaderman.shaders.texquad.begin()
+            .uniform("u_projmatrix", nav.projmatrix)
+            .uniform("u_viewmatrix", nav.viewmatrix)
+            .uniform("u_modelmatrix", modelmatrix)
+            quad_unit_vao.bind().draw()
+        }
+
+        
+        {
+            // top ceiling:
+            mat4.identity(modelmatrix)
+            mat4.translate(modelmatrix, modelmatrix, [config.meters.x_top, 0, 0])
+            mat4.scale(modelmatrix, modelmatrix, [config.meters.w_top, config.meters.y, config.meters.z])
+            mat4.translate(modelmatrix, modelmatrix, [0, 1, 0])
+            mat4.rotateX(modelmatrix, modelmatrix, -Math.PI/2)
+            shaderman.shaders.texquad.begin()
+            .uniform("u_projmatrix", nav.projmatrix)
+            .uniform("u_viewmatrix", nav.viewmatrix)
+            .uniform("u_modelmatrix", modelmatrix)
+            quad_unit_vao.bind().draw()
+        }
+
 
         gl.disable(gl.BLEND)
         gl.enable(gl.DEPTH_TEST)
         gl.depthMask(true)
     }
-    export_gbo.end()
+    record_gbo.end()
 
 	//////////////
 
@@ -276,7 +411,7 @@ window.draw = function() {
 	// 	if (showCacheQueue && texcache.length) {
 	// 		cache_tex[showLayer].bind()
 	// 	} else {
-	// 		export_gbo.bind(showLayer)
+	// 		record_gbo.bind(showLayer)
 	// 	}
 	// } else {
 	// 	lighting_gbo.bind()
@@ -328,7 +463,7 @@ window.onkey = function(key, scan, down, mod) {
 			}
 			case 61: { // =
 				win_div = (win_div == 2) ? 4 : 2;
-				window.dim = [final_dim[0]/win_div, final_dim[1]/win_div]
+				window.dim = [screen_dim[0]/win_div, screen_dim[1]/win_div]
 				break;
 			}
             case 82: { // r

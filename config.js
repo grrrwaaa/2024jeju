@@ -1,9 +1,7 @@
 let state = arguments[0] || {}
 let params = arguments[1] || {}
 
-
-
-console.log("config options", state, params)
+// Room geometry, based on the origin in the centre of the floor. 
 
 // these are the final output resolutions
 // (why are the render resolutions they used different?)
@@ -23,7 +21,35 @@ let res_wallL1 = res_wallR1
 // Server 192.168.100.54, far wall:
 let res_wallF = [1920, 1080]
 
+let mm_floor = [7.750, 15.790]
+let mm_wallF = [7.750, 6.900]
+
+let mm_wall0 = [15.790, 5.345]
+
+
 return {
+    meters: {
+        x: 7.750,
+        y: 6.900,
+        y0: 5.345,
+        z: 15.790,
+
+        // // estimate size of gable section
+        // y_gable: 2.85, //3.58, // 2.85, // 3.58??  
+        // // estimated angle in radians
+        // a_gable: 0.95, // 1, // 0.95,
+        // // horizontal distance from wall to top section:
+        // x_top: 2.350, // 2.9965, // 2.350, 
+        // w_top: 3.050, //1.757, //3.050, //1.757
+
+        // estimate size of gable section
+        y_gable: 3.58, // 2.85, // 3.58??  
+        // estimated angle in radians
+        a_gable: 1.1, // 0.95,
+        // horizontal distance from wall to top section:
+        x_top: 2.9965, // 2.350, 
+        w_top: 1.757, //3.050, //1.757
+    },
     machines: {
         "192.168.100.51": {
             name: "floor",
