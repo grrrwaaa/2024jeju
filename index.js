@@ -363,10 +363,13 @@ let floor_vao, far_wall_vao, near_wall_vao, left_wall_vao, right_wall_vao
 }
 
 
-let test_tex = png2tex(gl, "HDTestPattern.png", true)
+let testL_tex = png2tex(gl, "HDTestPattern.png", true)
+let testR_tex = png2tex(gl, "HDTestPattern.png", true)
+let testF_tex = png2tex(gl, "HDTestPattern.png", true)
+let testG_tex = png2tex(gl, "HDTestPattern.png", true)
 
 
-const lidars = ndi(gl, "LIDAR")
+const lidars = ndi(gl, "TOF")
 
 window.draw = function() {
 	let { dim } = this;
@@ -390,7 +393,7 @@ window.draw = function() {
     // update camera:
     {
         const { width, height, data } = record_gbo
-        let aspect = width/height
+        let aspect = dim[0]/dim[1]
         let fov = 1.4 // radians
 
         let NEAR = 0.01
@@ -451,7 +454,7 @@ window.draw = function() {
     //     fbo.end()
     // }
 
-    for (fbo of [wallF_gbo, wallL_gbo, wallR_gbo]) {
+    for (fbo of [wallR_gbo]) {
         fbo.begin()
         const { width, height, data } = fbo
         const dim = [width, height]
@@ -461,7 +464,41 @@ window.draw = function() {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST)
 
-        test_tex.bind()
+        testR_tex.bind()
+        shaderman.shaders.test.begin()
+        quad_vao.bind().draw()
+
+        fbo.end()
+    }
+
+    for (fbo of [wallL_gbo]) {
+        fbo.begin()
+        const { width, height, data } = fbo
+        const dim = [width, height]
+
+        gl.viewport(0, 0, ...dim);
+        gl.clearColor(0., 0., 0., 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.DEPTH_TEST)
+
+        testL_tex.bind()
+        shaderman.shaders.test.begin()
+        quad_vao.bind().draw()
+
+        fbo.end()
+    }
+
+    for (fbo of [wallF_gbo]) {
+        fbo.begin()
+        const { width, height, data } = fbo
+        const dim = [width, height]
+
+        gl.viewport(0, 0, ...dim);
+        gl.clearColor(0., 0., 0., 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.DEPTH_TEST)
+
+        testF_tex.bind()
         shaderman.shaders.test.begin()
         quad_vao.bind().draw()
 
@@ -478,9 +515,10 @@ window.draw = function() {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST)
 
-        test_tex.bind()
+        testG_tex.bind(1)
         lidars.tex.bind().submit()
-        shaderman.shaders.test.begin()
+        shaderman.shaders.floor.begin()
+        .uniform("u_tex1", 1)
         quad_vao.bind().draw()
 
         fbo.end()
