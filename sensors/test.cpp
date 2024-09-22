@@ -14,22 +14,14 @@
 using namespace std;
 using namespace hlds;
 
-struct sendCarrier  {
-  char* name = nullptr;
-  char* groups = nullptr;
-  bool clockVideo = false;
-  bool clockAudio = false;
-  NDIlib_send_instance_t send;
-  ~sendCarrier() {
-    free(name);
-  }
-};
+#define XRES 320
+#define YRES 240
+#define NUM_CAMERAS 3
 
 
 int main(int ac, char * av) {
 
     printf("hello\n");
-
 
 	if (!NDIlib_initialize()) {
 		std::cout << "unable to initialize NDI" << endl;
@@ -39,61 +31,52 @@ int main(int ac, char * av) {
 
 	printf("NDI supported cpu? %i %s\n", NDIlib_is_supported_CPU(), NDIlib_version());
 
-	// try to create a sender:
-	{
-		NDIlib_send_create_t settings;
-		settings.p_ndi_name = "TOF_NDI";
-		NDIlib_send_instance_t sender = NDIlib_send_create(&settings);
+	NDIlib_send_create_t settings;
+	settings.p_ndi_name = "TOF_NDI";
+	NDIlib_send_instance_t sender = NDIlib_send_create(&settings);
 
-		#define XRES 320
-		#define YRES 240
+	uint8_t frame_data[YRES * XRES * 4]; // 4 bytes for R G B A
 
-		uint8_t frame_data[YRES * XRES * 4]; // 4 bytes for R G B A
+	NDIlib_video_frame_v2_t frame;
+	frame.xres = XRES;
+	frame.yres = YRES;
+	frame.FourCC = NDIlib_FourCC_video_type_RGBA;  // 4:4:4:4 
+	frame.frame_rate_N = 25;
+	frame.frame_rate_D = 1;
+	frame.picture_aspect_ratio = float(XRES)/float(YRES);
+	frame.frame_format_type = NDIlib_frame_format_type_progressive;
+	// The timecode of this frame in 100-nanosecond intervals.
+	frame.timecode = 0;  // int64_t
+	// // The video data itself.
+	frame.p_data = frame_data;
+	// union {	// If the FourCC is not a compressed type, then this will be the inter-line stride of the video data
+	// 	// in bytes.  If the stride is 0, then it will default to sizeof(one pixel)*xres.
+	// 	int line_stride_in_bytes;
+	// 	// If the FourCC is a compressed type, then this will be the size of the p_data buffer in bytes.
+	// 	int data_size_in_bytes;
+	// };
+	frame.line_stride_in_bytes = 0;
+	// // Per frame metadata for this frame. This is a NULL terminated UTF8 string that should be in XML format.
+	// // If you do not want any metadata then you may specify NULL here.
+	// const char* p_metadata; // Present in >= v2.5
+	frame.p_metadata = NULL;
 
-		NDIlib_video_frame_v2_t frame;
-		frame.xres = XRES;
-		frame.yres = YRES;
-		frame.FourCC = NDIlib_FourCC_video_type_RGBA;  // 4:4:4:4 
-		frame.frame_rate_N = 25;
-		frame.frame_rate_D = 1;
-		frame.picture_aspect_ratio = float(XRES)/float(YRES);
-		frame.frame_format_type = NDIlib_frame_format_type_progressive;
-		// The timecode of this frame in 100-nanosecond intervals.
-		frame.timecode = 0;  // int64_t
-		// // The video data itself.
-		frame.p_data = frame_data;
 
-		// union {	// If the FourCC is not a compressed type, then this will be the inter-line stride of the video data
-		// 	// in bytes.  If the stride is 0, then it will default to sizeof(one pixel)*xres.
-		// 	int line_stride_in_bytes;
-		// 	// If the FourCC is a compressed type, then this will be the size of the p_data buffer in bytes.
-		// 	int data_size_in_bytes;
-		// };
-		frame.line_stride_in_bytes = 0;
 
-		// // Per frame metadata for this frame. This is a NULL terminated UTF8 string that should be in XML format.
-		// // If you do not want any metadata then you may specify NULL here.
-		// const char* p_metadata; // Present in >= v2.5
-		frame.p_metadata = NULL;
 
-		while (true) {
-
-			// randomize the memory:
-			for (int c=0; c<YRES; c++) {
-				for (int r=0; r<XRES; r++) {
-					for (int i=0; i<4; i++) {
-						frame_data[i + 4*(r + c*XRES)] = rand() % 256;
-					}
+	while (true) {
+		// randomize the memory:
+		for (int r=0; r<YRES; r++) {
+			for (int c=0; c<XRES; c++) {
+				for (int i=0; i<4; i++) {
+					frame_data[i + 4*(c + r*XRES)] = rand() % 256;
 				}
 			}
-
-			NDIlib_send_send_video_v2(sender, &frame);
 		}
 
-		
-
-		NDIlib_send_destroy(sender);
+		NDIlib_send_send_video_v2(sender, &frame);
 	}
+
 
     // Create TofManager
 	TofManager tofm;
@@ -123,7 +106,7 @@ int main(int ac, char * av) {
 	FrameDepth * frame = new FrameDepth[numoftof];
 
     // Open all Tof instances (Set TOF information)
-	for (int tofno = 0; tofno < numoftof; tofno++){
+	for (int tofno = 0; tofno < NUM_CAMERAS; tofno++){
 		if (tof[tofno].Open(ptofinfo[tofno]) != Result::OK){
 			std::cout << "TOF ID " << ptofinfo[tofno].tofid << " Open Error" << endl;
 
@@ -141,8 +124,10 @@ int main(int ac, char * av) {
 		return -1;
 	}
 
+
+
     // Start all Tof instances (Start data transferring)
-	for (int tofno = 0; tofno < numoftof; tofno++){
+	for (int tofno = 0; tofno < NUM_CAMERAS; tofno++){
 
 		// Start only enable TOF sensor
 		if (tofenable[tofno] == true){
@@ -183,13 +168,6 @@ int main(int ac, char * av) {
 		}
 	}
 
-    // Set color information in each frame
-	for (int tofno = 0; tofno < numoftof; tofno++){
-		if (tofenable[tofno] == true){
-			frame[tofno].CreateColorTable(0, 65530);
-		}
-	}
-
     bool berror = false;
     try {
 
@@ -197,7 +175,7 @@ int main(int ac, char * av) {
 		while (1){
 
             // Loop for each TOF sensor
-			for (int tofno = 0; tofno < numoftof; tofno++){
+			for (int tofno = 0; tofno < NUM_CAMERAS; tofno++){
 
 				if (tofenable[tofno] == true){
                     // Get the latest frame number
@@ -218,15 +196,18 @@ int main(int ac, char * av) {
                         // Reverse(Mirror) mode
 						for (int i = 0; i < frame[tofno].height; i++){
 							for (int j = 0; j < frame[tofno].width; j++){
+								// get pixel from camera
                                 unsigned short pixel = frame[tofno].databuf[i * frame[tofno].width + (frame[tofno].width - j - 1)];
-                                //...
 
-                                
+                                // copy this into one channel of our frame_data:
+								frame_data[tofno + 4*(j + i*XRES)] = pixel * 16;
                             }
                         }
                     }
                 }
             }
+
+			NDIlib_send_send_video_v2(sender, &frame);
         }
     } catch (std::exception& ex){
 		std::cout << ex.what() << std::endl;
@@ -241,7 +222,6 @@ int main(int ac, char * av) {
 			}
 		}
 	}
-
 
 	for (int tofno = 0; tofno < numoftof; tofno++){
 		if (tofenable[tofno] == true){
@@ -262,6 +242,9 @@ int main(int ac, char * av) {
 	if (berror){
 		system("pause");
 	}
+
+	
+	NDIlib_send_destroy(sender);
 
     return 0;
 }
