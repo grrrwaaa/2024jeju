@@ -19,9 +19,10 @@
     "anode_gl": "file:../anode_gl",
     "bindings": "1.5.0",
     "gl-matrix": "^3.4.3",
+    "grandiose": "git+git@github.com:Streampunk/grandiose.git",
     "node-addon-api": "^3.1.0",
-    "pngjs": "^7.0.0",
-    "grandiose": "git+git@github.com:Streampunk/grandiose.git"
+    "nodemon": "^3.1.7",
+    "pngjs": "^7.0.0"
   },
   "nodemonConfig": {
     "ignore": [
