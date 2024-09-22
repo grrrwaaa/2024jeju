@@ -5,6 +5,11 @@ audio*
 export*
 restore*
 
+*.exe
+*.obj
+
+package-lock.json
+
 # Logs
 logs
 *.log

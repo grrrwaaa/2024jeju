@@ -26,6 +26,14 @@ let mm_wallF = [7.750, 6.900]
 
 let mm_wall0 = [15.790, 5.345]
 
+console.log("pix/m content x", 1872 / 7.750)
+console.log("pix/m content y", 1272 / 5.345)
+console.log("pix/m content z", 3840 / 15.790)
+
+console.log("pix/m projection x", 1920 / 7.750)
+console.log("pix/m projection y", 1080 / 5.345)
+console.log("pix/m projection z", 3240 / 15.790)
+
 
 return {
     meters: {
@@ -43,29 +51,42 @@ return {
         // w_top: 3.050, //1.757, //3.050, //1.757
 
         // estimate size of gable section
-        y_gable: 3.58, // 2.85, // 3.58??  
+        y_gable: 3.4, // 2.85, // 3.58??  
         // estimated angle in radians
-        a_gable: 1.1, // 0.95,
+        a_gable: 1.08, // 0.95,
         // horizontal distance from wall to top section:
         x_top: 2.9965, // 2.350, 
         w_top: 1.757, //3.050, //1.757
     },
+    mode: "development",
     machines: {
-        "192.168.100.51": {
+        "player1": {
             name: "floor",
-            res: res_floor
+            content_res: [1872, 3840],
+            res: res_floor,
+            show: 1
         },
-        "192.168.100.52": {
+        "player2": {
             name: "leftwall",
-            res: res_wallL
+            content_res: [3840, 1272+904+406],
+            res: res_wallL,
+            show: 2
         },
-        "192.168.100.53": {
+        "player3": {
             name: "rightwall",
-            res: res_wallR
+            content_res: [3840, 1272+904+406],
+            res: res_wallR,
+            show: 3
         },
-        "192.168.100.54": {
+        "player4": {
             name: "farwall",
-            res: res_wallF
+            content_res: [1872, 1752],
+            res: res_wallF,
+            show: 4
         },
+        "development": {
+            name: "development",
+            show: 0
+        }
     }
 }

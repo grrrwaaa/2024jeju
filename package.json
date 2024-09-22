@@ -16,8 +16,12 @@
     "url": "https://github.com/grrrwaaa/2024jeju/issues"
   },
   "dependencies": {
+    "anode_gl": "file:../anode_gl",
+    "bindings": "1.5.0",
     "gl-matrix": "^3.4.3",
-    "pngjs": "^7.0.0"
+    "node-addon-api": "^3.1.0",
+    "pngjs": "^7.0.0",
+    "grandiose": "git+git@github.com:Streampunk/grandiose.git"
   },
   "nodemonConfig": {
     "ignore": [

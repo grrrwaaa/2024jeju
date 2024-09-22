@@ -7,15 +7,7 @@ const child_process = require('child_process');
 
 const { vec2, vec3, vec4, quat, mat2, mat2d, mat3, mat4} = require("gl-matrix")
 
-// add anode_gl to the module search paths:
-module.paths.push(path.resolve(path.join(__dirname, "..", "anode_gl")))
-
-const gl = require('gles3.js'),
-	glfw = require('glfw3.js'),
-    Window = require("window.js"),
-	glutils = require('glutils.js'),
-	Shaderman = require('shaderman.js');
-const { inherits } = require("util");
+const { gl, glfw, glutils, Window, Shaderman } = require('anode_gl')
 
 const {
 	pngfile2base64string,
@@ -28,6 +20,9 @@ const {
 	base64string2texture,
 	png2tex, jpg2tex,
 } = require("./pngtools");
+
+const ndi = require("./ndi.js")
+
 
 const {
     quat_rotate,
@@ -70,24 +65,6 @@ let record_dim = [
 ]
 console.log("record_dim", record_dim)
 
-// these are the final output resolutions
-// (why are the render resolutions they used different?)
-// player1 192.168.100.51 floor
-let res_floor = [1920, 3240]
-// player3 192.168.100.53 right wall:
-let res_wallR = [3840, 2160] // which is made up of:
-let res_wallR0 = [3840, 1080]
-let res_wallR1 = [3840, 725]
-let res_wallR2 = [3840, 355]
-// player2 92.168.100.52 left wall:
-// left wall is the same res, but there is no L2 (just blank)
-let res_wallL = res_wallR // which is made up of:
-let res_wallL0 = res_wallR0
-let res_wallL1 = res_wallR1
-//let res_wallL2 = res_wallR2 // but this is blank.
-// Server 192.168.100.54, far wall:
-let res_wallF = [1920, 1080]
-
 let window = new Window({
 	title: "",
 	dim: win_dim,
@@ -110,18 +87,6 @@ let record_gbo = glutils.makeGbuffer(gl, ...record_dim, [
 ])
 //let record_gbo_prev = record_gbo.clone(gl)
 
-let floor_gbo = glutils.makeGbuffer(gl, ...res_floor, [
-    { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // color
-])
-let wallL_gbo = glutils.makeGbuffer(gl, ...res_wallL, [
-    { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // color
-])
-let wallR_gbo = glutils.makeGbuffer(gl, ...res_wallR, [
-    { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // color
-])
-let wallF_gbo = glutils.makeGbuffer(gl, ...res_wallF, [
-    { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // color
-])
 
 // restore state:
 let state = {
@@ -134,7 +99,7 @@ let state = {
         viewmatrix: mat4.create(),
         projmatrix: mat4.create(),
 
-        looky: Math.PI,
+        looky: 0, //Math.PI,
         lookx: 0,
     }
 } 
@@ -246,21 +211,43 @@ restoreAllState()
 
 let params = new Function(fs.readFileSync("params.js", "utf-8"))(state)
 let config = new Function(fs.readFileSync("config.js", "utf-8"))(state)
+// override config based on local IP address:
+const ipconfig = JSON.parse(fs.readFileSync("ipconfig.json", "utf-8"))
 
 const ips = []
 const networks = os.networkInterfaces()
 for (const name of Object.keys(networks)) {
     for (const net of networks[name]) {
-        // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
-        // 'IPv4' is in Node <= 17, from 18 it's a number 4 or 6
         const familyV4Value = typeof net.family === 'string' ? 'IPv4' : 4
         if (net.family === familyV4Value && !net.internal) {
-            ips.push(net.address)
+            let ip = net.address
+            console.log("IP", ip)
+            if (ipconfig[ip]) Object.assign(config, ipconfig[ip])
         }
     }
 }
-console.log("my IPv4 IPs", ips)
-// look for a matching ip in the config
+// set up to use the machine definition for this IP:
+config.machine = config.machines[config.mode]
+
+show = config.machine.show
+
+let floor_gbo = glutils.makeGbuffer(gl, ...config.machines["player1"].content_res, [
+    { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // color
+])
+let wallL_gbo = glutils.makeGbuffer(gl, ...config.machines["player2"].content_res, [
+    { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // color
+])
+let wallR_gbo = glutils.makeGbuffer(gl, ...config.machines["player3"].content_res, [
+    { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // color
+])
+let wallF_gbo = glutils.makeGbuffer(gl, ...config.machines["player4"].content_res, [
+    { float: false, mipmap: mipmap, wrap: gl.CLAMP_TO_EDGE }, // color
+])
+
+
+
+
+console.log(config)
 
 
 // floor geometry:
@@ -376,8 +363,10 @@ let floor_vao, far_wall_vao, near_wall_vao, left_wall_vao, right_wall_vao
 }
 
 
-let test_tex = png2tex(gl, "stars.png", true)
+let test_tex = png2tex(gl, "HDTestPattern.png", true)
 
+
+const lidars = ndi(gl, "LIDAR")
 
 window.draw = function() {
 	let { dim } = this;
@@ -434,6 +423,9 @@ window.draw = function() {
 
     // run computes, update buffers
 
+
+    lidars.tex.bind().submit()
+
     // render
     // {
     //     let tmp = record_gbo_prev
@@ -441,23 +433,23 @@ window.draw = function() {
     //     record_gbo = tmp
     // }
 
-    {
-        let fbo = floor_gbo
-        fbo.begin()
-        const { width, height, data } = fbo
-        const dim = [width, height]
+    // {
+    //     let fbo = floor_gbo
+    //     fbo.begin()
+    //     const { width, height, data } = fbo
+    //     const dim = [width, height]
 
-        gl.viewport(0, 0, ...dim);
-        gl.clearColor(0., 0., 0., 1);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.enable(gl.DEPTH_TEST)
+    //     gl.viewport(0, 0, ...dim);
+    //     gl.clearColor(0., 0., 0., 1);
+    //     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    //     gl.enable(gl.DEPTH_TEST)
 
-        test_tex.bind()
-        shaderman.shaders.show.begin()
-        quad_vao.bind().draw()
+    //     test_tex.bind()
+    //     shaderman.shaders.show.begin()
+    //     quad_vao.bind().draw()
 
-        fbo.end()
-    }
+    //     fbo.end()
+    // }
 
     for (fbo of [wallF_gbo, wallL_gbo, wallR_gbo]) {
         fbo.begin()
@@ -470,7 +462,25 @@ window.draw = function() {
         gl.enable(gl.DEPTH_TEST)
 
         test_tex.bind()
-        shaderman.shaders.show.begin()
+        shaderman.shaders.test.begin()
+        quad_vao.bind().draw()
+
+        fbo.end()
+    }
+
+    for (fbo of [floor_gbo]) {
+        fbo.begin()
+        const { width, height, data } = fbo
+        const dim = [width, height]
+
+        gl.viewport(0, 0, ...dim);
+        gl.clearColor(0., 0., 0., 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.DEPTH_TEST)
+
+        test_tex.bind()
+        lidars.tex.bind().submit()
+        shaderman.shaders.test.begin()
         quad_vao.bind().draw()
 
         fbo.end()
@@ -548,10 +558,6 @@ window.draw = function() {
 }
 
 window.onpointermove = function(sx, sy) {
-    if (pointer.buttons[0]){ 
-
-	    console.log(pointer.vel)
-    }
     pointer.vel[0] = sx - pointer.pos[0]
     pointer.vel[1] = sy - pointer.pos[1]
     pointer.pos[0] = sx
