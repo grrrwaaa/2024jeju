@@ -289,49 +289,35 @@ let floor_vao, far_wall_vao, near_wall_vao, left_wall_vao, right_wall_vao
     let ytotal = 2160, ywall = 1080, ygable = 725, yroof = 355
 
     // wall:
+    // mat3.identity(texmatrix)
+    // mat3.scale(texmatrix, texmatrix, [1, ywall/ytotal])
+    // glutils.geomTexTransform(geom, texmatrix)
+    // mat4.identity(modelmatrix)
+    // mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y0, config.meters.z])
+    // mat4.rotateY(modelmatrix, modelmatrix, Math.PI/2)
+    // glutils.geomTransform(geom, modelmatrix)
+
     mat3.identity(texmatrix)
     mat3.scale(texmatrix, texmatrix, [1, ywall/ytotal])
     glutils.geomTexTransform(geom, texmatrix)
     mat4.identity(modelmatrix)
-    mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y0, config.meters.z])
-    mat4.rotateY(modelmatrix, modelmatrix, Math.PI/2)
-    glutils.geomTransform(geom, modelmatrix)
-
-    // gable:
-    mat3.identity(texmatrix)
-    mat3.translate(texmatrix, texmatrix, [0, ywall/ytotal])
-    mat3.scale(texmatrix, texmatrix, [1, ygable/ytotal])
-    glutils.geomTexTransform(geom2, texmatrix)
-    mat4.identity(modelmatrix)
-    mat4.translate(modelmatrix, modelmatrix, [0, config.meters.y0, 0])
-    mat4.rotateZ(modelmatrix, modelmatrix, -config.meters.a_gable)
-    mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y_gable, config.meters.z])
-    mat4.rotateY(modelmatrix, modelmatrix, Math.PI/2)
-    glutils.geomTransform(geom2, modelmatrix)
-
-    glutils.geomAppend(geom, geom2)
-    left_wall_vao = glutils.createVao(gl, geom)
-}
-
-{
-    let geom = glutils.makeQuad3D({ min: 0 })
-    let geom2 = glutils.makeQuad3D({ min: 0 })
-    let geom3 = glutils.makeQuad3D({ min: 0 })
-
-    let modelmatrix = mat4.create()
-    let texmatrix = mat3.create()
-    let ytotal = 2160, ywall = 1080, ygable = 725, yroof = 355
-
-    // wall
-    mat3.identity(texmatrix)
-    mat3.scale(texmatrix, texmatrix, [1, ywall/ytotal])
-    glutils.geomTexTransform(geom, texmatrix)
     mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y0, config.meters.z])
     mat4.translate(modelmatrix, modelmatrix, [1, 0, -1])
     mat4.rotateY(modelmatrix, modelmatrix, -Math.PI/2)
     glutils.geomTransform(geom, modelmatrix)
 
     // gable:
+    // mat3.identity(texmatrix)
+    // mat3.translate(texmatrix, texmatrix, [0, ywall/ytotal])
+    // mat3.scale(texmatrix, texmatrix, [1, ygable/ytotal])
+    // glutils.geomTexTransform(geom2, texmatrix)
+    // mat4.identity(modelmatrix)
+    // mat4.translate(modelmatrix, modelmatrix, [0, config.meters.y0, 0])
+    // mat4.rotateZ(modelmatrix, modelmatrix, -config.meters.a_gable)
+    // mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y_gable, config.meters.z])
+    // mat4.rotateY(modelmatrix, modelmatrix, Math.PI/2)
+    // glutils.geomTransform(geom2, modelmatrix)
+
     mat3.identity(texmatrix)
     mat3.translate(texmatrix, texmatrix, [0, ywall/ytotal])
     mat3.scale(texmatrix, texmatrix, [1, ygable/ytotal])
@@ -344,7 +330,74 @@ let floor_vao, far_wall_vao, near_wall_vao, left_wall_vao, right_wall_vao
     mat4.rotateY(modelmatrix, modelmatrix, -Math.PI/2)
     glutils.geomTransform(geom2, modelmatrix)
 
+    glutils.geomAppend(geom, geom2)
+    right_wall_vao = glutils.createVao(gl, geom)
+}
+
+{
+    let geom = glutils.makeQuad3D({ min: 0 })
+    let geom2 = glutils.makeQuad3D({ min: 0 })
+    let geom3 = glutils.makeQuad3D({ min: 0 })
+
+    let modelmatrix = mat4.create()
+    let texmatrix = mat3.create()
+    let ytotal = 2160, ywall = 1080, ygable = 725, yroof = 355
+
+    // // wall
+    // mat3.identity(texmatrix)
+    // mat3.scale(texmatrix, texmatrix, [1, ywall/ytotal])
+    // glutils.geomTexTransform(geom, texmatrix)
+    // mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y0, config.meters.z])
+    // mat4.translate(modelmatrix, modelmatrix, [1, 0, -1])
+    // mat4.rotateY(modelmatrix, modelmatrix, -Math.PI/2)
+    // glutils.geomTransform(geom, modelmatrix)
+
+    // wall:
+    mat3.identity(texmatrix)
+    mat3.scale(texmatrix, texmatrix, [1, ywall/ytotal])
+    glutils.geomTexTransform(geom, texmatrix)
+    mat4.identity(modelmatrix)
+    mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y0, config.meters.z])
+    mat4.rotateY(modelmatrix, modelmatrix, Math.PI/2)
+    glutils.geomTransform(geom, modelmatrix)
+
+    // gable:
+    // mat3.identity(texmatrix)
+    // mat3.translate(texmatrix, texmatrix, [0, ywall/ytotal])
+    // mat3.scale(texmatrix, texmatrix, [1, ygable/ytotal])
+    // glutils.geomTexTransform(geom2, texmatrix)
+    // mat4.identity(modelmatrix)
+    // mat4.translate(modelmatrix, modelmatrix, [config.meters.x, config.meters.y0, 0])
+    // mat4.rotateZ(modelmatrix, modelmatrix, config.meters.a_gable)
+    // mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y_gable, config.meters.z])
+    // mat4.translate(modelmatrix, modelmatrix, [0, 0, -1])
+    // mat4.rotateY(modelmatrix, modelmatrix, -Math.PI/2)
+    // glutils.geomTransform(geom2, modelmatrix)
+
+    mat3.identity(texmatrix)
+    mat3.translate(texmatrix, texmatrix, [0, ywall/ytotal])
+    mat3.scale(texmatrix, texmatrix, [1, ygable/ytotal])
+    glutils.geomTexTransform(geom2, texmatrix)
+    mat4.identity(modelmatrix)
+    mat4.translate(modelmatrix, modelmatrix, [0, config.meters.y0, 0])
+    mat4.rotateZ(modelmatrix, modelmatrix, -config.meters.a_gable)
+    mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y_gable, config.meters.z])
+    mat4.rotateY(modelmatrix, modelmatrix, Math.PI/2)
+    glutils.geomTransform(geom2, modelmatrix)
+
     // roof:
+    // mat3.identity(texmatrix)
+    // mat3.translate(texmatrix, texmatrix, [0, (ywall+ygable)/ytotal])
+    // mat3.scale(texmatrix, texmatrix, [1, yroof/ytotal])
+    // glutils.geomTexTransform(geom3, texmatrix)
+    // mat4.identity(modelmatrix)
+    // mat4.translate(modelmatrix, modelmatrix, [config.meters.x_top, config.meters.y, 0])
+    // mat4.rotateZ(modelmatrix, modelmatrix, Math.PI/2)
+    // mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.w_top, config.meters.z])
+    // mat4.translate(modelmatrix, modelmatrix, [0, -1, -1])
+    // mat4.rotateY(modelmatrix, modelmatrix, -Math.PI/2)
+    // glutils.geomTransform(geom3, modelmatrix)
+
     mat3.identity(texmatrix)
     mat3.translate(texmatrix, texmatrix, [0, (ywall+ygable)/ytotal])
     mat3.scale(texmatrix, texmatrix, [1, yroof/ytotal])
@@ -353,20 +406,21 @@ let floor_vao, far_wall_vao, near_wall_vao, left_wall_vao, right_wall_vao
     mat4.translate(modelmatrix, modelmatrix, [config.meters.x_top, config.meters.y, 0])
     mat4.rotateZ(modelmatrix, modelmatrix, Math.PI/2)
     mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.w_top, config.meters.z])
-    mat4.translate(modelmatrix, modelmatrix, [0, -1, -1])
-    mat4.rotateY(modelmatrix, modelmatrix, -Math.PI/2)
+    mat4.translate(modelmatrix, modelmatrix, [0, -1, 0])
+    mat4.rotateY(modelmatrix, modelmatrix, Math.PI/2)
     glutils.geomTransform(geom3, modelmatrix)
+
 
     glutils.geomAppend(geom, geom2)
     glutils.geomAppend(geom, geom3)
-    right_wall_vao = glutils.createVao(gl, geom)
+    left_wall_vao = glutils.createVao(gl, geom)
 }
 
 
-let testL_tex = png2tex(gl, "HDTestPattern.png", true)
-let testR_tex = png2tex(gl, "HDTestPattern.png", true)
-let testF_tex = png2tex(gl, "HDTestPattern.png", true)
-let testG_tex = png2tex(gl, "HDTestPattern.png", true)
+let testL_tex = png2tex(gl, "projector_imgs/left.png", true)
+let testR_tex = png2tex(gl, "projector_imgs/right.png", true)
+let testF_tex = png2tex(gl, "projector_imgs/floor.png", true)
+let testE_tex = png2tex(gl, "projector_imgs/exit.png", true)
 
 
 const lidars = ndi(gl, "TOF")
@@ -498,7 +552,7 @@ window.draw = function() {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST)
 
-        testF_tex.bind()
+        testE_tex.bind()
         shaderman.shaders.test.begin()
         quad_vao.bind().draw()
 
@@ -515,7 +569,7 @@ window.draw = function() {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST)
 
-        testG_tex.bind(1)
+        testF_tex.bind(1)
         lidars.tex.bind().submit()
         shaderman.shaders.floor.begin()
         .uniform("u_tex1", 1)
@@ -535,6 +589,8 @@ window.draw = function() {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST)
 
+        gl.enable(gl.BLEND)
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
         // bind previous
 		//record_gbo_prev.bind(0, 0)
 
@@ -556,10 +612,8 @@ window.draw = function() {
         far_wall_vao.bind().draw()
         wallL_gbo.bind()
         left_wall_vao.bind().draw()
-        wallF_gbo.bind()
+        wallR_gbo.bind()
         right_wall_vao.bind().draw()
-        // wallF_gbo.bind()
-        // near_wall_vao.bind().draw()
 
         gl.disable(gl.BLEND)
         gl.enable(gl.DEPTH_TEST)
@@ -578,9 +632,9 @@ window.draw = function() {
         case 1:
         floor_gbo.bind(); break;
         case 2:
-        wallL_gbo.bind(); break;
-        case 3:
         wallR_gbo.bind(); break;
+        case 3:
+        wallL_gbo.bind(); break;
         case 4:
         wallF_gbo.bind(); break;
         default:

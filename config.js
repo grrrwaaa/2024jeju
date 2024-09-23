@@ -67,19 +67,19 @@ return {
             show: 1
         },
         "player2": {
-            name: "leftwall",
+            name: "rightwall",
             content_res: [3840, 1272+904+406],
             res: res_wallL,
             show: 2
         },
         "player3": {
-            name: "rightwall",
+            name: "leftwall",
             content_res: [3840, 1272+904+406],
             res: res_wallR,
             show: 3
         },
         "player4": {
-            name: "farwall",
+            name: "exitwall",
             content_res: [1872, 1752],
             res: res_wallF,
             show: 4
