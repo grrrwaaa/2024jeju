@@ -404,9 +404,9 @@ let floor_vao, far_wall_vao, near_wall_vao, left_wall_vao, right_wall_vao
     glutils.geomTexTransform(geom3, texmatrix)
     mat4.identity(modelmatrix)
     mat4.translate(modelmatrix, modelmatrix, [config.meters.x_top, config.meters.y, 0])
-    mat4.rotateZ(modelmatrix, modelmatrix, Math.PI/2)
+    mat4.rotateZ(modelmatrix, modelmatrix, -Math.PI/2)
     mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.w_top, config.meters.z])
-    mat4.translate(modelmatrix, modelmatrix, [0, -1, 0])
+    mat4.translate(modelmatrix, modelmatrix, [0, 0, 0])
     mat4.rotateY(modelmatrix, modelmatrix, Math.PI/2)
     glutils.geomTransform(geom3, modelmatrix)
 
