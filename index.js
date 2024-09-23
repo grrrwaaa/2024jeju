@@ -49,7 +49,7 @@ let pointer = {
 }
 
 let show = 0
-
+let START_IN_FULLSCREEN = 1
 
 let screen_dim = [1920, 1080]
 let win_div = 2
@@ -71,6 +71,8 @@ let window = new Window({
 	//CONTEXT_VERSION_MAJOR: 4, // need gl 4.3 for compute shaders
 	//CONTEXT_VERSION_MINOR: 3,
     sync: true,
+
+    fullscreen: START_IN_FULLSCREEN,
 })
 
 const shaderman = new Shaderman(gl)
@@ -667,6 +669,7 @@ window.onkey = function(key, scan, down, mod) {
 	let ctrl = Math.floor(mod/2) % 2
 
 	if (down) {
+
 		switch(key) {
 			case 32: {
 				pause = !pause; 
@@ -692,6 +695,12 @@ window.onkey = function(key, scan, down, mod) {
 				window.dim = [screen_dim[0]/win_div, screen_dim[1]/win_div]
 				break;
 			}
+
+            case 70: { // f
+                
+                window.setFullscreen(!window.fullscreen);
+                break;
+            }
             case 82: { // r
 				restoreAllState()
 				break;
