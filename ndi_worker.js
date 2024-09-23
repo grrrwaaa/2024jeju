@@ -6,15 +6,15 @@ console.log(grandiose.version(), grandiose.isSupportedCPU())
 
 let timeout = 2000; // Optional timeout, default is 10000ms
 
-const finder = new grandiose.GrandioseFinder({
-    // Should sources on the same system be found?
-    showLocalSources: true,
-    // Show only sources in a named group. May be an array.
-    //groups: "studio3",
-    // Specific IP addresses or machine names to check
-    // These are possibly on a different VLAN and not visible over MDNS
-    //extraIPs: [ "192.168.1.122", "mixer.studio7.zbc.com" ]
-  })
+// const finder = new grandiose.GrandioseFinder({
+//     // Should sources on the same system be found?
+//     showLocalSources: true,
+//     // Show only sources in a named group. May be an array.
+//     //groups: "studio3",
+//     // Specific IP addresses or machine names to check
+//     // These are possibly on a different VLAN and not visible over MDNS
+//     //extraIPs: [ "192.168.1.122", "mixer.studio7.zbc.com" ]
+//   })
 
 let targetData
 
@@ -26,8 +26,9 @@ async function run() {
     console.log("searching for source", workerData.name)
 
     let receiver
-    let sources = finder.getCurrentSources()
-	//console.log("NDI sources", sources)
+    //let sources = finder.getCurrentSources()
+    let sources = await grandiose.find()
+	console.log("NDI sources", sources)
 
     source = sources[0]
     if (workerData.name) source = sources.find(v => v.name.includes(workerData.name))
