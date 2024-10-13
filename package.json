@@ -18,8 +18,8 @@
   "dependencies": {
     "anode_gl": "file:../anode_gl",
     "gl-matrix": "^3.4.3",
-    "grandiose": "^0.0.4",
-    "pngjs": "^7.0.0"
+    "pngjs": "^7.0.0",
+    "grandiose": "file:../grandiose"
   },
   "nodemonConfig": {
     "ignore": [

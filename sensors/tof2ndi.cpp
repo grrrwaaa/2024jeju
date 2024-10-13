@@ -4,6 +4,7 @@
 #include <time.h>
 #include <Windows.h>
 
+#include <thread>
 #include <chrono>
 #include <string>
 #include <cstddef>
@@ -18,30 +19,21 @@ using namespace hlds;
 #define YRES 240
 #define NUM_CAMERAS 3
 
+struct Sender {
+	NDIlib_send_create_t settings;
+	NDIlib_send_instance_t sender;
+	NDIlib_video_frame_v2_t frame;
 
-int main(int ac, char * av) {
+	uint8_t ndi_frame_data[YRES * XRES * 4]; // 4 bytes for R G B A
 
-    printf("hello\n");
+	void create(const char * name) {
+		settings.p_ndi_name = name;
+		sender = NDIlib_send_create(&settings);
 
-	if (!NDIlib_initialize()) {
-		std::cout << "unable to initialize NDI" << endl;
-		system("pause");
-		return -1;
-	}
-
-	printf("NDI supported cpu? %i %s\n", NDIlib_is_supported_CPU(), NDIlib_version());
-
-	
-		NDIlib_send_create_t settings;
-		settings.p_ndi_name = "TOF_NDI";
-		NDIlib_send_instance_t sender = NDIlib_send_create(&settings);
-
-		uint8_t frame_data[YRES * XRES * 4]; // 4 bytes for R G B A
-
-		NDIlib_video_frame_v2_t frame;
 		frame.xres = XRES;
 		frame.yres = YRES;
 		frame.FourCC = NDIlib_FourCC_video_type_BGRA;  // 4:4:4:4 
+		//frame.FourCC = NDIlib_FourCC_video_type_RGBA;  // 4:4:4:4 
 		frame.frame_rate_N = 25;
 		frame.frame_rate_D = 1;
 		frame.picture_aspect_ratio = float(XRES)/float(YRES);
@@ -49,7 +41,7 @@ int main(int ac, char * av) {
 		// The timecode of this frame in 100-nanosecond intervals.
 		frame.timecode = 0;  // int64_t
 		// // The video data itself.
-		frame.p_data = frame_data;
+		frame.p_data = ndi_frame_data;
 		// union {	// If the FourCC is not a compressed type, then this will be the inter-line stride of the video data
 		// 	// in bytes.  If the stride is 0, then it will default to sizeof(one pixel)*xres.
 		// 	int line_stride_in_bytes;
@@ -62,199 +54,255 @@ int main(int ac, char * av) {
 		// const char* p_metadata; // Present in >= v2.5
 		frame.p_metadata = NULL;
 
+		// randomize the memory:
+		for (int r=0; r<YRES; r++) {
+			for (int c=0; c<XRES; c++) {
+				for (int i=0; i<4; i++) {
+					ndi_frame_data[i + 4*(c + r*XRES)] = (rand() % 256);
 
-
-
-		while (true) {
-			// randomize the memory:
-			for (int r=0; r<YRES; r++) {
-				for (int c=0; c<XRES; c++) {
-					for (int i=0; i<4; i++) {
-						frame_data[i + 4*(c + r*XRES)] = (rand() % 256);
-
-						// if (i==0) {
-						// 	frame_data[i + 4*(c + r*XRES)] = c;
-						// } else if (i==1) {
-						// 	frame_data[i + 4*(c + r*XRES)] = r;
-						// } else if (i==2) {
-						// 	frame_data[i + 4*(c + r*XRES)] = 0;
-						// } else 
-						if (i==3) {
-							frame_data[i + 4*(c + r*XRES)] = 255;
-						}
+					// if (i==0) {
+					// 	ndi_frame_data[i + 4*(c + r*XRES)] = c;
+					// } else if (i==1) {
+					// 	ndi_frame_data[i + 4*(c + r*XRES)] = r;
+					// } else if (i==2) {
+					// 	ndi_frame_data[i + 4*(c + r*XRES)] = 0;
+					// } else 
+					if (i==3) {
+						ndi_frame_data[i + 4*(c + r*XRES)] = 255;
 					}
 				}
 			}
-
-			NDIlib_send_send_video_v2(sender, &frame);
 		}
-	
-
-
-    // Create TofManager
-	TofManager tofm;
-
-    // Open TOF Manager (Read tof.ini file)
-	if (tofm.Open() != Result::OK){
-		std::cout << "TofManager Open Error (may not be tof.ini file)" << endl;
-		system("pause");
-		return -1;
 	}
 
-	// Get number of TOF sensor and TOF information list
-	const TofInfo * ptofinfo = nullptr;
-	int numoftof = tofm.GetTofList(&ptofinfo);
-
-	if (numoftof == 0){
-		std::cout << "No TOF Sensor" << endl;
-		system("pause");
-		return -1;
+	void destroy() {
+		NDIlib_send_destroy(sender);
 	}
+};
 
-    // Create Tof instances for TOF sensors
-	Tof * tof = new Tof[numoftof];
-	// Flags for enable/disable of TOF sensors
-	bool * tofenable = new bool[numoftof];
-    // Create instances for reading frames
-	FrameDepth * frame_depth = new FrameDepth[numoftof];
+struct Sensor {
+	Tof * tof;
+	// Flags for enable/disable of TOF senders
+	bool tofenable;
+	// Create instances for reading frames
+	FrameDepth * frame_depth;
 
-    // Open all Tof instances (Set TOF information)
-	for (int tofno = 0; tofno < NUM_CAMERAS; tofno++){
-		if (tof[tofno].Open(ptofinfo[tofno]) != Result::OK){
+	int create(int tofno, const TofInfo * ptofinfo) {
+		tof = new Tof;
+		// Create instances for reading frames
+		frame_depth = new FrameDepth;
+
+		tofenable = false;
+
+		if (tof->Open(ptofinfo[tofno]) != Result::OK) {
 			std::cout << "TOF ID " << ptofinfo[tofno].tofid << " Open Error" << endl;
-
-			tofenable[tofno] = false;
-		}
-		else{
-			tofenable[tofno] = true;
-		}
-	}
-
-    // Once Tof instances are started, TofManager is not necessary and closed
-	if (tofm.Close() != Result::OK){
-		std::cout << "TofManager Close Error" << endl;
-		system("pause");
-		return -1;
-	}
-
-
-
-    // Start all Tof instances (Start data transferring)
-	for (int tofno = 0; tofno < NUM_CAMERAS; tofno++){
-
-		// Start only enable TOF sensor
-		if (tofenable[tofno] == true){
+		} else {
 
 			// Set camera mode(Depth)
-			if (tof[tofno].SetCameraMode(CameraMode::CameraModeDepth) != Result::OK){
-				std::cout << "TOF ID " << tof[tofno].tofinfo.tofid << " Set Camera Mode Error" << endl;
+			if (tof->SetCameraMode(CameraMode::CameraModeDepth) != Result::OK){
+				std::cout << "TOF ID " << tof->tofinfo.tofid << " Set Camera Mode Error" << endl;
 				system("pause");
 				return -1;
 			}
 
 			// Set camera resolution
-			if (tof[tofno].SetCameraPixel(CameraPixel::w320h240) != Result::OK){
+			if (tof->SetCameraPixel(CameraPixel::w320h240) != Result::OK){
 				//		if (tof[tofno].SetCameraPixel((CameraPixel)(tofno % 7)) != Result::OK){
-				std::cout << "TOF ID " << tof[tofno].tofinfo.tofid << " Set Camera Pixel Error" << endl;
+				std::cout << "TOF ID " << tof->tofinfo.tofid << " Set Camera Pixel Error" << endl;
 				system("pause");
 				return -1;
 			}
 
 			//Edge noise reduction
-			if (tof[tofno].SetEdgeSignalCutoff(EdgeSignalCutoff::Enable) != Result::OK){
-				std::cout << "TOF ID " << tof[tofno].tofinfo.tofid << " Edge Noise Reduction Error" << endl;
+			if (tof->SetEdgeSignalCutoff(EdgeSignalCutoff::Enable) != Result::OK){
+				std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
 				system("pause");
 				return -1;
 			}
 
 			// Start(Start data transferring)
-			std::cout << "TOF ID " << tof[tofno].tofinfo.tofid << " Run OK" << endl;
+			std::cout << "TOF ID " << tof->tofinfo.tofid << " Run OK" << endl;
 			Result ret2 = Result::OK;
-			ret2 = tof[tofno].Run();
+			ret2 = tof->Run();
 			if (ret2 != Result::OK){
-				std::cout << "TOF ID " << tof[tofno].tofinfo.tofid << " Run Error" << endl;
+				std::cout << "TOF ID " << tof->tofinfo.tofid << " Run Error" << endl;
 				printf("ret: %d\n", ret2);
 				system("pause");
 				return -1;
 			}
-			std::cout << "TOF ID " << tof[tofno].tofinfo.tofid << " Run OK" << endl;
+			std::cout << "TOF ID " << tof->tofinfo.tofid << " Run OK" << endl;
+
+			tofenable = true;
 		}
+
+		return !tofenable;
 	}
 
+	int getFrame(Sender& sender, int channel) {
+		if (!tofenable) return -1;
+
+		// Get the latest frame number
+		long frameno;
+		TimeStamp timestamp;
+		tof->GetFrameStatus(&frameno, &timestamp);
+
+		if (frameno != frame_depth->framenumber){
+			// Read a new frame only if frame number is changed(Old data is shown if it is not changed.)
+			// Read a frame of depth data
+			if (tof->ReadFrame(frame_depth) != Result::OK){
+				std::cout << "Tof ReadFrame Error" << endl;
+				return -1;
+			}
+		}
+
+		if (frame_depth->width != XRES || frame_depth->height != YRES) {
+			printf("TOF resolution error %dx%d not %dx%d\n", frame_depth->width, frame_depth->height, XRES, YRES);
+			return -1;
+		}
+
+		// frame[tofno].width * frame[tofno].height
+		// Reverse(Mirror) mode
+		int i=0;
+		int w = XRES; //frame_depth->width;
+		int h = YRES; //frame_depth->height;
+		for (int y = 0; y < h; y++){
+			for (int x = 0; x < w; x++, i+=4){
+				// get pixel from camera
+				unsigned short pixel = frame_depth->databuf[y*w + x];
+
+				// copy this into one channel of our ndi_frame_data:
+				sender.ndi_frame_data[i + 0] = pixel * 16 * (channel == 0);
+				sender.ndi_frame_data[i + 1] = pixel * 16 * (channel == 1);
+				sender.ndi_frame_data[i + 2] = pixel * 16 * (channel == 2);
+				sender.ndi_frame_data[i + 3] = 255;
+			}
+		}
+
+		return 0;
+	}
+
+	void destroy() {
+		// Stop and close all TOF senders
+		if (tofenable){
+			if (tof->Stop() != Result::OK){
+				std::cout << "TOF ID " << tof->tofinfo.tofid << " Stop Error" << endl;
+				return;
+			}
+		
+			if (tof->Close() != Result::OK){
+				std::cout << "TOF ID " << tof->tofinfo.tofid << " Close Error" << endl;
+				return;
+			}
+		}
+	}
+};
+
+
+Sender sender;
+Sensor sensors[NUM_CAMERAS];
+
+
+int main(int ac, char * av) {
+
+	bool run = 1;
     bool berror = false;
-    try {
 
-		// Main loop(Until q key pushed)
-		while (1){
+    printf("hello\n");
 
-            // Loop for each TOF sensor
-			for (int tofno = 0; tofno < NUM_CAMERAS; tofno++){
-
-				if (tofenable[tofno] == true){
-                    // Get the latest frame number
-					long frameno;
-					TimeStamp timestamp;
-					tof[tofno].GetFrameStatus(&frameno, &timestamp);
-
-                    if (frameno != frame_depth[tofno].framenumber){
-						// Read a new frame only if frame number is changed(Old data is shown if it is not changed.)
-                        // Read a frame of depth data
-						if (tof[tofno].ReadFrame(&frame_depth[tofno]) != Result::OK){
-							std::cout << "Tof ReadFrame Error" << endl;
-							berror = true;
-							break;
-						}
-
-                        // frame[tofno].width * frame[tofno].height
-                        // Reverse(Mirror) mode
-						for (int i = 0; i < frame_depth[tofno].height; i++){
-							for (int j = 0; j < frame_depth[tofno].width; j++){
-								// get pixel from camera
-                                unsigned short pixel = frame_depth[tofno].databuf[i * frame_depth[tofno].width + (frame_depth[tofno].width - j - 1)];
-
-                                // copy this into one channel of our frame_data:
-								frame_data[tofno + 4*(j + i*XRES)] = pixel * 16;
-                            }
-                        }
-                    }
-                }
-            }
-
-			NDIlib_send_send_video_v2(sender, &frame);
-        }
-    } catch (std::exception& ex){
-		std::cout << ex.what() << std::endl;
-	}
-
-    // Stop and close all TOF sensors
-	for (int tofno = 0; tofno < numoftof; tofno++){
-		if (tofenable[tofno] == true){
-			if (tof[tofno].Stop() != Result::OK){
-				std::cout << "TOF ID " << tof[tofno].tofinfo.tofid << " Stop Error" << endl;
-				berror = true;
-			}
-		}
-	}
-
-	for (int tofno = 0; tofno < numoftof; tofno++){
-		if (tofenable[tofno] == true){
-			if (tof[tofno].Close() != Result::OK){
-				std::cout << "TOF ID " << tof[tofno].tofinfo.tofid << " Close Error" << endl;
-				berror = true;
-			}
-		}
-	}
-
-	delete[] frame_depth;
-	delete[] tof;
-	delete[] tofenable;
-
-	if (berror){
+	if (!NDIlib_initialize()) {
+		std::cout << "unable to initialize NDI" << endl;
 		system("pause");
+		return -1;
 	}
 
+	printf("NDI supported cpu? %i %s\n", NDIlib_is_supported_CPU(), NDIlib_version());
+
+	sender.create("TOF_NDI");
 	
-	NDIlib_send_destroy(sender);
+	if (1) {
+
+		// Create TofManager
+		TofManager tofm;
+
+		// Open TOF Manager (Read tof.ini file)
+		if (tofm.Open() != Result::OK){
+			std::cout << "TofManager Open Error (may not be tof.ini file)" << endl;
+			system("pause");
+			return -1;
+		}
+
+		// Get number of TOF sensor and TOF information list
+		const TofInfo * ptofinfo = nullptr;
+		int numoftof = tofm.GetTofList(&ptofinfo);
+
+		if (numoftof == 0){
+			std::cout << "No TOF Sender" << endl;
+			system("pause");
+			return -1;
+		}
+
+		// Open all Tof instances (Set TOF information)
+		for (int tofno = 0; tofno < NUM_CAMERAS; tofno++){
+
+			sensors[tofno].create(tofno, ptofinfo);
+		}
+
+		// Once Tof instances are started, TofManager is not necessary and closed
+		if (tofm.Close() != Result::OK){
+			std::cout << "TofManager Close Error" << endl;
+			system("pause");
+			return -1;
+		}
+
+		try {
+
+			// Main loop(Until q key pushed)
+			while (run){
+
+				// Loop for each TOF sensor
+				for (int tofno = 0; tofno < NUM_CAMERAS; tofno++){
+					Sensor& sensor = sensors[tofno];
+
+					if (sensor.getFrame(sender, tofno)) break;
+
+					NDIlib_send_send_video_v2(sender.sender, &sender.frame);
+				}
+			}
+
+		} catch (std::exception& ex){
+			std::cout << ex.what() << std::endl;
+		}
+
+	} else {
+
+		while(run) {
+
+			for (int tofno=0; tofno < NUM_CAMERAS; tofno++) {
+
+				// demo test stream:
+				int i=0;
+				for (int y=0; y<YRES; y++) {
+					for (int x=0; x<XRES; x++, i+=4) {
+						sender.ndi_frame_data[i+0] = 255 * x/float(XRES); //R
+						sender.ndi_frame_data[i+1] = 255 * y/float(YRES);   //G
+						sender.ndi_frame_data[i+2] = rand() % 256;   //B
+						sender.ndi_frame_data[i+3] = 255;
+					}
+				}
+
+				NDIlib_send_send_video_v2(sender.sender, &sender.frame);
+				//printf("sent %d\n", tofno);
+			}
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(int(1000./25)));
+		}
+	}
+
+	for (int i=0; i<NUM_CAMERAS; i++) {
+		sensors[i].destroy();
+	}
+
+	sender.destroy();
 
     return 0;
 }

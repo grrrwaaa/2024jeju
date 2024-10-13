@@ -7,14 +7,8 @@ const child_process = require('child_process');
 
 const pnglib = require("pngjs").PNG
 
-// add node-gles3 to the module search paths:
-module.paths.push(path.resolve(path.join(__dirname, "..", "node-gles3")))
+const { gl, glfw, glutils, Window, Shaderman } = require('anode_gl')
 
-const gl = require('gles3.js'),
-	glfw = require('glfw3.js'),
-	glutils = require('glutils.js')
-
-    
 function dataFlipY(buf, width, height) {
     let buf1 = new Uint8Array(width*height*4)
     for (let y=0; y<height; y++) {
