@@ -21,7 +21,7 @@ const {
 	png2tex, jpg2tex,
 } = require("./pngtools");
 
-const ndi = require("./ndi.js")
+//const ndi = require("./ndi.js")
 
 
 const {
@@ -425,7 +425,7 @@ let testF_tex = png2tex(gl, "projector_imgs/floor.png", true)
 let testE_tex = png2tex(gl, "projector_imgs/exit.png", true)
 
 
-const lidars = ndi(gl, "TOF")
+//const lidars = ndi(gl, "TOF")
 
 window.draw = function() {
 	let { dim } = this;
@@ -483,7 +483,7 @@ window.draw = function() {
     // run computes, update buffers
 
 
-    lidars.tex.bind().submit()
+  //  lidars.tex.bind().submit()
 
     // render
     // {
@@ -572,7 +572,7 @@ window.draw = function() {
         gl.enable(gl.DEPTH_TEST)
 
         testF_tex.bind(1)
-        lidars.tex.bind().submit()
+      //  lidars.tex.bind().submit()
         shaderman.shaders.floor.begin()
         .uniform("u_tex1", 1)
         quad_vao.bind().draw()
