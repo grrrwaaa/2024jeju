@@ -1,6 +1,10 @@
 const fs = require("fs")
+const path = require("path")
 // add to the module search paths:
 module.paths.push(path.resolve(path.join(__dirname, "..", "anode_gl")))
+
+
+//module.paths.push(path.resolve(path.join(__dirname, "..", "anode_gl")))
 
 const gl = require('gles3.js'),
 	glfw = require('glfw3.js'),

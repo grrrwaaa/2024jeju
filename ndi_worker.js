@@ -1,6 +1,7 @@
 const { workerData, parentPort } = require('worker_threads')
 
-const grandiose = require('grandiose');
+//const grandiose = require('grandiose');
+const grandiose = require("../grandiose/index.js")
 console.log(grandiose.version(), grandiose.isSupportedCPU())
 
 
