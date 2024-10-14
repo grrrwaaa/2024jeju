@@ -13,7 +13,7 @@ function makeNDItexture(gl, name) {
     })
 
     let self = {
-        tex: glutils.createTexture(gl),
+        tex: glutils.createTexture(gl, { wrap: gl.CLAMP_TO_BORDER }),
         worker,
     }
 

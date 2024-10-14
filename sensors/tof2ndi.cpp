@@ -24,19 +24,19 @@ struct Sender {
 	NDIlib_send_instance_t sender;
 	NDIlib_video_frame_v2_t frame;
 
-	uint8_t ndi_frame_data[YRES * XRES * 4]; // 4 bytes for R G B A
+	uint8_t ndi_frame_data[YRES*3 * XRES * 4]; // 4 bytes for R G B A
 
 	void create(const char * name) {
 		settings.p_ndi_name = name;
 		sender = NDIlib_send_create(&settings);
 
-		frame.xres = XRES;
-		frame.yres = YRES;
+		frame.xres = YRES*3;
+		frame.yres = XRES;
 		frame.FourCC = NDIlib_FourCC_video_type_BGRA;  // 4:4:4:4 
 		//frame.FourCC = NDIlib_FourCC_video_type_RGBA;  // 4:4:4:4 
 		frame.frame_rate_N = 25;
 		frame.frame_rate_D = 1;
-		frame.picture_aspect_ratio = float(XRES)/float(YRES);
+		frame.picture_aspect_ratio = float(frame.xres)/float(frame.yres);
 		frame.frame_format_type = NDIlib_frame_format_type_progressive;
 		// The timecode of this frame in 100-nanosecond intervals.
 		frame.timecode = 0;  // int64_t
@@ -55,24 +55,16 @@ struct Sender {
 		frame.p_metadata = NULL;
 
 		// randomize the memory:
-		for (int r=0; r<YRES; r++) {
-			for (int c=0; c<XRES; c++) {
-				for (int i=0; i<4; i++) {
-					ndi_frame_data[i + 4*(c + r*XRES)] = (rand() % 256);
-
-					// if (i==0) {
-					// 	ndi_frame_data[i + 4*(c + r*XRES)] = c;
-					// } else if (i==1) {
-					// 	ndi_frame_data[i + 4*(c + r*XRES)] = r;
-					// } else if (i==2) {
-					// 	ndi_frame_data[i + 4*(c + r*XRES)] = 0;
-					// } else 
-					if (i==3) {
-						ndi_frame_data[i + 4*(c + r*XRES)] = 255;
-					}
-				}
-			}
-		}
+		// for (int r=0; r<frame.yres; r++) {
+		// 	for (int c=0; c<frame.xres; c++) {
+		// 		for (int i=0; i<4; i++) {
+		// 			ndi_frame_data[i + 4*(c + r*frame.xres)] = 0;
+		// 			if (i==3) {
+		// 				ndi_frame_data[i + 4*(c + r*frame.xres)] = 255;
+		// 			}
+		// 		}
+		// 	}
+		// }
 	}
 
 	void destroy() {
@@ -155,25 +147,33 @@ struct Sensor {
 			}
 		}
 
-		if (frame_depth->width != XRES || frame_depth->height != YRES) {
-			printf("TOF resolution error %dx%d not %dx%d\n", frame_depth->width, frame_depth->height, XRES, YRES);
-			return -1;
-		}
+		// if (frame_depth->width != XRES || frame_depth->height != YRES) {
+		// 	printf("TOF resolution error %dx%d not %dx%d\n", frame_depth->width, frame_depth->height, XRES, YRES);
+		// 	return -1;
+		// }
 
 		// frame[tofno].width * frame[tofno].height
 		// Reverse(Mirror) mode
-		int i=0;
-		int w = XRES; //frame_depth->width;
-		int h = YRES; //frame_depth->height;
+		int w = XRES; 
+		int h = YRES; 
 		for (int y = 0; y < h; y++){
-			for (int x = 0; x < w; x++, i+=4){
+			for (int x = 0; x < w; x++){
 				// get pixel from camera
 				unsigned short pixel = frame_depth->databuf[y*w + x];
 
+				uint8_t grey = pixel * 16;
+
+				// compute corresponding location in the ndi frame:
+				int i = 0;
+				// row:
+				i += x * sender.frame.xres; // xres cells per row
+				i += y + YRES*channel; // horizontal offset in space for each sensor
+				i *= 4; // 4 pixels per cell (RGBA)
+
 				// copy this into one channel of our ndi_frame_data:
-				sender.ndi_frame_data[i + 0] = pixel * 16 * (channel == 0);
-				sender.ndi_frame_data[i + 1] = pixel * 16 * (channel == 1);
-				sender.ndi_frame_data[i + 2] = pixel * 16 * (channel == 2);
+				sender.ndi_frame_data[i + 0] = grey;
+				sender.ndi_frame_data[i + 1] = grey;
+				sender.ndi_frame_data[i + 2] = grey;
 				sender.ndi_frame_data[i + 3] = 255;
 			}
 		}
@@ -219,7 +219,7 @@ int main(int ac, char * av) {
 
 	sender.create("TOF_NDI");
 	
-	if (1) {
+	if (0) {
 
 		// Create TofManager
 		TofManager tofm;
@@ -265,8 +265,9 @@ int main(int ac, char * av) {
 
 					if (sensor.getFrame(sender, tofno)) break;
 
-					NDIlib_send_send_video_v2(sender.sender, &sender.frame);
 				}
+				
+				NDIlib_send_send_video_v2(sender.sender, &sender.frame);
 			}
 
 		} catch (std::exception& ex){
@@ -278,23 +279,34 @@ int main(int ac, char * av) {
 		while(run) {
 
 			for (int tofno=0; tofno < NUM_CAMERAS; tofno++) {
+				int channel = tofno;
 
 				// demo test stream:
-				int i=0;
-				for (int y=0; y<YRES; y++) {
-					for (int x=0; x<XRES; x++, i+=4) {
-						sender.ndi_frame_data[i+0] = 255 * x/float(XRES); //R
-						sender.ndi_frame_data[i+1] = 255 * y/float(YRES);   //G
-						sender.ndi_frame_data[i+2] = rand() % 256;   //B
+				int w = XRES; 
+				int h = YRES; 
+				for (int y = 0; y < h; y++){
+					for (int x = 0; x < w; x++){
+						uint8_t grey = (rand() % 256);
+
+						// compute corresponding location in the ndi frame:
+						int i = 0;
+						// row:
+						i += x * sender.frame.xres; // xres cells per row
+						i += y + YRES*channel; // horizontal offset in space for each sensor
+						i *= 4; // 4 pixels per cell (RGBA)
+
+						sender.ndi_frame_data[i+0] = grey;//x/float(XRES); //R
+						sender.ndi_frame_data[i+1] = grey;//y/float(YRES);   //G
+						sender.ndi_frame_data[i+2] = grey;//rand() % 256;   //B
 						sender.ndi_frame_data[i+3] = 255;
 					}
 				}
 
-				NDIlib_send_send_video_v2(sender.sender, &sender.frame);
 				//printf("sent %d\n", tofno);
 			}
 
-			std::this_thread::sleep_for(std::chrono::milliseconds(int(1000./25)));
+			NDIlib_send_send_video_v2(sender.sender, &sender.frame);
+			//std::this_thread::sleep_for(std::chrono::milliseconds(int(1000./25)));
 		}
 	}
 
