@@ -571,10 +571,10 @@ window.draw = function() {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST)
 
-        testF_tex.bind(1)
+        testF_tex.bind()
       //  lidars.tex.bind().submit()
-        shaderman.shaders.floor.begin()
-        .uniform("u_tex1", 1)
+        shaderman.shaders.test.begin()
+       // .uniform("u_tex1", 1)
         quad_vao.bind().draw()
 
         fbo.end()
