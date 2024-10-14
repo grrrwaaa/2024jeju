@@ -1,5 +1,13 @@
 const fs = require("fs")
-const { gl, glfw, Window, glutils, Shaderman } = require("anode_gl")
+// add to the module search paths:
+module.paths.push(path.resolve(path.join(__dirname, "..", "anode_gl")))
+
+const gl = require('gles3.js'),
+	glfw = require('glfw3.js'),
+    Window = require("window.js"),
+	glutils = require('glutils.js'),
+	Shaderman = require('shaderman.js'),
+	Config = require('config.js')
 const { vec2, vec3, vec4, quat, mat2, mat2d, mat3, mat4} = require("gl-matrix")
 const ndi = require("./ndi.js")
 
