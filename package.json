@@ -16,10 +16,8 @@
     "url": "https://github.com/grrrwaaa/2024jeju/issues"
   },
   "dependencies": {
-    "anode_gl": "file:../anode_gl",
     "gl-matrix": "^3.4.3",
-    "pngjs": "^7.0.0",
-    "grandiose": "file:../grandiose"
+    "pngjs": "^7.0.0"
   },
   "nodemonConfig": {
     "ignore": [
