@@ -17,7 +17,7 @@ void main() {
 
 
     if (mod(v_pos.y, 2.) < 1. ^^ mod(v_pos.x, 2.) < 1.^^ mod(v_pos.z, 2.) < 1.) {
-	    out_color = mix(out_color, vec4(v_pos * vec3(1, 1, -1) * 0.1, 1.), 0.75);
+	   // out_color = mix(out_color, vec4(v_pos * vec3(1, 1, -1) * 0.1, 1.), 0.75);
     } 
     
     // a grid:

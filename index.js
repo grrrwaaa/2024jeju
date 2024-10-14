@@ -270,7 +270,18 @@ let floor_vao, far_wall_vao, near_wall_vao, left_wall_vao, right_wall_vao
     mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y, config.meters.z])
     mat4.rotateX(modelmatrix, modelmatrix, -Math.PI/2)
     mat4.translate(modelmatrix, modelmatrix, [0, 0, 0])
+
+
+    mat4.translate(modelmatrix, modelmatrix, [0.5, 0.5, 0])
+    mat4.rotateZ(modelmatrix, modelmatrix, Math.PI)
+    mat4.translate(modelmatrix, modelmatrix, [-0.5, -0.5, 0])
+
     glutils.geomTransform(geom, modelmatrix)
+    let texmatrix = mat3.create()
+    // mat3.translate(texmatrix, texmatrix, [0.5, 0.5])
+    // mat3.rotate(texmatrix, texmatrix, Math.PI)
+    // mat3.translate(texmatrix, texmatrix, [-0.5, -0.5])
+    glutils.geomTexTransform(geom, texmatrix)
     floor_vao = glutils.createVao(gl, geom)
 }
 {
