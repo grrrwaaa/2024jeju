@@ -3,7 +3,7 @@
 #include <iostream>
 #include <time.h>
 #include <Windows.h>
-
+#include <algorithm>
 #include <thread>
 #include <chrono>
 #include <string>
@@ -160,8 +160,10 @@ struct Sensor {
 			for (int x = 0; x < w; x++){
 				// get pixel from camera
 				unsigned short pixel = frame_depth->databuf[y*w + x];
+				float mm = frame_depth->CalculateLength(pixel);
 
-				uint8_t grey = pixel * 16;
+				uint8_t grey = 255.f * float(pixel) / 0xfffe; // * 16;
+				grey = 255.f * max(0.f, mm - 5000.f) / 4000.f;
 
 				// compute corresponding location in the ndi frame:
 				int i = 0;
@@ -219,7 +221,7 @@ int main(int ac, char * av) {
 
 	sender.create("TOF_NDI");
 	
-	if (0) {
+	if (10) {
 
 		// Create TofManager
 		TofManager tofm;
