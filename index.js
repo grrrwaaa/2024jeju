@@ -7,7 +7,16 @@ const child_process = require('child_process');
 
 const { vec2, vec3, vec4, quat, mat2, mat2d, mat3, mat4} = require("gl-matrix")
 
-const { gl, glfw, glutils, Window, Shaderman } = require('anode_gl')
+
+// add to the module search paths:
+module.paths.push(path.resolve(path.join(__dirname, "..", "anode_gl")))
+
+const gl = require('gles3.js'),
+	glfw = require('glfw3.js'),
+    Window = require("window.js"),
+	glutils = require('glutils.js'),
+	Shaderman = require('shaderman.js'),
+	Config = require('config.js')
 
 const {
 	pngfile2base64string,
