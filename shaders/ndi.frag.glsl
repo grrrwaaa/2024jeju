@@ -2,7 +2,6 @@
 precision mediump float;
 
 uniform sampler2D u_tex;
-uniform float u_calib;
 
 in vec2 v_uv;
 
