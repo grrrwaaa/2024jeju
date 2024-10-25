@@ -51,17 +51,12 @@ for (let path of [restore_path, export_image_path, export_path]) {
 }
 
 let pause = 0
-let pointer = {
-    buttons: [0, 0, 0],
-    pos: [0, 0],
-    vel: [0, 0],
-}
 
 let show = 0
-let START_IN_FULLSCREEN = 1
+let START_IN_FULLSCREEN = 0
 
 let screen_dim = [1920, 1080]
-let win_div = 2
+let win_div = 1
 let record_div = 1
 let SDquant = 8
 let win_dim = [
@@ -83,6 +78,13 @@ let window = new Window({
 
     fullscreen: START_IN_FULLSCREEN,
 })
+
+
+let pointer = {
+    buttons: [0, 0, 0],
+    pos: [0, 0],
+    vel: [0, 0],
+}
 
 const shaderman = new Shaderman(gl)
 const quad_vao = glutils.createVao(gl, glutils.makeQuad3D())

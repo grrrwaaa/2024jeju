@@ -18,7 +18,7 @@ const finder = new grandiose.GrandioseFinder({
   })
 
 let targetData
-let metadata = workerData.metadata
+let { metadata, status } = workerData
 
 let xres, yres
 
@@ -31,7 +31,7 @@ async function run() {
 
     let receiver
     let sources = finder.getCurrentSources()
-	//console.log("NDI sources", sources)
+	console.log("NDI sources", sources)
 
     source = sources[0]
     if (workerData.name) source = sources.find(v => v.name.includes(workerData.name))
@@ -115,6 +115,9 @@ async function run() {
             //console.log(frame)
             .then(frame => {
                 targetData.set(frame.data)
+                status[0] = 1
+
+                parentPort.postMessage({ msg:"frame" })
 
                 //if (xres && yres) {
                     // for (let y=0; y<yres; y++) {
@@ -128,12 +131,12 @@ async function run() {
                     // }
                 //}
 
-                if (frame.metadata) {
-                    parentPort.postMessage({
-                        msg: "metadata",
-                        metadata: frame.metadata
-                    })
-                }
+                // if (frame.metadata) {
+                //     parentPort.postMessage({
+                //         msg: "metadata",
+                //         metadata: frame.metadata
+                //     })
+                // }
             })
             .catch(e => {
                 console.log("frame error")

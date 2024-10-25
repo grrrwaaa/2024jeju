@@ -15,13 +15,17 @@ const gl = require('gles3.js'),
 function makeNDItexture(gl, name) {
 
     let metadata = []
+    let status = new Uint32Array(1)
 
     let worker = new Worker("./ndi_worker.js", { 
-        workerData: { name, metadata }
+        workerData: { name, status, metadata }
     })
 
     let self = {
         tex: glutils.createTexture(gl, { wrap: gl.CLAMP_TO_BORDER }),
+        frame: 0,
+        status,
+        metadata,
         worker,
     }
 
@@ -31,6 +35,9 @@ function makeNDItexture(gl, name) {
                 self.metadata = msg.metadata
                 break;
             }
+            case "frame": {
+                self.frame++
+            } break;
             case "properties": {
                 console.log("ndi_worker properties", msg)
             

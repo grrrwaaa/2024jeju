@@ -30,18 +30,23 @@ const {
 let win_mul = 4
 let screenshot = 0
 let USE_NDI = 1
-let show = 3
+let show = 4
+let pause = 0
+
+let shader_init = 1
+
 
 let lidar_dim = [240*3, 320]
 
 let window = new Window({
+    sync: true,
     width:  lidar_dim[0]*win_mul,
     height: lidar_dim[1]*win_mul
 })
 
 // this is what the LiDAR feeds are written into:
 let lidar_fbo = glutils.makeGbuffer(gl, ...lidar_dim, [
-	{ float: false, mipmap: false, wrap: gl.BORDER }
+	{ float: false, mipmap: true, wrap: gl.BORDER }
 ]);
 
 let lidar_filter_fbo = glutils.makeGbuffer(gl, ...lidar_dim, [
@@ -51,6 +56,7 @@ let lidar_filter_fbo = glutils.makeGbuffer(gl, ...lidar_dim, [
 let lidar_filter_fbo1 = lidar_filter_fbo.clone(gl)
 
 const shaderman = new Shaderman(gl)
+shaderman.on("reload", () => { shader_init = 1 })
 const quad_vao = glutils.createVao(gl, glutils.makeQuad())
 
 function makeCalibration() {
@@ -98,74 +104,88 @@ if (USE_NDI) {
     stream = ndi(gl, "TOF_NDI")
 } else {
     stream = {
-        tex: png2tex(gl, "lidar_example.png", true)
+        tex: png2tex(gl, "lidar_example.png", true),
+        frame: 1
     }
 }
 
 window.draw = function() {
-	let { t, dt, dim } = this;
+	let { t, dt, frame, dim } = this;
 
-    lidar_fbo.begin()
-    {
-        let { width, height, data } = lidar_fbo
-        gl.viewport(0, 0, width, height)
-		gl.clearColor(0, 0, 0, 1)
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.enable(gl.DEPTH_TEST)
+    if (pause) return;
 
-        stream.tex.bind()
-        if (USE_NDI) stream.tex.submit()
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_BORDER);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_BORDER);
-        shaderman.shaders.ndi.begin()
-        lidar_vao.bind().draw()
+    // only process lidar input if we received data:
+    if (stream.frame) {
+        stream.tex.bind().submit()
+        stream.frame = 0
+
+        lidar_fbo.begin()
+        {
+            let { width, height, data } = lidar_fbo
+            gl.viewport(0, 0, width, height)
+            gl.clearColor(0, 0, 0, 1)
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.enable(gl.DEPTH_TEST)
+
+            stream.tex.bind()
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_BORDER);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_BORDER);
+            shaderman.shaders.ndi.begin()
+            lidar_vao.bind().draw()
+        }
+        lidar_fbo.end()
+        lidar_fbo.bind()
+
+        {
+            let tmp = lidar_filter_fbo; lidar_filter_fbo = lidar_filter_fbo1; lidar_filter_fbo1 = tmp;
+        }
+        lidar_filter_fbo.begin()
+        {
+            let { width, height, data } = lidar_filter_fbo
+            gl.viewport(0, 0, width, height)
+            gl.clearColor(0, 0, 0, 1)
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.enable(gl.DEPTH_TEST)
+
+            lidar_filter_fbo1.bind(0, 0)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+            lidar_filter_fbo1.bind(1, 1)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+            lidar_fbo.bind(0, 2)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+            shaderman.shaders.lidar_filter.begin()
+            .uniform("u_tex0", 0)
+            .uniform("u_tex1", 1)
+            .uniform("u_tex_input", 2)
+            .uniform("u_resolution", [width, height])
+            .uniform("u_init", shader_init)
+            .uniform("u_frame", frame)
+            quad_vao.bind().draw()
+        }
+        lidar_filter_fbo.end()
+
+        lidar_filter_fbo.bind()
+        gl.generateMipmap(gl.TEXTURE_2D)
     }
-    lidar_fbo.end()
-    lidar_fbo.bind()
 
-    {
-        let tmp = lidar_filter_fbo; lidar_filter_fbo = lidar_filter_fbo1; lidar_filter_fbo1 = tmp;
-    }
-    lidar_filter_fbo.begin()
-    {
-        let { width, height, data } = lidar_filter_fbo
-        gl.viewport(0, 0, width, height)
-		gl.clearColor(0, 0, 0, 1)
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.enable(gl.DEPTH_TEST)
-
-        lidar_filter_fbo1.bind(0, 0)
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-        lidar_filter_fbo1.bind(1, 1)
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-        lidar_fbo.bind(0, 2)
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-        shaderman.shaders.lidar_filter.begin()
-        .uniform("u_tex0", 0)
-        .uniform("u_tex1", 1)
-        .uniform("u_tex_input", 2)
-        quad_vao.bind().draw()
-    }
-    lidar_filter_fbo.end()
-
-    lidar_filter_fbo.bind()
-    gl.generateMipmap(gl.TEXTURE_2D)
+    
 
     gl.viewport(0, 0, ...dim);
 	gl.clearColor(0, 0, 0, 1);
@@ -209,6 +229,8 @@ window.draw = function() {
 		screenshot = 0
     }
 
+    shader_init = 0
+
 }
 
 
@@ -219,11 +241,9 @@ window.onkey = function(key, scan, down, mod) {
     if (down) {
 
 		switch(key) {
-			// case 32: {
-			// 	pause = !pause; 
-			// 	console.log("pause", pause)
-			// 	break;
-			// }
+			case 32: {
+				pause = !pause;  break;
+			}
 	
 			case 48: // 0
 			case 49: // 1
