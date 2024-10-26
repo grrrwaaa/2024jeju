@@ -3,17 +3,16 @@ const ndi = require("../anode_ndi/index.js")
 const { vec2, vec3, vec4, quat, mat2, mat2d, mat3, mat4} = require("gl-matrix")
 
 let shaderman
-let res = 400
 
 class App extends Window {
 
-    constructor(options) {
+    constructor(options, common) {
         super(options)
         // have to manually install this:
         this.draw = App.prototype.draw
         
         // i.e. are we the first window to be created? If so, create global resources:
-        let fbo = glutils.makeGbufferPair(gl, res, res, [
+        let fbo = glutils.makeGbufferPair(gl, common.res, common.res, [
             { float: true, mipmap: false, wrap: gl.CLAMP_TO_EDGE }, 
         ])
 
@@ -39,7 +38,10 @@ class App extends Window {
         Object.assign(this, { 
             quad_vao: glutils.createVao(gl, glutils.makeQuad()),
             unit_quad_vao: glutils.createVao(gl, glutils.makeQuad({ min: 0, max: 1 })),
-            image_fbo, fbo
+            image_fbo, fbo,
+
+            common,
+            unique: Math.random(),
         })
     }
 
@@ -125,6 +127,7 @@ class App extends Window {
             .uniform("u_tex_network", 1)
             .uniform("u_frame", frame)
             .uniform("u_random", [Math.random(), Math.random(), Math.random(), Math.random()])
+            .uniform("u_unique", this.unique)
             quad_vao.bind().draw()
             
             gl.disable(gl.BLEND)

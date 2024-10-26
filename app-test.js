@@ -4,8 +4,13 @@ const App = require("./app.js")
 // sync on the global Window, not on each window:
 Window.syncfps = 60
 
-let overlap = 2
-let res = 400
+
+let overlap = 4
+let res = 1600
+
+let common = {
+    res, overlap,
+}
 
 let a1 = new App({
     title: "a1",
@@ -19,7 +24,7 @@ let a1 = new App({
     receivers: [
         { name: "a2", dim: [overlap, res], pos: [res - overlap, 0] }
     ]
-})
+}, common)
 
 let a2 = new App({
     title: "a2",
@@ -32,6 +37,6 @@ let a2 = new App({
     receivers: [
         { name: "a1", dim: [overlap, res], pos: [0, 0] }
     ],
-})
+}, common)
 
 Window.animate()

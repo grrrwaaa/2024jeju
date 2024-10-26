@@ -7,6 +7,7 @@ uniform sampler2D u_tex_feedback;
 uniform sampler2D u_tex_network;
 uniform float u_frame;
 uniform vec4 u_random;
+uniform float u_unique;
 
 in vec2 v_uv;
 
@@ -39,9 +40,10 @@ void main() {
     ivec2 texel = ivec2(v_uv * dim);
 
     vec4 OUT = vec4(0);
-    float iTime = u_frame / 30.;
+    float iTime = u_frame / 30. + u_unique * 100.;
     vec2 DIM = dim;
     vec2 COORD = v_uv * (dim);
+
 
     // past neighborhood states (per flow)
     vec4 p = prev(COORD),
@@ -75,13 +77,13 @@ void main() {
     float transport = -0.25*((e.x-0.5)*e.w - (w.x-0.5)*w.w + (n.y-0.5)*n.w - (s.y-0.5)*s.w);
     // can mix between p.w and avg.w here to allow general diffusion of mass
     // slightly unrealistic in that this can result in negative mass
-    OUT.w = mix(p.w, avg.w, 0.) + transport;
+    OUT.w = mix(p.w, avg.w, 0.9) + transport;
     
     // optional add forces
-    float d = line2(COORD, DIM/2. - DIM.y*0.2* vec2(sin(iTime*0.2),cos(iTime*0.2)), DIM/2. + DIM.y*0.4* vec2(sin(iTime*.1618),cos(iTime*.1618)));
+    float d = line2(COORD, DIM/2. - DIM.y*0.2* vec2(sin(iTime*0.42),cos(iTime*0.32)), DIM/2. + DIM.y*0.4* vec2(sin(iTime*.1618),cos(iTime*.18)));
     //if (d < 1.) 
     {
-        OUT += exp(-d) * vec4(cos(iTime*2.)*0.5+0.5, sin(iTime*3.)*0.5+0.5, 0, 1.);
+        OUT += exp(-d*0.5) * vec4(cos(iTime*0.26), sin(iTime*0.45), 0, 1.);
     }
     // if (iMouse.z > 0. && length(iMouse.xy - COORD) < 4.) {
     //     OUT = vec4(COORD/DIM - 0.5, 0., 1.);
@@ -90,7 +92,7 @@ void main() {
     // optional decays
     // xy or z, don't need to do both
     // OUT.xy *= 0.99;
-    OUT.z *= 0.9;
+    OUT.z = clamp(OUT.z*0.999, 0., 1.);
     OUT.w = clamp(OUT.w*0.9999, 0., 1.);
     
     // boundary:
