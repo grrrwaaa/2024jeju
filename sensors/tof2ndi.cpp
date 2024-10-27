@@ -273,10 +273,10 @@ struct Sensor {
 				i *= 4; // 4 pixels per cell (RGBA)
 
 				// copy this into one channel of our ndi_frame_data:
-				sender.ndi_frame_data[i + 0] = grey;
-				sender.ndi_frame_data[i + 1] = grey;
-				sender.ndi_frame_data[i + 2] = grey;
-				sender.ndi_frame_data[i + 3] = valid * 255;
+				sender.ndi_frame_data[i + 0] = valid ? grey : 0;
+				sender.ndi_frame_data[i + 1] = valid ? grey : 0;
+				sender.ndi_frame_data[i + 2] = valid ? grey : 0;
+				sender.ndi_frame_data[i + 3] = valid ? 255 : 0;
 			}
 		}
 
