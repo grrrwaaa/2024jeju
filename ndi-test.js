@@ -30,7 +30,7 @@ const {
 let win_mul = 4
 let screenshot = 0
 let USE_NDI = 1
-let show = 4
+let show = 2
 let pause = 0
 
 let shader_init = 1
