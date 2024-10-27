@@ -222,6 +222,10 @@ window.draw = function() {
 		screenshot = 0
     }
 
+    if (Math.floor(t+dt) > Math.floor(t)) {
+        console.log(`fps ${1/dt}`)
+    }
+
     shader_init = 0
 
 }
