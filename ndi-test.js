@@ -1,19 +1,11 @@
 const fs = require("fs")
 const path = require("path")
-// add to the module search paths:
-module.paths.push(path.resolve(path.join(__dirname, "..", "anode_gl")))
 
-
-//module.paths.push(path.resolve(path.join(__dirname, "..", "anode_gl")))
-
-const gl = require('gles3.js'),
-	glfw = require('glfw3.js'),
-    Window = require("window.js"),
-	glutils = require('glutils.js'),
-	Shaderman = require('shaderman.js'),
-	Config = require('config.js')
 const { vec2, vec3, vec4, quat, mat2, mat2d, mat3, mat4} = require("gl-matrix")
+
+const { gl, glfw, glutils, Window, Shaderman, Config } = require("../anode_gl/index.js")
 const ndi = require("./ndi.js")
+
 const {
     pngfile2base64string,
     pngfile2texture, 
@@ -25,7 +17,6 @@ const {
     dataFlipY,
     png2tex,
 } = require("./pngtools")
-
 
 let win_mul = 4
 let screenshot = 0
