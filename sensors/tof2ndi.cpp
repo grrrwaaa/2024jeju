@@ -194,8 +194,7 @@ struct Sensor {
 		if (config.GetBoolean("capture", "docapture", false)) {
 			printf("capturing to %s\n", filename);
 
-			#define MAX_CAPTURE_DURATION	(3600.0f)	//Capture(Record) max time (Sec.)
-			tof->capturetime = MAX_CAPTURE_DURATION;
+			tof->capturetime = 5.f * (60.f); // 5 minutes
 
 			if (tof->CreateCaptureFile(capinf) == Result::OK){
 
