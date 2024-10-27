@@ -85,6 +85,11 @@ struct Sensor {
 	float mm_min = 0;
 	float mm_max = 10000;
 
+	// capture/playback
+	char filename[256];
+	bool bCapture;
+	clock_t capturetime;						//Capture(Record/Replay) start time
+
 	int create(int tofno, const TofInfo * ptofinfo, INIReader& config) {
 		tof = new Tof;
 		// Create instances for reading frames
@@ -93,84 +98,121 @@ struct Sensor {
 
 		tofenable = false;
 
-		if (tof->Open(ptofinfo[tofno]) != Result::OK) {
-			std::cout << "TOF ID " << ptofinfo[tofno].tofid << " Open Error" << endl;
+		snprintf(filename, 255, "tof%d.capture", tofno);
+		CaptureInfo capinf;
+		capinf.path = "";
+		capinf.filename = filename;
+
+		if (config.GetBoolean("capture", "doplayback", false)) {
+			printf("playback from %s\n", filename);
+
+			if (tof->Open(capinf) != Result::OK){
+				std::cout << "playback Tof Open Error" << endl;
+				return 1;
+			}
+
 		} else {
+			if (tof->Open(ptofinfo[tofno]) != Result::OK) {
+				std::cout << "TOF ID " << ptofinfo[tofno].tofid << " Open Error" << endl;
+			} else {
 
-			// Set camera mode(Depth)
-			if (tof->SetCameraMode(CameraMode::CameraModeDepth) != Result::OK){
-				std::cout << "TOF ID " << tof->tofinfo.tofid << " Set Camera Mode Error" << endl;
-				system("pause");
-				return -1;
-			}
+				// Set camera mode(Depth)
+				if (tof->SetCameraMode(CameraMode::CameraModeDepth) != Result::OK){
+					std::cout << "TOF ID " << tof->tofinfo.tofid << " Set Camera Mode Error" << endl;
+					system("pause");
+					return -1;
+				}
 
-			// Set camera resolution
-			if (tof->SetCameraPixel(CameraPixel::w320h240) != Result::OK){
-				//		if (tof[tofno].SetCameraPixel((CameraPixel)(tofno % 7)) != Result::OK){
-				std::cout << "TOF ID " << tof->tofinfo.tofid << " Set Camera Pixel Error" << endl;
-				system("pause");
-				return -1;
-			}
+				// Set camera resolution
+				if (tof->SetCameraPixel(CameraPixel::w320h240) != Result::OK){
+					//		if (tof[tofno].SetCameraPixel((CameraPixel)(tofno % 7)) != Result::OK){
+					std::cout << "TOF ID " << tof->tofinfo.tofid << " Set Camera Pixel Error" << endl;
+					system("pause");
+					return -1;
+				}
 
-			int irgain = config.GetInteger("camera", "irgain", 8);
-			int distancemode = config.GetInteger("camera", "distancemode", 1);
-			int lowcutoff = config.GetInteger("camera", "lowcutoff", 0);
-			float farcutoff = config.GetReal("camera", "farcutoff", 0.f);
-			bool edgecutoff = config.GetBoolean("camera", "edgecutoff", true);
-			bool impulsecutoff = config.GetBoolean("camera", "implusecutoff", true);
-			mm_min = config.GetReal("frame", "mm_min", 0);
-			mm_min = config.GetReal("frame", "mm_max", 10000);
+				int irgain = config.GetInteger("camera", "irgain", 8);
+				int distancemode = config.GetInteger("camera", "distancemode", 1);
+				int lowcutoff = config.GetInteger("camera", "lowcutoff", 0);
+				float farcutoff = config.GetReal("camera", "farcutoff", 0.f);
+				bool edgecutoff = config.GetBoolean("camera", "edgecutoff", true);
+				bool impulsecutoff = config.GetBoolean("camera", "implusecutoff", true);
+				mm_min = config.GetReal("frame", "mm_min", 0);
+				mm_min = config.GetReal("frame", "mm_max", 10000);
 
-			if (tof->SetIrGain(irgain) != Result::OK){
-				std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
-				system("pause");
-				return -1;
-			}
-			if (tof->SetDistanceMode((DistanceMode)distancemode) != Result::OK){
-				std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
-				system("pause");
-				return -1;
-			}
+				if (tof->SetIrGain(irgain) != Result::OK){
+					std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
+					system("pause");
+					return -1;
+				}
+				if (tof->SetDistanceMode((DistanceMode)distancemode) != Result::OK){
+					std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
+					system("pause");
+					return -1;
+				}
 
-			//noise reduction
-			if (tof->SetLowSignalCutoff((int)lowcutoff) != Result::OK){
-				std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
-				system("pause");
-				return -1;
-			}
-			if (tof->SetFarSignalCutoff((float)farcutoff) != Result::OK){
-				std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
-				system("pause");
-				return -1;
-			}
-			if (tof->SetEdgeSignalCutoff((EdgeSignalCutoff)edgecutoff) != Result::OK){
-				std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
-				system("pause");
-				return -1;
-			}
-			if (tof->SetImpulseSignalCutoff((ImpulseSignalCutoff)impulsecutoff) != Result::OK){
-				std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
-				system("pause");
-				return -1;
-			}
+				//noise reduction
+				if (tof->SetLowSignalCutoff((int)lowcutoff) != Result::OK){
+					std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
+					system("pause");
+					return -1;
+				}
+				if (tof->SetFarSignalCutoff((float)farcutoff) != Result::OK){
+					std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
+					system("pause");
+					return -1;
+				}
+				if (tof->SetEdgeSignalCutoff((EdgeSignalCutoff)edgecutoff) != Result::OK){
+					std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
+					system("pause");
+					return -1;
+				}
+				if (tof->SetImpulseSignalCutoff((ImpulseSignalCutoff)impulsecutoff) != Result::OK){
+					std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
+					system("pause");
+					return -1;
+				}
 
-			printf("irgain %d distancemode %d lowcutoff %d farcutoff %f edgecutoff %d impulsecutoff %d min %f max %f\n", 
-				irgain, distancemode, lowcutoff, farcutoff, edgecutoff, impulsecutoff, mm_min, mm_max);
+				std::cout << "TOF ID " << tof->tofinfo.tofid << " Run OK" << endl;
 
-			// Start(Start data transferring)
-			std::cout << "TOF ID " << tof->tofinfo.tofid << " Run OK" << endl;
-			Result ret2 = Result::OK;
-			ret2 = tof->Run();
-			if (ret2 != Result::OK){
-				std::cout << "TOF ID " << tof->tofinfo.tofid << " Run Error" << endl;
-				printf("ret: %d\n", ret2);
-				system("pause");
-				return -1;
+				printf("irgain %d distancemode %d lowcutoff %d farcutoff %f edgecutoff %d impulsecutoff %d min %f max %f\n", 
+					irgain, distancemode, lowcutoff, farcutoff, edgecutoff, impulsecutoff, mm_min, mm_max);
 			}
-			std::cout << "TOF ID " << tof->tofinfo.tofid << " Run OK" << endl;
-
-			tofenable = true;
 		}
+
+
+			
+		if (tof->Run() != Result::OK){
+			std::cout << "TOF ID " << tof->tofinfo.tofid << " Run Error" << endl;
+			system("pause");
+			return -1;
+		}
+
+		tofenable = true;
+
+
+		if (config.GetBoolean("capture", "docapture", false)) {
+			printf("capturing to %s\n", filename);
+
+			#define MAX_CAPTURE_DURATION	(3600.0f)	//Capture(Record) max time (Sec.)
+			tof->capturetime = MAX_CAPTURE_DURATION;
+
+			if (tof->CreateCaptureFile(capinf) == Result::OK){
+
+				if (tof->Capture(true) == Result::OK){
+					bCapture = true;
+
+					//Capture start time
+					capturetime = clock();
+				}
+				else {
+					std::cout << "Capture Start Error" << endl;
+				}
+			}
+			else {
+				std::cout << "Create Capture Error (File:" << capinf.filename << ")" << endl;
+			}
+		} 
 
 		return !tofenable;
 	}
@@ -244,6 +286,11 @@ struct Sensor {
 	void destroy() {
 		// Stop and close all TOF senders
 		if (tofenable){
+
+			if (bCapture) {
+				tof->Capture(false);
+			}
+
 			if (tof->Stop() != Result::OK){
 				std::cout << "TOF ID " << tof->tofinfo.tofid << " Stop Error" << endl;
 				return;
