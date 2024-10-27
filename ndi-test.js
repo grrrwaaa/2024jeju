@@ -32,6 +32,7 @@ let screenshot = 0
 let USE_NDI = 1
 let show = 2
 let pause = 0
+let fullscreen = 1
 
 let shader_init = 1
 
@@ -40,6 +41,7 @@ let lidar_dim = [240*3, 320]
 
 let window = new Window({
     sync: true,
+    fullscreen,
     width:  lidar_dim[0]*win_mul,
     height: lidar_dim[1]*win_mul
 })
