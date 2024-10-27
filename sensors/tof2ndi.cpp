@@ -137,8 +137,8 @@ struct Sensor {
 				float farcutoff = config.GetReal("camera", "farcutoff", 0.f);
 				bool edgecutoff = config.GetBoolean("camera", "edgecutoff", true);
 				bool impulsecutoff = config.GetBoolean("camera", "implusecutoff", true);
-				mm_min = config.GetReal("frame", "mm_min", 0);
-				mm_min = config.GetReal("frame", "mm_max", 10000);
+				mm_min = config.GetReal("camera", "mm_min", 0);
+				mm_min = config.GetReal("camera", "mm_max", 10000);
 
 				if (tof->SetIrGain(irgain) != Result::OK){
 					std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
