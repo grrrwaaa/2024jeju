@@ -10,6 +10,8 @@
 #include <cstddef>
 #include <Processing.NDI.Lib.h>
 
+#include "inireader.h"
+
 #include "tof.h"
 
 using namespace std;
@@ -26,7 +28,7 @@ struct Sender {
 
 	uint8_t ndi_frame_data[YRES*3 * XRES * 4]; // 4 bytes for R G B A
 
-	void create(const char * name) {
+	void create(const char * name, INIReader& config) {
 		settings.p_ndi_name = name;
 		sender = NDIlib_send_create(&settings);
 
@@ -78,11 +80,16 @@ struct Sensor {
 	bool tofenable;
 	// Create instances for reading frames
 	FrameDepth * frame_depth;
+	Frame3d * frame_3d;
 
-	int create(int tofno, const TofInfo * ptofinfo) {
+	float mm_min = 0;
+	float mm_max = 10000;
+
+	int create(int tofno, const TofInfo * ptofinfo, INIReader& config) {
 		tof = new Tof;
 		// Create instances for reading frames
 		frame_depth = new FrameDepth;
+		frame_3d = new Frame3d;
 
 		tofenable = false;
 
@@ -105,12 +112,50 @@ struct Sensor {
 				return -1;
 			}
 
-			//Edge noise reduction
-			if (tof->SetEdgeSignalCutoff(EdgeSignalCutoff::Enable) != Result::OK){
+			int irgain = config.GetInteger("camera", "irgain", 8);
+			int distancemode = config.GetInteger("camera", "distancemode", 1);
+			int lowcutoff = config.GetInteger("camera", "lowcutoff", 0);
+			float farcutoff = config.GetReal("camera", "farcutoff", 0.f);
+			bool edgecutoff = config.GetBoolean("camera", "edgecutoff", true);
+			bool impulsecutoff = config.GetBoolean("camera", "implusecutoff", true);
+			mm_min = config.GetReal("frame", "mm_min", 0);
+			mm_min = config.GetReal("frame", "mm_max", 10000);
+
+			if (tof->SetIrGain(irgain) != Result::OK){
 				std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
 				system("pause");
 				return -1;
 			}
+			if (tof->SetDistanceMode((DistanceMode)distancemode) != Result::OK){
+				std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
+				system("pause");
+				return -1;
+			}
+
+			//noise reduction
+			if (tof->SetLowSignalCutoff((int)lowcutoff) != Result::OK){
+				std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
+				system("pause");
+				return -1;
+			}
+			if (tof->SetFarSignalCutoff((float)farcutoff) != Result::OK){
+				std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
+				system("pause");
+				return -1;
+			}
+			if (tof->SetEdgeSignalCutoff((EdgeSignalCutoff)edgecutoff) != Result::OK){
+				std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
+				system("pause");
+				return -1;
+			}
+			if (tof->SetImpulseSignalCutoff((ImpulseSignalCutoff)impulsecutoff) != Result::OK){
+				std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;
+				system("pause");
+				return -1;
+			}
+
+			printf("irgain %d distancemode %d lowcutoff %d farcutoff %f edgecutoff %d impulsecutoff %d min %f max %f\n", 
+				irgain, distancemode, lowcutoff, farcutoff, edgecutoff, impulsecutoff, mm_min, mm_max);
 
 			// Start(Start data transferring)
 			std::cout << "TOF ID " << tof->tofinfo.tofid << " Run OK" << endl;
@@ -152,6 +197,9 @@ struct Sensor {
 		// 	return -1;
 		// }
 
+		
+		frame_3d->Convert(frame_depth);
+
 		// frame[tofno].width * frame[tofno].height
 		// Reverse(Mirror) mode
 		int w = XRES; 
@@ -160,10 +208,20 @@ struct Sensor {
 			for (int x = 0; x < w; x++){
 				// get pixel from camera
 				unsigned short pixel = frame_depth->databuf[y*w + x];
-				float mm = frame_depth->CalculateLength(pixel);
+				//float mm = frame_depth->CalculateLength(pixel);
 
-				uint8_t grey = 255.f * float(pixel) / 0xfffe; // * 16;
-				grey = 255.f * max(0.f, mm - 5000.f) / 4000.f;
+				// bad pixels are when pixel == Oxffff
+				bool valid = (pixel != 0xFFFF);
+
+				TofPoint& pt = frame_3d->frame3d[y*w + x];
+				float mm = pt.z;
+
+				float normalized = (mm - mm_min) / (mm_max - mm_min);
+				// another validity check:
+				valid = valid && normalized <= 1.f && normalized >= 0.f;
+
+				// convert to bits:
+				uint8_t grey = 255.f * min(max(normalized, 0.f), 1.f);
 
 				// compute corresponding location in the ndi frame:
 				int i = 0;
@@ -176,7 +234,7 @@ struct Sensor {
 				sender.ndi_frame_data[i + 0] = grey;
 				sender.ndi_frame_data[i + 1] = grey;
 				sender.ndi_frame_data[i + 2] = grey;
-				sender.ndi_frame_data[i + 3] = 255;
+				sender.ndi_frame_data[i + 3] = valid * 255;
 			}
 		}
 
@@ -211,6 +269,12 @@ int main(int ac, char * av) {
 
     printf("hello\n");
 
+	INIReader config("config.ini");
+	if (config.ParseError() != 0) {
+        std::cout << "Can't load 'config.ini'\n";
+        return 1;
+    }
+
 	if (!NDIlib_initialize()) {
 		std::cout << "unable to initialize NDI" << endl;
 		system("pause");
@@ -219,7 +283,7 @@ int main(int ac, char * av) {
 
 	printf("NDI supported cpu? %i %s\n", NDIlib_is_supported_CPU(), NDIlib_version());
 
-	sender.create("TOF_NDI");
+	sender.create("TOF_NDI", config);
 	
 	if (10) {
 
@@ -246,7 +310,7 @@ int main(int ac, char * av) {
 		// Open all Tof instances (Set TOF information)
 		for (int tofno = 0; tofno < NUM_CAMERAS; tofno++){
 
-			sensors[tofno].create(tofno, ptofinfo);
+			sensors[tofno].create(tofno, ptofinfo, config);
 		}
 
 		// Once Tof instances are started, TofManager is not necessary and closed
