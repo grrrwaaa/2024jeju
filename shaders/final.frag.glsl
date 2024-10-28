@@ -17,7 +17,7 @@ vec3 hsl2rgb( in vec3 c )
 void main() {
     out0 = vec4(v_uv, 0, 1);
 	vec4 a = texture(u_tex, v_uv);
-
+    out0 = a;
 
     out0.rgb = 1.-a.www * hsl2rgb(vec3(0.5*dot(a.xy-0.5, vec2(1,0)), abs(a.z-0.5), 0.85));
     

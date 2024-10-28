@@ -33,11 +33,6 @@ vec3 adjustSaturation(vec3 color, float value) {
 
 
 
-
-
-
-
-
 // distance from point p to the nearest point on the line a->b
 float line (vec2 p, vec2 a, vec2 b) {
     // position on line a+tb
@@ -273,4 +268,43 @@ vec4 median5(sampler2D tex, vec2 uv, vec2 ut) {
     t25(12, 17,		7, 17,		7, 10,		12, 18,		7, 12);
     t24(10, 18,		12, 20,		10, 20,		10, 12);
     return v[12];
+}
+
+
+
+void sort2(inout vec4 a0, inout vec4 a1) {
+	vec4 b0 = min(a0, a1);
+	vec4 b1 = max(a0, a1);
+	a0 = b0;
+	a1 = b1;
+}
+
+void sort(inout vec4 a0, inout vec4 a1, inout vec4 a2, inout vec4 a3, inout vec4 a4) {
+	sort2(a0, a1);
+	sort2(a3, a4);
+	sort2(a0, a2);
+	sort2(a1, a2);
+	sort2(a0, a3);
+	sort2(a2, a3);
+	sort2(a1, a4);
+	sort2(a1, a2);
+	sort2(a3, a4);
+}
+
+vec4 median(sampler2D tex, vec2 uv, vec2 ut) {
+    vec4 c0 = texture(tex, uv + ut*vec2(-2,0) );
+    vec4 c1 = texture(tex, uv + ut*vec2(-1,0) );
+    vec4 c2 = texture(tex, uv );
+    vec4 c3 = texture(tex, uv + ut*vec2(-1,0) );
+    vec4 c4 = texture(tex, uv + ut*vec2(-2,0) );
+    
+    vec4 c5 = texture(tex, uv + ut*vec2(0,-2) );
+    vec4 c6 = texture(tex, uv + ut*vec2(0,-1) );
+    vec4 c7 = texture(tex, uv + ut*vec2(0,1) );
+    vec4 c8 = texture(tex, uv + ut*vec2(0,2) );
+    
+    sort(c0, c1, c2, c3, c4);
+    sort(c5, c6, c2, c7, c8);
+    
+    return c2;
 }

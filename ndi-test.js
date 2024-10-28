@@ -21,9 +21,9 @@ const {
 let win_mul = 4
 let screenshot = 0
 let USE_NDI = 1
-let show = 2
+let show = 3
 let pause = 0
-let fullscreen = 1
+let fullscreen = 0
 
 let shader_init = 1
 
@@ -39,14 +39,12 @@ let window = new Window({
 
 // this is what the LiDAR feeds are written into:
 let lidar_fbo = glutils.makeGbuffer(gl, ...lidar_dim, [
-	{ float: false, mipmap: true, wrap: gl.BORDER }
+	{ float: false, mipmap: false, wrap: gl.BORDER }
 ]);
 
-let lidar_filter_fbo = glutils.makeGbuffer(gl, ...lidar_dim, [
-	{ float: true, mipmap: true, wrap: gl.BORDER },
-	{ float: true, mipmap: true, wrap: gl.BORDER }
+let lidar_filter_fbo = glutils.makeGbufferPair(gl, ...lidar_dim, [
+	{ float: true, mipmap: false, wrap: gl.BORDER }
 ]);
-let lidar_filter_fbo1 = lidar_filter_fbo.clone(gl)
 
 const shaderman = new Shaderman(gl)
 shaderman.on("reload", () => { shader_init = 1 })
@@ -112,6 +110,7 @@ window.draw = function() {
         stream.tex.bind().submit()
         stream.frame = 0
 
+        // first, use the calibration .obj geometry to resample the texture
         lidar_fbo.begin()
         {
             let { width, height, data } = lidar_fbo
@@ -121,19 +120,21 @@ window.draw = function() {
             gl.enable(gl.DEPTH_TEST)
 
             stream.tex.bind()
+            // using NEAREST to avoid blending of invalid pixel data
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_BORDER);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_BORDER);
-            shaderman.shaders.ndi.begin()
+            shaderman.shaders.show.begin()
             lidar_vao.bind().draw()
         }
         lidar_fbo.end()
-        lidar_fbo.bind()
 
-        {
-            let tmp = lidar_filter_fbo; lidar_filter_fbo = lidar_filter_fbo1; lidar_filter_fbo1 = tmp;
-        }
+        // next, send this through a feedback process:
+        // this has 2 layers: layer 0 is the output image, layer 1 is for holding state (e.g. background for background subtraction)
+        // {
+        //     let tmp = lidar_filter_fbo; lidar_filter_fbo = lidar_filter_fbo1; lidar_filter_fbo1 = tmp;
+        // }
         lidar_filter_fbo.begin()
         {
             let { width, height, data } = lidar_filter_fbo
@@ -142,34 +143,24 @@ window.draw = function() {
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             gl.enable(gl.DEPTH_TEST)
 
-            lidar_filter_fbo1.bind(0, 0)
+            lidar_filter_fbo.bind(0, 0)
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-            lidar_filter_fbo1.bind(1, 1)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-            lidar_fbo.bind(0, 2)
+            lidar_fbo.bind(0, 1)
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
             shaderman.shaders.lidar_filter.begin()
             .uniform("u_tex0", 0)
-            .uniform("u_tex1", 1)
-            .uniform("u_tex_input", 2)
+            .uniform("u_tex_input", 1)
             .uniform("u_resolution", [width, height])
-            .uniform("u_init", shader_init)
-            .uniform("u_frame", frame)
             quad_vao.bind().draw()
         }
         lidar_filter_fbo.end()

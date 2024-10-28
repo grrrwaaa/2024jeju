@@ -12,6 +12,8 @@ let win_div = 4
 let common = {
     overlap,
 
+    lidar_dim: [240*3, 320],
+
     machines: {
         "F": {
             name: "F",
@@ -42,6 +44,7 @@ let common = {
 
 let F = new App({
     title: "F",
+    machine: common.machines.F,
     width: common.machines.F.content_res[0] / win_div, 
     height: common.machines.F.content_res[1] / win_div,
     pos: [0, 2582 / win_div],
@@ -62,6 +65,7 @@ let F = new App({
 
 let E = new App({
     title: "E",
+    machine: common.machines.E,
     width: common.machines.E.content_res[0] / win_div, 
     height: common.machines.E.content_res[1] / win_div,
     pos: [3840 / win_div, 2582 / win_div],
@@ -78,6 +82,7 @@ let E = new App({
 
 let L = new App({
     title: "L",
+    machine: common.machines.L,
     width: common.machines.L.content_res[0] / win_div, 
     height: common.machines.L.content_res[1] / win_div,
     pos: [0, 0],
@@ -94,6 +99,7 @@ let L = new App({
 
 let R = new App({
     title: "R",
+    machine: common.machines.R,
     width: common.machines.R.content_res[0] / win_div, 
     height: common.machines.R.content_res[1] / win_div,
     pos: [0, (2582 + 1872) / win_div],

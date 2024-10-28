@@ -4,7 +4,8 @@ precision mediump float;
 
 
 uniform sampler2D u_tex_feedback;
-uniform sampler2D u_tex_network;
+uniform sampler2D u_tex_lidar;
+uniform float u_use_lidar;
 uniform float u_frame;
 uniform vec4 u_random;
 uniform float u_unique;
@@ -57,7 +58,7 @@ void main() {
     // creates velocity in me (OUT.xy)
     vec2 force = -0.25*vec2(e.z-w.z, n.z-s.z);
 
-    force *= 2. + 0.5*sin(u_frame * 0.1);
+    force *= 1.;// + 0.5*sin(u_frame * 0.1);
     // new velocity derived from neighbourhood average
     // should this be p.xy rather than avg.xy?
     // either the velocity or the pressure should be diffused, but not both
@@ -80,30 +81,46 @@ void main() {
     // can mix between p.w and avg.w here to allow general diffusion of mass
     // slightly unrealistic in that this can result in negative mass
     OUT.w = mix(p.w, avg.w, 0.9) + transport;
+
+    
+    // optional decays
+    // xy or z, don't need to do both
+    // OUT.xy *= 0.99;
+    //OUT.z = clamp(OUT.z*0.99999, -1., 1.);
+    //OUT.w = clamp(OUT.w*0.99999, 0., 1.);
+
     
     // optional add forces
     float d = line2(COORD, DIM/2. - DIM.y*0.2* vec2(sin(iTime*0.42),cos(iTime*0.32)), DIM/2. + DIM.y*0.6* vec2(sin(iTime*.1618),cos(iTime*.18)));
     //if (d < 1.) 
     {
-        OUT += exp(-d*0.5) * vec4(cos(iTime*0.26), sin(iTime*0.45), 0, 1.);
+        //OUT += exp(-d*0.5) * vec4(cos(iTime*0.26), sin(iTime*0.45), 0, 1.);
+    }
+
+    vec4 rnd = hash43(vec3(texel + dim*u_random.xy, u_frame));
+
+    if (u_use_lidar > 0.) {
+        vec4 lidar = texture(u_tex_lidar, v_uv);
+        OUT.xy += lidar.xy * lidar.z;
+        OUT.z += lidar.z; // * lidar.w;
+
+        OUT.w += lidar.z * lidar.w * rnd.w;
     }
     // if (iMouse.z > 0. && length(iMouse.xy - COORD) < 4.) {
     //     OUT = vec4(COORD/DIM - 0.5, 0., 1.);
     // }
     
-    // optional decays
-    // xy or z, don't need to do both
-    // OUT.xy *= 0.99;
-    OUT.z = clamp(OUT.z*0.999, 0., 1.);
-    OUT.w = clamp(OUT.w*0.9999, 0., 1.);
-
-    OUT.xy += 0.01 * (hash23(vec3(texel + dim*u_random.xy, u_frame))-0.5);
+   // OUT.xy += 0.001 * (hash23(vec3(texel + dim*u_random.xy, u_frame))-0.5);
     
     // boundary:
     // float b = 4.;
     // if (COORD.x < b || COORD.y < b || DIM.x-COORD.x < b || DIM.y-COORD.y < b) {
     //     OUT = vec4(0);
     // }
+
+    
+    OUT.z = clamp(OUT.z, -1., 1.);
+    OUT.w = clamp(OUT.w, 0., 1.);
 
     out0 = OUT;
 

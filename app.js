@@ -1,6 +1,11 @@
+const fs = require("fs")
+const path = require("path")
+
+const { vec2, vec3, vec4, quat, mat2, mat2d, mat3, mat4} = require("gl-matrix")
+
 const { gl, glfw, glutils, Window, Shaderman } = require("../anode_gl/index.js")
 const ndi = require("../anode_ndi/index.js")
-const { vec2, vec3, vec4, quat, mat2, mat2d, mat3, mat4} = require("gl-matrix")
+const ndi_texture = require("./ndi.js")
 
 let shaderman
 let show = 1
@@ -46,6 +51,25 @@ class App extends Window {
             common,
             unique: Math.random(),
         })
+
+        // special case for floor:
+        if (this.title == "F") {
+            Object.assign(this, {
+                // this is the lidar data stream over NDI:
+                lidar_stream: ndi_texture(gl, "TOF_NDI"),
+                // this is what the LiDAR feeds are written into:
+                lidar_fbo: glutils.makeGbuffer(gl, ...common.lidar_dim, [
+                    { float: false, mipmap: false, wrap: gl.BORDER }
+                ]), 
+                // this is the calibration geometry for it:
+                lidar_vao: glutils.createVao(gl, glutils.geomFromOBJ(fs.readFileSync("lidar.obj", "utf8"), { soup: true })),
+
+                // this is the filtered & processed lidar data
+                lidar_filter_fbo: glutils.makeGbufferPair(gl, ...common.lidar_dim, [
+                    { float: true, mipmap: false, wrap: gl.BORDER }
+                ]), 
+            })
+        }
     }
 
     draw(gl) {
@@ -53,6 +77,66 @@ class App extends Window {
         let [ width, height ] = dim
         let { quad_vao, unit_quad_vao, image_fbo, fbo } = this
         let { senders, receivers } = this
+        let { lidar_stream, lidar_fbo, lidar_filter_fbo, lidar_vao } = this
+
+        const isFloor = (this.title == "F");
+
+        // special case for floor:
+        if (isFloor) {
+            // only process lidar input if we received data:
+            if (lidar_stream.frame) {
+                lidar_stream.frame = 0
+
+                // first, use the calibration .obj geometry to resample the texture
+                lidar_fbo.begin()
+                {
+                    let { width, height, data } = lidar_fbo
+                    gl.viewport(0, 0, width, height)
+                    gl.clearColor(0, 0, 0, 1)
+                    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                    gl.enable(gl.DEPTH_TEST)
+
+                    lidar_stream.tex.bind().submit()
+                    // using NEAREST to avoid blending of invalid pixel data
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_BORDER);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_BORDER);
+                    shaderman.shaders.show.begin()
+                    lidar_vao.bind().draw()
+                }
+                lidar_fbo.end()
+
+                // next, send this through a feedback process:
+                lidar_filter_fbo.begin()
+                {
+                    let { width, height, data } = lidar_filter_fbo
+                    gl.viewport(0, 0, width, height)
+                    gl.clearColor(0, 0, 0, 1)
+                    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                    gl.enable(gl.DEPTH_TEST)
+
+                    lidar_filter_fbo.bind(0, 0)
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                    lidar_fbo.bind(0, 1)
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                    shaderman.shaders.lidar_filter.begin()
+                    .uniform("u_tex0", 0)
+                    .uniform("u_tex_input", 1)
+                    .uniform("u_resolution", [width, height])
+                    quad_vao.bind().draw()
+                }
+                lidar_filter_fbo.end()
+            }
+        }
 
         let received = 0
 
@@ -129,12 +213,21 @@ class App extends Window {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+            if (isFloor) {
+                lidar_filter_fbo.bind(0,1)
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.BORDER);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.BORDER);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            }
             
             shaderman.shaders.demo.begin()
-            .uniform("u_tex_network", 1)
+            .uniform("u_tex_lidar", 1)
             .uniform("u_frame", frame)
             .uniform("u_random", [Math.random(), Math.random(), Math.random(), Math.random()])
             .uniform("u_unique", this.unique)
+            .uniform("u_use_lidar", +isFloor)
             quad_vao.bind().draw()
             
             gl.disable(gl.BLEND)
@@ -178,6 +271,13 @@ class App extends Window {
         gl.enable(gl.DEPTH_TEST)
 
         image_fbo.bind()
+        // if (isFLoor) {
+        //     lidar_filter_fbo.bind()
+        //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        // }
         shaderman.shaders.final.begin()
         quad_vao.bind().draw()
         
