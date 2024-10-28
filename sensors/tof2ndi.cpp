@@ -91,6 +91,7 @@ struct Sensor {
 	clock_t capturetime;						//Capture(Record/Replay) start time
 
 	int create(int tofno, const TofInfo * ptofinfo, INIReader& config) {
+		printf("sensor create\n");
 		tof = new Tof;
 		// Create instances for reading frames
 		frame_depth = new FrameDepth;
@@ -308,7 +309,8 @@ struct Sensor {
 
 Sender sender;
 Sensor sensors[NUM_CAMERAS];
-
+const TofInfo * ptofinfo = nullptr;
+TofManager tofm;
 
 int main(int ac, char * av) {
 	
@@ -330,14 +332,17 @@ int main(int ac, char * av) {
 		return -1;
 	}
 
+    printf("config loaded\n");
+
 	printf("NDI supported cpu? %i %s\n", NDIlib_is_supported_CPU(), NDIlib_version());
 
 	sender.create("TOF_NDI", config);
+    printf("NDI sender TOF_NDI created\n");
 	
-	if (10) {
+	if (!config.GetBoolean("capture", "doplayback", false)) {
 
 		// Create TofManager
-		TofManager tofm;
+   	 	printf("TOF manager created\n");
 
 		// Open TOF Manager (Read tof.ini file)
 		if (tofm.Open() != Result::OK){
@@ -345,85 +350,51 @@ int main(int ac, char * av) {
 			system("pause");
 			return -1;
 		}
+   	 	printf("TOF manager opened\n");
 
 		// Get number of TOF sensor and TOF information list
-		const TofInfo * ptofinfo = nullptr;
 		int numoftof = tofm.GetTofList(&ptofinfo);
 
 		if (numoftof == 0){
-			std::cout << "No TOF Sender" << endl;
+			std::cout << "No TOF devices found" << endl;
 			system("pause");
 			return -1;
-		}
-
-		// Open all Tof instances (Set TOF information)
-		for (int tofno = 0; tofno < NUM_CAMERAS; tofno++){
-
-			sensors[tofno].create(tofno, ptofinfo, config);
-		}
-
-		// Once Tof instances are started, TofManager is not necessary and closed
-		if (tofm.Close() != Result::OK){
-			std::cout << "TofManager Close Error" << endl;
-			system("pause");
-			return -1;
-		}
-
-		try {
-
-			// Main loop(Until q key pushed)
-			while (run){
-
-				// Loop for each TOF sensor
-				for (int tofno = 0; tofno < NUM_CAMERAS; tofno++){
-					Sensor& sensor = sensors[tofno];
-
-					if (sensor.getFrame(sender, tofno)) break;
-
-				}
-				
-				NDIlib_send_send_video_v2(sender.sender, &sender.frame);
-			}
-
-		} catch (std::exception& ex){
-			std::cout << ex.what() << std::endl;
-		}
-
-	} else {
-
-		while(run) {
-
-			for (int tofno=0; tofno < NUM_CAMERAS; tofno++) {
-				int channel = tofno;
-
-				// demo test stream:
-				int w = XRES; 
-				int h = YRES; 
-				for (int y = 0; y < h; y++){
-					for (int x = 0; x < w; x++){
-						uint8_t grey = (rand() % 256);
-
-						// compute corresponding location in the ndi frame:
-						int i = 0;
-						// row:
-						i += x * sender.frame.xres; // xres cells per row
-						i += y + YRES*channel; // horizontal offset in space for each sensor
-						i *= 4; // 4 pixels per cell (RGBA)
-
-						sender.ndi_frame_data[i+0] = grey;//x/float(XRES); //R
-						sender.ndi_frame_data[i+1] = grey;//y/float(YRES);   //G
-						sender.ndi_frame_data[i+2] = grey;//rand() % 256;   //B
-						sender.ndi_frame_data[i+3] = 255;
-					}
-				}
-
-				//printf("sent %d\n", tofno);
-			}
-
-			NDIlib_send_send_video_v2(sender.sender, &sender.frame);
-			//std::this_thread::sleep_for(std::chrono::milliseconds(int(1000./25)));
 		}
 	}
+
+	// Open all Tof instances (Set TOF information)
+	for (int tofno = 0; tofno < NUM_CAMERAS; tofno++){
+
+		sensors[tofno].create(tofno, ptofinfo, config);
+	}
+
+	// Once Tof instances are started, TofManager is not necessary and closed
+	if (tofm.Close() != Result::OK){
+		std::cout << "TofManager Close Error" << endl;
+		system("pause");
+		return -1;
+	}
+
+	try {
+
+		// Main loop(Until q key pushed)
+		while (run){
+
+			// Loop for each TOF sensor
+			for (int tofno = 0; tofno < NUM_CAMERAS; tofno++){
+				Sensor& sensor = sensors[tofno];
+
+				if (sensor.getFrame(sender, tofno)) break;
+
+			}
+			
+			NDIlib_send_send_video_v2(sender.sender, &sender.frame);
+		}
+
+	} catch (std::exception& ex){
+		std::cout << ex.what() << std::endl;
+	}
+
 
 	for (int i=0; i<NUM_CAMERAS; i++) {
 		sensors[i].destroy();
