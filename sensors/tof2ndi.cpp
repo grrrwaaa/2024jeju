@@ -259,7 +259,7 @@ struct Sensor {
 				// TofPoint& pt = frame_3d->frame3d[y*w + x];
 				// float mm = pt.z;
 
-				float normalized = (mm - mm_min) / (mm_max - mm_min);
+				float normalized = (mm_max - mm) / (mm_max - mm_min);
 				// another validity check:
 				valid = valid && normalized <= 1.f && normalized >= 0.f;
 
@@ -277,7 +277,7 @@ struct Sensor {
 				sender.ndi_frame_data[i + 0] = valid ? grey : 0;
 				sender.ndi_frame_data[i + 1] = valid ? grey : 0;
 				sender.ndi_frame_data[i + 2] = valid ? grey : 0;
-				sender.ndi_frame_data[i + 3] = valid ? 255 : 0;
+				sender.ndi_frame_data[i + 3] = 255;
 			}
 		}
 
