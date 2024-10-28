@@ -65,10 +65,10 @@ class App extends Window {
             gl.depthMask(false)
 
             fbo.bind()
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             
             shaderman.shaders.show.begin()
             quad_vao.bind().draw()
@@ -79,12 +79,13 @@ class App extends Window {
 
                     let [w, h] = recv.dim
                     let [x, y] = recv.pos
+                    let a = recv.angle
                         
                     recv.tex.bind().submit()
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
                     let modelmatrix = mat4.create()
                     let projmatrix = mat4.create()
@@ -93,7 +94,9 @@ class App extends Window {
                     mat4.ortho(projmatrix, 0, fbo.width, 0, fbo.height, 0, 1)
 
                     mat4.translate(modelmatrix, modelmatrix, [x, y, 0])
+                    mat4.rotateZ(modelmatrix, modelmatrix, a)
                     mat4.scale(modelmatrix, modelmatrix, [w, h, 1])
+
 
                     shaderman.shaders.pixelrect.begin()
                     .uniform("u_modelmatrix", modelmatrix)

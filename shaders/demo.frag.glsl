@@ -57,7 +57,7 @@ void main() {
     // creates velocity in me (OUT.xy)
     vec2 force = -0.25*vec2(e.z-w.z, n.z-s.z);
 
-    //force *= 2.;
+    force *= 2.;
     // new velocity derived from neighbourhood average
     // should this be p.xy rather than avg.xy?
     // either the velocity or the pressure should be diffused, but not both
@@ -82,7 +82,7 @@ void main() {
     OUT.w = mix(p.w, avg.w, 0.9) + transport;
     
     // optional add forces
-    float d = line2(COORD, DIM/2. - DIM.y*0.2* vec2(sin(iTime*0.42),cos(iTime*0.32)), DIM/2. + DIM.y*0.4* vec2(sin(iTime*.1618),cos(iTime*.18)));
+    float d = line2(COORD, DIM/2. - DIM.y*0.2* vec2(sin(iTime*0.42),cos(iTime*0.32)), DIM/2. + DIM.y*0.6* vec2(sin(iTime*.1618),cos(iTime*.18)));
     //if (d < 1.) 
     {
         OUT += exp(-d*0.5) * vec4(cos(iTime*0.26), sin(iTime*0.45), 0, 1.);
@@ -124,7 +124,7 @@ void main() {
     
     // init:
     if (mod(u_frame, 263000) <= 1.) {
-        out0 = mix(vec4(0.5, 0.5, 0.1, 0.1), hash42(texel + dim*u_random.xy), 0.2);
+        out0 = mix(vec4(0.5, 0.5, 0.1, 0.1), hash42(texel + dim*u_random.xy), 0.1);
     }
 
 
