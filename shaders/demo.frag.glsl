@@ -57,11 +57,11 @@ void main() {
     // creates velocity in me (OUT.xy)
     vec2 force = -0.25*vec2(e.z-w.z, n.z-s.z);
 
-    force *= 2.;
+    force *= 2. + 0.5*sin(u_frame * 0.1);
     // new velocity derived from neighbourhood average
     // should this be p.xy rather than avg.xy?
     // either the velocity or the pressure should be diffused, but not both
-    float blend = 0.; //sin(iTime)*0.5+0.5;  // I like blend=0 more, it gives more turbulence; 1 is more smoky
+    float blend = sin(iTime)*0.5+0.5;  // I like blend=0 more, it gives more turbulence; 1 is more smoky
     //OUT.xy = avg.xy + force;
     OUT.xy = 0.5 + mix(p.xy-0.5, avg.xy-0.5, blend) + force; 
     
@@ -96,6 +96,8 @@ void main() {
     // OUT.xy *= 0.99;
     OUT.z = clamp(OUT.z*0.999, 0., 1.);
     OUT.w = clamp(OUT.w*0.9999, 0., 1.);
+
+    OUT.xy += 0.01 * (hash23(vec3(texel + dim*u_random.xy, u_frame))-0.5);
     
     // boundary:
     // float b = 4.;

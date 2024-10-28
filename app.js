@@ -3,6 +3,7 @@ const ndi = require("../anode_ndi/index.js")
 const { vec2, vec3, vec4, quat, mat2, mat2d, mat3, mat4} = require("gl-matrix")
 
 let shaderman
+let show = 1
 
 class App extends Window {
 
@@ -10,6 +11,7 @@ class App extends Window {
         super(options)
         // have to manually install this:
         this.draw = App.prototype.draw
+        this.onkey = App.prototype.onkey
         
         // i.e. are we the first window to be created? If so, create global resources:
         let fbo = glutils.makeGbufferPair(gl, options.config.content_res[0], options.config.content_res[1], [
@@ -183,6 +185,72 @@ class App extends Window {
             console.log(`fps ${1/dt}`)
         }
     }
+
+    
+    onkey(key, scan, down, mod) {
+        let shift = mod % 2
+        let ctrl = Math.floor(mod/2) % 2
+
+        if (down) {
+
+            switch(key) {
+                // case 32: {
+                //     pause = !pause; 
+                //     console.log("pause", pause)
+                //     break;
+                // }
+        
+                case 48: // 0
+                case 49: // 1
+                case 50:
+                case 51:
+                case 52:
+                case 53:
+                case 54:
+                case 55:
+                case 56:
+                case 57: {
+                    
+                    break;
+                }
+                // case 61: { // =
+                //     win_div = (win_div == 2) ? 4 : 2;
+                //     window.dim = [screen_dim[0]/win_div, screen_dim[1]/win_div]
+                //     break;
+                // }
+
+                case 70: { // f
+                    
+                    this.setFullscreen(!this.fullscreen);
+                    break;
+                }
+                // case 82: { // r
+                //     restoreAllState()
+                //     break;
+                // }
+                // case 83: { // s
+                //     saveAllState()
+                //     break;
+                // }
+                
+                case 290: 
+                case 291:
+                case 292:
+                case 293:
+                case 294:
+                case 295:
+                { // F1
+                    show = key - 290
+                    break;
+                }
+                default: console.log(key, scan, down, mod)
+            }
+        }
+
+        if (shift && down) {
+        }	
+    }
+
 }
 
 module.exports = App
