@@ -56,10 +56,12 @@ void main() {
     // ordered difference in the pressure/convergence/disorder (A.z) 
     // creates velocity in me (OUT.xy)
     vec2 force = -0.25*vec2(e.z-w.z, n.z-s.z);
+
+    //force *= 2.;
     // new velocity derived from neighbourhood average
     // should this be p.xy rather than avg.xy?
     // either the velocity or the pressure should be diffused, but not both
-    float blend = sin(iTime)*0.5+0.5;  // I like blend=0 more, it gives more turbulence; 1 is more smoky
+    float blend = 0.; //sin(iTime)*0.5+0.5;  // I like blend=0 more, it gives more turbulence; 1 is more smoky
     //OUT.xy = avg.xy + force;
     OUT.xy = 0.5 + mix(p.xy-0.5, avg.xy-0.5, blend) + force; 
     
@@ -120,10 +122,10 @@ void main() {
 
     // out0 = a;
     
-    // // init:
-    // if (mod(u_frame, 630) <= 1.) {
-    //     out0 = step(0.85, vec4(hash12(texel + dim*u_random.xy)));
-    // }
+    // init:
+    if (mod(u_frame, 263000) <= 1.) {
+        out0 = mix(vec4(0.5, 0.5, 0.1, 0.1), hash42(texel + dim*u_random.xy), 0.2);
+    }
 
 
 }

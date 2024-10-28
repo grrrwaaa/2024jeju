@@ -12,7 +12,7 @@ class App extends Window {
         this.draw = App.prototype.draw
         
         // i.e. are we the first window to be created? If so, create global resources:
-        let fbo = glutils.makeGbufferPair(gl, common.res, common.res, [
+        let fbo = glutils.makeGbufferPair(gl, options.config.content_res[0], options.config.content_res[1], [
             { float: true, mipmap: false, wrap: gl.CLAMP_TO_EDGE }, 
         ])
 
@@ -20,6 +20,7 @@ class App extends Window {
             { float: false, mipmap: false, wrap: gl.CLAMP_TO_EDGE }, 
         ])
 
+        
         shaderman = new Shaderman(gl)
 
         this.senders.forEach(send => {
@@ -53,6 +54,7 @@ class App extends Window {
 
         let received = 0
 
+        // first, overlay in the receivers:
         fbo.begin()
         {
             let { width, height } = fbo
@@ -153,9 +155,9 @@ class App extends Window {
         }
         image_fbo.end()
 
+
         if (frame % 2 == 0) 
         {
-            
             senders.forEach(send => {
                 let [x, y] = send.pos
                 let [w, h] = send.dim
