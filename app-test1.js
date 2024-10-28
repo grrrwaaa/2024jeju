@@ -4,7 +4,7 @@ const App = require("./app.js")
 // sync on the global Window, not on each window:
 Window.syncfps = 60
 
-let overlap = 16
+let overlap = 8
 let decorated = false
 
 let win_div = 4

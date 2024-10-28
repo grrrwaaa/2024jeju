@@ -14,7 +14,8 @@ in vec2 v_uv;
 
 layout(location = 0) out vec4 out0;
 
-
+// "zero" value of the velocity vector
+float XYo = 0.;
 
 ivec2 dim = textureSize(u_tex_feedback, 0);
 vec2 texelsize = 1./dim;
@@ -23,8 +24,8 @@ vec2 texelsize = 1./dim;
 
 // back project along the vector field to guess where we were previously:
 vec4 prev(vec2 coord) {
-    coord -= (A(coord).xy-0.5)*0.5;
-    coord -= (A(coord).xy-0.5)*0.5;
+    coord -= (A(coord).xy - XYo)*0.5;
+    coord -= (A(coord).xy - XYo)*0.5;
     return A(coord);
 }
 
@@ -43,7 +44,8 @@ void main() {
     vec4 OUT = vec4(0);
     float iTime = u_frame / 30. + u_unique * 100.;
     vec2 DIM = dim;
-    vec2 COORD = v_uv * (dim);
+    vec2 COORD = //vec2(texel); //
+                v_uv * (dim);
 
 
     // past neighborhood states (per flow)
@@ -62,9 +64,9 @@ void main() {
     // new velocity derived from neighbourhood average
     // should this be p.xy rather than avg.xy?
     // either the velocity or the pressure should be diffused, but not both
-    float blend = sin(iTime)*0.5+0.5;  // I like blend=0 more, it gives more turbulence; 1 is more smoky
+    float blend = 0.; //sin(iTime)*0.5+0.5;  // I like blend=0 more, it gives more turbulence; 1 is more smoky
     //OUT.xy = avg.xy + force;
-    OUT.xy = 0.5 + mix(p.xy-0.5, avg.xy-0.5, blend) + force; 
+    OUT.xy = mix(p.xy, avg.xy, blend) + force; 
     
     // variance in the velocity (A.xy) near me creates pressure/convergence/disorder in me
     float press = -0.25*(e.x + n.y - w.x - s.y);
@@ -77,7 +79,7 @@ void main() {
     */
     
     // mass transport
-    float transport = -0.25*((e.x-0.5)*e.w - (w.x-0.5)*w.w + (n.y-0.5)*n.w - (s.y-0.5)*s.w);
+    float transport = -0.25*((e.x-XYo)*e.w - (w.x-XYo)*w.w + (n.y-XYo)*n.w - (s.y-XYo)*s.w);
     // can mix between p.w and avg.w here to allow general diffusion of mass
     // slightly unrealistic in that this can result in negative mass
     OUT.w = mix(p.w, avg.w, 0.9) + transport;
@@ -86,8 +88,8 @@ void main() {
     // optional decays
     // xy or z, don't need to do both
     // OUT.xy *= 0.99;
-    //OUT.z = clamp(OUT.z*0.99999, -1., 1.);
-    //OUT.w = clamp(OUT.w*0.99999, 0., 1.);
+    OUT.z = OUT.z*0.99999;
+    OUT.w = OUT.w*0.99999;
 
     
     // optional add forces
@@ -101,25 +103,24 @@ void main() {
 
     if (u_use_lidar > 0.) {
         vec4 lidar = texture(u_tex_lidar, v_uv);
-        OUT.xy += lidar.xy * lidar.z;
+        OUT.xy += lidar.xy * cos(lidar.z * 6.2 + iTime);
         OUT.z += lidar.z; // * lidar.w;
-
         OUT.w += lidar.z * lidar.w * rnd.w;
     }
     // if (iMouse.z > 0. && length(iMouse.xy - COORD) < 4.) {
-    //     OUT = vec4(COORD/DIM - 0.5, 0., 1.);
+    //     OUT = vec4(COORD/DIM - 0.5 + XYo, 0., 1.);
     // }
     
-   // OUT.xy += 0.001 * (hash23(vec3(texel + dim*u_random.xy, u_frame))-0.5);
+     OUT.xy += 0.1 * (hash23(vec3(texel + dim*u_random.xy, u_frame))-0.5);
     
     // boundary:
-    // float b = 4.;
-    // if (COORD.x < b || COORD.y < b || DIM.x-COORD.x < b || DIM.y-COORD.y < b) {
-    //     OUT = vec4(0);
-    // }
+    float b = 2.;
+    if (COORD.x < b || COORD.y < b || DIM.x-COORD.x < b || DIM.y-COORD.y < b) {
+        OUT.z = 0.;
+    }
 
     
-    OUT.z = clamp(OUT.z, -1., 1.);
+    OUT.z = clamp(OUT.z, 0., 1.);
     OUT.w = clamp(OUT.w, 0., 1.);
 
     out0 = OUT;
@@ -142,9 +143,9 @@ void main() {
     // out0 = a;
     
     // init:
-    if (mod(u_frame, 263000) <= 1.) {
-        out0 = mix(vec4(0.5, 0.5, 0.1, 0.1), hash42(texel + dim*u_random.xy), 0.1);
-    }
+    // if (mod(u_frame, 263000) <= 1.) {
+    //     out0 = mix(vec4(XYo, XYo, 0.1, 0.1), hash42(texel + dim*u_random.xy), 0.1);
+    // }
 
 
 }
