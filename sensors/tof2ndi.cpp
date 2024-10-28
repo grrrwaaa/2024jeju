@@ -111,7 +111,9 @@ struct Sensor {
 				return 1;
 			}
 
-		} else {
+		} else 
+        
+        {
 			if (tof->Open(ptofinfo[tofno]) != Result::OK) {
 				std::cout << "TOF ID " << ptofinfo[tofno].tofid << " Open Error" << endl;
 			} else {
@@ -239,7 +241,7 @@ struct Sensor {
 		// }
 
 		
-		frame_3d->Convert(frame_depth);
+		//frame_3d->Convert(frame_depth);
 
 		// frame[tofno].width * frame[tofno].height
 		// Reverse(Mirror) mode
@@ -249,13 +251,13 @@ struct Sensor {
 			for (int x = 0; x < w; x++){
 				// get pixel from camera
 				unsigned short pixel = frame_depth->databuf[y*w + x];
-				//float mm = frame_depth->CalculateLength(pixel);
+				float mm = frame_depth->CalculateLength(pixel);
 
 				// bad pixels are when pixel == Oxffff
 				bool valid = (pixel != 0xFFFF);
 
-				TofPoint& pt = frame_3d->frame3d[y*w + x];
-				float mm = pt.z;
+				// TofPoint& pt = frame_3d->frame3d[y*w + x];
+				// float mm = pt.z;
 
 				float normalized = (mm - mm_min) / (mm_max - mm_min);
 				// another validity check:
@@ -309,11 +311,12 @@ Sensor sensors[NUM_CAMERAS];
 
 
 int main(int ac, char * av) {
+	
+    printf("hello\n");
 
 	bool run = 1;
     bool berror = false;
 
-    printf("hello\n");
 
 	INIReader config("config.ini");
 	if (config.ParseError() != 0) {
