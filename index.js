@@ -248,10 +248,6 @@ let wallF_gbo = glutils.makeGbuffer(gl, ...config.machines["player4"].content_re
 
 
 
-
-console.log(config)
-
-
 // floor geometry:
 let floor_vao, far_wall_vao, near_wall_vao, left_wall_vao, right_wall_vao
 
@@ -269,11 +265,17 @@ let floor_vao, far_wall_vao, near_wall_vao, left_wall_vao, right_wall_vao
 
     glutils.geomTransform(geom, modelmatrix)
     let texmatrix = mat3.create()
-    // mat3.translate(texmatrix, texmatrix, [0.5, 0.5])
-    // mat3.rotate(texmatrix, texmatrix, Math.PI)
-    // mat3.translate(texmatrix, texmatrix, [-0.5, -0.5])
+    mat3.translate(texmatrix, texmatrix, [0.5, 0.5])
+    mat3.rotate(texmatrix, texmatrix, Math.PI/2)
+    mat3.translate(texmatrix, texmatrix, [-0.5, -0.5])
     glutils.geomTexTransform(geom, texmatrix)
+
+    glutils.geomSetAllNormals(geom, [0, 1, 0])
+
+    console.log("floor", geom)
+
     floor_vao = glutils.createVao(gl, geom)
+
 }
 {
     let geom = glutils.makeQuad3D({ min: 0 })
@@ -281,6 +283,11 @@ let floor_vao, far_wall_vao, near_wall_vao, left_wall_vao, right_wall_vao
     mat4.scale(modelmatrix, modelmatrix, [config.meters.x, config.meters.y, config.meters.z])
     mat4.translate(modelmatrix, modelmatrix, [0, 0, -1])
     glutils.geomTransform(geom, modelmatrix)
+    let texmatrix = mat3.create()
+    mat3.translate(texmatrix, texmatrix, [0.5, 0.5])
+    mat3.rotate(texmatrix, texmatrix, -Math.PI/2)
+    mat3.translate(texmatrix, texmatrix, [-0.5, -0.5])
+    glutils.geomTexTransform(geom, texmatrix)
     far_wall_vao = glutils.createVao(gl, geom)
 }
 
@@ -335,6 +342,7 @@ let floor_vao, far_wall_vao, near_wall_vao, left_wall_vao, right_wall_vao
     mat3.translate(texmatrix, texmatrix, [0, ywall/ytotal])
     mat3.scale(texmatrix, texmatrix, [1, ygable/ytotal])
     glutils.geomTexTransform(geom2, texmatrix)
+
     mat4.identity(modelmatrix)
     mat4.translate(modelmatrix, modelmatrix, [config.meters.x, config.meters.y0, 0])
     mat4.rotateZ(modelmatrix, modelmatrix, config.meters.a_gable)
@@ -344,6 +352,13 @@ let floor_vao, far_wall_vao, near_wall_vao, left_wall_vao, right_wall_vao
     glutils.geomTransform(geom2, modelmatrix)
 
     glutils.geomAppend(geom, geom2)
+
+    mat3.identity(texmatrix)
+    mat3.translate(texmatrix, texmatrix, [0.5, 0.5])
+    mat3.rotate(texmatrix, texmatrix, Math.PI)
+    mat3.translate(texmatrix, texmatrix, [-0.5, -0.5])
+    glutils.geomTexTransform(geom, texmatrix)
+
     right_wall_vao = glutils.createVao(gl, geom)
 }
 
@@ -429,6 +444,11 @@ let floor_vao, far_wall_vao, near_wall_vao, left_wall_vao, right_wall_vao
     left_wall_vao = glutils.createVao(gl, geom)
 }
 
+
+fs.writeFileSync("models/F.obj", glutils.geomToOBJ(floor_vao.geom), "utf8")
+fs.writeFileSync("models/R.obj", glutils.geomToOBJ(right_wall_vao.geom), "utf8")
+fs.writeFileSync("models/L.obj", glutils.geomToOBJ(left_wall_vao.geom), "utf8")
+fs.writeFileSync("models/E.obj", glutils.geomToOBJ(far_wall_vao.geom), "utf8")
 
 let testL_tex = png2tex(gl, "projector_imgs/left.png", true)
 let testR_tex = png2tex(gl, "projector_imgs/right.png", true)

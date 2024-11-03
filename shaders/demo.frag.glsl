@@ -94,9 +94,9 @@ void main() {
     
     // optional add forces
     float d = line2(COORD, DIM/2. - DIM.y*0.2* vec2(sin(iTime*0.42),cos(iTime*0.32)), DIM/2. + DIM.y*0.6* vec2(sin(iTime*.1618),cos(iTime*.18)));
-    //if (d < 1.) 
+    if (u_use_lidar < 0.5 && d < 1.) 
     {
-        //OUT += exp(-d*0.5) * vec4(cos(iTime*0.26), sin(iTime*0.45), 0, 1.);
+        OUT += exp(-d*0.5) * vec4(cos(iTime*0.26), sin(iTime*0.45), 0, 1.);
     }
 
     vec4 rnd = hash43(vec3(texel + dim*u_random.xy, u_frame));

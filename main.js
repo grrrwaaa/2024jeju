@@ -1,10 +1,11 @@
 const { gl, glfw, glutils, Window, Shaderman } = require("../anode_gl/index.js")
 const App = require("./app.js")
+const AppPreviz = require("./app-previz.js")
 
 // sync on the global Window, not on each window:
 Window.syncfps = 60
 
-let overlap = 8
+let overlap = 4
 let decorated = false
 
 let win_div = 4
@@ -57,9 +58,9 @@ let F = new App({
         { name: "FE", dim: [16, 1872], pos: [3840-16, 0] },
     ],
     receivers: [
-        { name: "LF", dim: [3840, 16], pos: [0, 1872 - overlap], angle: 0 },
-        { name: "RF", dim: [3840, 16], pos: [0, overlap-16], angle: 0 },
-        { name: "EF", dim: [16, 1872], pos: [3840-overlap, 0], angle: 0 },
+        // { name: "LF", dim: [3840, 16], pos: [0, 1872 - overlap], angle: 0 },
+        //{ name: "RF", dim: [3840, 16], pos: [0, overlap-16], angle: 0 },
+        // { name: "EF", dim: [16, 1872], pos: [3840-overlap, 0], angle: 0 },
     ],
 }, common)
 
@@ -76,7 +77,7 @@ let E = new App({
         { name: "EF", dim: [16, 1872], pos: [0, 0] },
     ],
     receivers: [
-        { name: "FE", dim: [16, 1872], pos: [overlap-16, 0], angle: 0 },
+        // { name: "FE", dim: [16, 1872], pos: [overlap-16, 0], angle: 0 },
     ],
 }, common)
 
@@ -93,7 +94,7 @@ let L = new App({
         { name: "LF", dim: [3840, 16], pos: [0, 0] },
     ],
     receivers: [
-        { name: "FL", dim: [3840, 16], pos: [0, overlap-16], angle: 0 },
+        // { name: "FL", dim: [3840, 16], pos: [0, overlap-16], angle: 0 },
     ],
 }, common)
 
@@ -110,9 +111,18 @@ let R = new App({
         { name: "RF", dim: [3840, 16], pos: [0, 2582-16] },
     ],
     receivers: [
-        { name: "FR", dim: [3840, 16], pos: [0, 2582-overlap], angle: 0 },
+        // { name: "FR", dim: [3840, 16], pos: [0, 2582-overlap], angle: 0 },
     ],
 }, common)
+
+let P = new AppPreviz({
+    title: "previz",
+    width: 8000 / win_div,
+    height: 8000 / win_div,
+    pos: [5600/win_div, 50],
+
+    sources: { L, R, F, E }
+})
 
 // let a2 = new App({
 //     title: "a2",

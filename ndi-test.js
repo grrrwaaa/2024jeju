@@ -21,9 +21,9 @@ const {
 let win_mul = 4
 let screenshot = 0
 let USE_NDI = 1
-let show = 3
+let show = 4
 let pause = 0
-let fullscreen = 0
+let fullscreen = 1
 
 let shader_init = 1
 
@@ -84,11 +84,11 @@ function makeCalibration() {
         //console.log(geom.texCoords)
         geom_combined = geom_combined ? glutils.geomAppend(geom_combined, geom) : geom;
     }
-    fs.writeFileSync("lidar.obj", glutils.geomToOBJ(geom_combined), "utf8")
+    fs.writeFileSync("models/lidar.obj", glutils.geomToOBJ(geom_combined), "utf8")
 }
 //makeCalibration()
 
-let lidar_vao = glutils.createVao(gl, glutils.geomFromOBJ(fs.readFileSync("lidar.obj", "utf8"), { soup: true }))
+let lidar_vao = glutils.createVao(gl, glutils.geomFromOBJ(fs.readFileSync("models/lidar.obj", "utf8"), { soup: true }))
 
 let stream 
 if (USE_NDI) {
@@ -182,15 +182,16 @@ window.draw = function() {
     // gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     
 
+    shaderman.shaders.show.begin()
+
     switch(show) {
         case 1: stream.tex.bind(); break;
         case 2: lidar_fbo.bind(); break;
         case 3: lidar_filter_fbo.bind(); break;
-        case 4: lidar_filter_fbo.bind(1, 0); break;
+        case 4:  shaderman.shaders.lidar_test.begin(); lidar_filter_fbo.bind(); break;
 
     }
 
-    shaderman.shaders.show.begin()
     quad_vao.bind().draw()
 
     

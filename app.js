@@ -17,13 +17,183 @@ class App extends Window {
         // have to manually install this:
         this.draw = App.prototype.draw
         this.onkey = App.prototype.onkey
+
+        let wall_flat_geom
+
+        if (1) {
+            let div = 8
+            switch(this.title) {
+                case "F": {
+                    let geom = glutils.makeQuad3D({ div })
+                    glutils.geomSetAllNormals(geom, [0, 1, 0])
+                    glutils.geomAddColors(geom)
+                    for (let i=0; i<geom.texCoords.length; i+=2) {
+                        let j = i * 2
+                        let u = geom.texCoords[i]
+                        let v = geom.texCoords[i+1]
+                        geom.colors[j+0] = 1-v
+                        geom.colors[j+1] = 0
+                        geom.colors[j+2] = 1-u
+                        geom.colors[j+3] = 1
+                    }
+                    wall_flat_geom = geom
+                } break;
+                case "E": {
+                    let geom = glutils.makeQuad3D({ div })
+                    glutils.geomSetAllNormals(geom, [0, 0, 1])
+                    glutils.geomAddColors(geom)
+                    for (let i=0; i<geom.texCoords.length; i+=2) {
+                        let j = i * 2
+                        let u = geom.texCoords[i]
+                        let v = geom.texCoords[i+1]
+                        geom.colors[j+0] = 1-v
+                        geom.colors[j+1] = u
+                        geom.colors[j+2] = 0
+                        geom.colors[j+3] = 1
+                    }
+                    wall_flat_geom = geom
+                } break;
+                case "L": {
+                    let texmatrix = mat3.create()
+                    let t1 = 0.5
+                    let t2 = 0.84
+                    let s1 = 0.775
+                    let s2 = 0.42
+                    let geom1 = glutils.makeQuad3D({ min: [-1, -1], max: [1, t1*2-1], div })
+                    glutils.geomAddColors(geom1)
+                    for (let i=0; i<geom1.texCoords.length; i+=2) {
+                        let j = i * 2
+                        let u = geom1.texCoords[i]
+                        let v = geom1.texCoords[i+1]
+                        geom1.colors[j+0] = 0
+                        geom1.colors[j+1] = v*s1
+                        geom1.colors[j+2] = 1-u
+                        geom1.colors[j+3] = 1
+                    }
+                    mat3.identity(texmatrix)
+                    mat3.translate(texmatrix, texmatrix, [0, 0])
+                    mat3.scale(texmatrix, texmatrix, [1, t1])
+                    glutils.geomTexTransform(geom1, texmatrix)
+                    glutils.geomSetAllNormals(geom1, [1, 0, 0])
+                    
+                    let geom2 = glutils.makeQuad3D({ min: [-1, t1*2-1], max: [1, t2*2-1], div  })
+                    glutils.geomAddColors(geom2)
+                    for (let i=0; i<geom2.texCoords.length; i+=2) {
+                        let j = i * 2
+                        let u = geom2.texCoords[i]
+                        let v = geom2.texCoords[i+1]
+                        geom2.colors[j+0] = v*s2
+                        geom2.colors[j+1] = s1+v*(1-s1)
+                        geom2.colors[j+2] = 1-u
+                        geom2.colors[j+3] = 1
+                    }
+                    mat3.identity(texmatrix)
+                    mat3.translate(texmatrix, texmatrix, [0, t1])
+                    mat3.scale(texmatrix, texmatrix, [1, t2-t1])
+                    glutils.geomTexTransform(geom2, texmatrix)
+                    glutils.geomSetAllNormals(geom2, vec3.normalize([0, 0, 0], [1, -2, 0]))
+                    
+                    let geom3 = glutils.makeQuad3D({ min: [-1, t2*2-1], max: [1, 1], div  })
+                    glutils.geomAddColors(geom3)
+                    for (let i=0; i<geom3.texCoords.length; i+=2) {
+                        let j = i * 2
+                        let u = geom3.texCoords[i]
+                        let v = geom3.texCoords[i+1]
+                        geom3.colors[j+0] = s2 + v*(1-s2 - s2)
+                        geom3.colors[j+1] = 1
+                        geom3.colors[j+2] = 1-u
+                        geom3.colors[j+3] = 1
+                    }
+                    mat3.identity(texmatrix)
+                    mat3.translate(texmatrix, texmatrix, [0, t2])
+                    mat3.scale(texmatrix, texmatrix, [1, 1-t2])
+                    glutils.geomTexTransform(geom3, texmatrix)
+                    glutils.geomSetAllNormals(geom3, [0, -1, 0])
+
+                    let geom = glutils.geomAppend(geom1, glutils.geomAppend(geom2, geom3))
+                    console.log(geom)
+                    wall_flat_geom = geom
+                } break;
+                case "R": {
+                    let texmatrix = mat3.create()
+                    let t1 = 0.5
+                    let t2 = 0.84
+                    let s1 = 0.775
+                    let s2 = 0.42
+                    let geom1 = glutils.makeQuad3D({ min: [-1, 1-t1*2], max: [1, 1], div  })
+                    glutils.geomAddColors(geom1)
+                    for (let i=0; i<geom1.texCoords.length; i+=2) {
+                        let j = i * 2
+                        let u = geom1.texCoords[i]
+                        let v = geom1.texCoords[i+1]
+                        geom1.colors[j+0] = 1
+                        geom1.colors[j+1] = s1*(1-v)
+                        geom1.colors[j+2] = 1-u
+                        geom1.colors[j+3] = 1
+                    }
+                    mat3.identity(texmatrix)
+                    mat3.translate(texmatrix, texmatrix, [0, 1-t1])
+                    mat3.scale(texmatrix, texmatrix, [1, 1-t1])
+                    glutils.geomTexTransform(geom1, texmatrix)
+                    glutils.geomSetAllNormals(geom1, [-1, 0, 0])
+
+                    let geom2 = glutils.makeQuad3D({ min: [-1, 1-t2*2], max: [1, 1-t1*2], div  })
+                    glutils.geomAddColors(geom2)
+                    for (let i=0; i<geom2.texCoords.length; i+=2) {
+                        let j = i * 2
+                        let u = geom2.texCoords[i]
+                        let v = geom2.texCoords[i+1]
+                        geom2.colors[j+0] = 1-(1-v)*s2
+                        geom2.colors[j+1] = s1 + (1-v)*(1-s1)
+                        geom2.colors[j+2] = 1-u
+                        geom2.colors[j+3] = 1
+                    }
+                    mat3.identity(texmatrix)
+                    mat3.translate(texmatrix, texmatrix, [0, 1-t2])
+                    mat3.scale(texmatrix, texmatrix, [1, t2-t1])
+                    glutils.geomTexTransform(geom2, texmatrix)
+                    glutils.geomSetAllNormals(geom2, vec3.normalize([0, 0, 0], [-1, -2, 0]))
+                    
+                    let geom3 = glutils.makeQuad3D({ min: [-1, -1], max: [1, 1-t2*2], div  })
+                    glutils.geomAddColors(geom3)
+                    for (let i=0; i<geom3.texCoords.length; i+=2) {
+                        let j = i * 2
+                        let u = geom3.texCoords[i]
+                        let v = geom3.texCoords[i+1]
+                        geom3.colors[j+0] = s2 + v*(1-s2 - s2)
+                        geom3.colors[j+1] = 1
+                        geom3.colors[j+2] = 1-u
+                        geom3.colors[j+3] = 1
+                    }
+                    mat3.identity(texmatrix)
+                    mat3.translate(texmatrix, texmatrix, [0, 0])
+                    mat3.scale(texmatrix, texmatrix, [1, 1-t2])
+                    glutils.geomTexTransform(geom3, texmatrix)
+                    glutils.geomSetAllNormals(geom3, [0, -1, 0])
+
+                    let geom = glutils.geomAppend(geom1, glutils.geomAppend(geom2, geom3))
+                    wall_flat_geom = geom
+                } break;
+                default: {
+                    wall_flat_geom = glutils.makeQuad3D({div})
+                    glutils.geomAddColors(geom)
+                } break;
+            }
+            fs.writeFileSync(`models/${this.title}_flat.obj`, glutils.geomToOBJ(wall_flat_geom), "utf8")
+        }
+
+        wall_flat_geom = glutils.geomFromOBJ(fs.readFileSync(`models/${this.title}_flat.obj`, "utf8"))
         
         // i.e. are we the first window to be created? If so, create global resources:
         let fbo = glutils.makeGbufferPair(gl, options.config.content_res[0], options.config.content_res[1], [
             { float: true, mipmap: false, wrap: gl.CLAMP_TO_EDGE }, 
         ])
 
-        let image_fbo = glutils.makeGbuffer(gl, fbo.width, fbo.height, [
+        let send_fbo = glutils.makeGbuffer(gl, fbo.width, fbo.height, [
+            { float: false, mipmap: false, wrap: gl.CLAMP_TO_EDGE }, 
+        ])
+
+        let final_fbo = glutils.makeGbuffer(gl, fbo.width, fbo.height, [
             { float: false, mipmap: false, wrap: gl.CLAMP_TO_EDGE }, 
         ])
 
@@ -44,9 +214,12 @@ class App extends Window {
 
         // VAOs can't be shared between windows, so we have to create one per window:
         Object.assign(this, { 
+            wall_vao: glutils.createVao(gl, wall_flat_geom),
             quad_vao: glutils.createVao(gl, glutils.makeQuad()),
             unit_quad_vao: glutils.createVao(gl, glutils.makeQuad({ min: 0, max: 1 })),
-            image_fbo, fbo,
+            send_fbo, fbo, final_fbo,
+
+            room_geom: glutils.geomFromOBJ(fs.readFileSync(`models/${this.title}.obj`, "utf8"), { soup: true }),
 
             common,
             unique: Math.random(),
@@ -62,7 +235,7 @@ class App extends Window {
                     { float: false, mipmap: false, wrap: gl.BORDER }
                 ]), 
                 // this is the calibration geometry for it:
-                lidar_vao: glutils.createVao(gl, glutils.geomFromOBJ(fs.readFileSync("lidar.obj", "utf8"), { soup: true })),
+                lidar_vao: glutils.createVao(gl, glutils.geomFromOBJ(fs.readFileSync("models/lidar.obj", "utf8"), { soup: true })),
 
                 // this is the filtered & processed lidar data
                 lidar_filter_fbo: glutils.makeGbufferPair(gl, ...common.lidar_dim, [
@@ -75,7 +248,7 @@ class App extends Window {
     draw(gl) {
         let { t, dt, frame, dim } = this
         let [ width, height ] = dim
-        let { quad_vao, unit_quad_vao, image_fbo, fbo } = this
+        let { quad_vao, wall_vao, unit_quad_vao, send_fbo, fbo, final_fbo } = this
         let { senders, receivers } = this
         let { lidar_stream, lidar_fbo, lidar_filter_fbo, lidar_vao } = this
 
@@ -222,22 +395,25 @@ class App extends Window {
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             }
             
-            shaderman.shaders.demo.begin()
+            // shaderman.shaders.demo.begin()
+            
+            shaderman.shaders.verify.begin()
             .uniform("u_tex_lidar", 1)
+            .uniform("u_use_lidar", +isFloor)
             .uniform("u_frame", frame)
             .uniform("u_random", [Math.random(), Math.random(), Math.random(), Math.random()])
             .uniform("u_unique", this.unique)
-            .uniform("u_use_lidar", +isFloor)
-            quad_vao.bind().draw()
+
+            wall_vao.bind().draw()
             
             gl.disable(gl.BLEND)
             gl.depthMask(true)
         }
         fbo.end()
 
-        image_fbo.begin()
+        send_fbo.begin()
         {
-            let { width, height } = image_fbo
+            let { width, height } = send_fbo
             gl.viewport(0, 0, width, height);
             gl.clearColor(0, 0, 0, 0)
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -251,7 +427,7 @@ class App extends Window {
             shaderman.shaders.show.begin()
             quad_vao.bind().draw()
         }
-        image_fbo.end()
+        send_fbo.end()
 
 
         if (frame % 2 == 0) 
@@ -259,18 +435,36 @@ class App extends Window {
             senders.forEach(send => {
                 let [x, y] = send.pos
                 let [w, h] = send.dim
-                gl.getTextureSubImage(image_fbo.textures[0], 0, x, y, 0, w, h, 1,
+                gl.getTextureSubImage(send_fbo.textures[0], 0, x, y, 0, w, h, 1,
                     gl.RGBA, gl.UNSIGNED_BYTE, send.data.byteLength, send.data)
                 send.sender.send(send.data, w, h)
             })
         }
+
+        final_fbo.begin()
+        {
+            let { width, height } = send_fbo
+            gl.viewport(0, 0, width, height);
+            gl.clearColor(0, 0, 0, 0)
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            fbo.bind()
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            
+            shaderman.shaders.final.begin()
+            quad_vao.bind().draw()
+        }
+        final_fbo.end()
 
         gl.viewport(0, 0, width, height);
         gl.clearColor(0, 0.25, 0, 0)
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST)
 
-        image_fbo.bind()
+        final_fbo.bind()
         // if (isFLoor) {
         //     lidar_filter_fbo.bind()
         //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -278,7 +472,7 @@ class App extends Window {
         //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         // }
-        shaderman.shaders.final.begin()
+        shaderman.shaders.show.begin()
         quad_vao.bind().draw()
         
         if (Math.floor(t+dt) > Math.floor(t)) {
