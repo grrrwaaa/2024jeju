@@ -399,9 +399,8 @@ class App extends Window {
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             }
             
-            // shaderman.shaders.demo.begin()
-            
-            shaderman.shaders.verify.begin()
+            shaderman.shaders.demo.begin()
+            //shaderman.shaders.verify.begin()
             .uniform("u_tex_lidar", 1)
             .uniform("u_use_lidar", +isFloor)
             .uniform("u_frame", frame)
