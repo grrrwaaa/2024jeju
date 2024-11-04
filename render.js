@@ -115,6 +115,7 @@ for (const name of Object.keys(networks)) {
                         pos: [0, (2582 + 1872) / win_div],
                         decorated,
                         fullscreen,
+                        final_rotate: 2,
                     
                         config: common.machines.R,
                         senders: [
@@ -136,7 +137,7 @@ for (const name of Object.keys(networks)) {
                         pos: [0, 2582 / win_div],
                         decorated,
                         fullscreen,
-                        final_rotate: 1,
+                        final_rotate: 3,
                     
                         config: common.machines.F,
                         senders: [

@@ -10,7 +10,11 @@ void main() {
 
 	gl_Position = vec4(a_position.xyz, 1.);
 
-    if (u_rotate > 0.5) {
+    if (u_rotate > 2.5) {
+        v_uv = vec2(1-a_texCoord.y, a_texCoord);
+    } else if (u_rotate > 1.5) {
+        v_uv = 1 - a_texCoord;
+    } else if (u_rotate > 0.5) {
         v_uv = vec2(a_texCoord.y, 1-a_texCoord);
     } else {
         v_uv = a_texCoord;
