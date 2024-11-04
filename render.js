@@ -74,6 +74,7 @@ for (const name of Object.keys(networks)) {
                         pos: [3840 / win_div, 2582 / win_div],
                         decorated,
                         fullscreen,
+                        final_rotate: 1,
                     
                         config: common.machines.E,
                         senders: [
