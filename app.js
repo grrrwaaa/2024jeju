@@ -20,6 +20,8 @@ class App extends Window {
 
         let wall_flat_geom
 
+        console.log("app", options.width, options.height)
+
         if (1) {
             let div = 8
             switch(this.title) {
@@ -196,6 +198,8 @@ class App extends Window {
         let final_fbo = glutils.makeGbuffer(gl, fbo.width, fbo.height, [
             { float: false, mipmap: false, wrap: gl.CLAMP_TO_EDGE }, 
         ])
+
+        console.log("content", options.config.content_res)
 
         
         shaderman = new Shaderman(gl)
@@ -455,6 +459,7 @@ class App extends Window {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             
             shaderman.shaders.final.begin()
+            .uniform("u_rotate", this.final_rotate)
             quad_vao.bind().draw()
         }
         final_fbo.end()

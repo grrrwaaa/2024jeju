@@ -65,30 +65,6 @@ for (const name of Object.keys(networks)) {
             let ip = net.address
             console.log("IP", ip)
             switch (ipconfig[ip]) {
-                case "F": {
-                    new App({
-                        title: "F",
-                        machine: common.machines.F,
-                        width: common.machines.F.content_res[0] / win_div, 
-                        height: common.machines.F.content_res[1] / win_div,
-                        pos: [0, 2582 / win_div],
-                        decorated,
-                        fullscreen,
-                    
-                        config: common.machines.F,
-                        senders: [
-                            { name: "FL", dim: [3840, 16], pos: [0, 1872 - 16] },
-                            { name: "FR", dim: [3840, 16], pos: [0, 0] },
-                            { name: "FE", dim: [16, 1872], pos: [3840-16, 0] },
-                        ],
-                        receivers: [
-                            // { name: "LF", dim: [3840, 16], pos: [0, 1872 - overlap], angle: 0 },
-                            //{ name: "RF", dim: [3840, 16], pos: [0, overlap-16], angle: 0 },
-                            // { name: "EF", dim: [16, 1872], pos: [3840-overlap, 0], angle: 0 },
-                        ],
-                    }, common)
-                    break;
-                }
                 case "E": {
                     new App({
                         title: "E",
@@ -145,6 +121,32 @@ for (const name of Object.keys(networks)) {
                         ],
                         receivers: [
                             // { name: "FR", dim: [3840, 16], pos: [0, 2582-overlap], angle: 0 },
+                        ],
+                    }, common)
+                    break;
+                }
+                
+                default: {
+                    new App({
+                        title: "F",
+                        machine: common.machines.F,
+                        width: common.machines.F.content_res[1] / win_div, 
+                        height: common.machines.F.content_res[0] / win_div,
+                        pos: [0, 2582 / win_div],
+                        decorated,
+                        fullscreen,
+                        final_rotate: 1,
+                    
+                        config: common.machines.F,
+                        senders: [
+                            { name: "FL", dim: [3840, 16], pos: [0, 1872 - 16] },
+                            { name: "FR", dim: [3840, 16], pos: [0, 0] },
+                            { name: "FE", dim: [16, 1872], pos: [3840-16, 0] },
+                        ],
+                        receivers: [
+                            // { name: "LF", dim: [3840, 16], pos: [0, 1872 - overlap], angle: 0 },
+                            //{ name: "RF", dim: [3840, 16], pos: [0, overlap-16], angle: 0 },
+                            // { name: "EF", dim: [16, 1872], pos: [3840-overlap, 0], angle: 0 },
                         ],
                     }, common)
                     break;
