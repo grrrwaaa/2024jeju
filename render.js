@@ -153,3 +153,6 @@ for (const name of Object.keys(networks)) {
         }
     }
 }
+
+
+Window.animate()
