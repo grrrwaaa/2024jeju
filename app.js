@@ -24,6 +24,10 @@ class App extends Window {
 
         if (1) {
             let div = 8
+            let t1 = 0.5
+            let t2 = 0.835
+            let s1 = 0.775
+            let s2 = 0.42
             switch(this.title) {
                 case "F": {
                     let geom = glutils.makeQuad3D({ div })
@@ -57,10 +61,7 @@ class App extends Window {
                 } break;
                 case "L": {
                     let texmatrix = mat3.create()
-                    let t1 = 0.5
-                    let t2 = 0.84
-                    let s1 = 0.775
-                    let s2 = 0.42
+                    
                     let geom1 = glutils.makeQuad3D({ min: [-1, -1], max: [1, t1*2-1], div })
                     glutils.geomAddColors(geom1)
                     for (let i=0; i<geom1.texCoords.length; i+=2) {
@@ -113,15 +114,10 @@ class App extends Window {
                     glutils.geomSetAllNormals(geom3, [0, -1, 0])
 
                     let geom = glutils.geomAppend(geom1, glutils.geomAppend(geom2, geom3))
-                    console.log(geom)
                     wall_flat_geom = geom
                 } break;
                 case "R": {
                     let texmatrix = mat3.create()
-                    let t1 = 0.5
-                    let t2 = 0.84
-                    let s1 = 0.775
-                    let s2 = 0.42
                     let geom1 = glutils.makeQuad3D({ min: [-1, 1-t1*2], max: [1, 1], div  })
                     glutils.geomAddColors(geom1)
                     for (let i=0; i<geom1.texCoords.length; i+=2) {
@@ -317,6 +313,76 @@ class App extends Window {
 
         let received = 0
 
+
+        fbo.begin()
+        {
+            let { width, height } = fbo
+            gl.viewport(0, 0, width, height);
+            gl.clearColor(0, 0, 0, 0)
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.enable(gl.DEPTH_TEST)
+            // gl.enable(gl.BLEND);
+            // gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+            gl.depthMask(false)
+
+            fbo.bind()
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+            if (isFloor) {
+                lidar_filter_fbo.bind(0,1)
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.BORDER);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.BORDER);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            }
+            
+            shaderman.shaders.demo.begin()
+            shaderman.shaders.verify.begin()
+            .uniform("u_tex_lidar", 1)
+            .uniform("u_use_lidar", +isFloor)
+            .uniform("u_frame", frame)
+            .uniform("u_random", [Math.random(), Math.random(), Math.random(), Math.random()])
+            .uniform("u_unique", this.unique)
+
+            wall_vao.bind().draw()
+            
+            gl.disable(gl.BLEND)
+            gl.depthMask(true)
+        }
+        fbo.end()
+
+        send_fbo.begin()
+        {
+            let { width, height } = send_fbo
+            gl.viewport(0, 0, width, height);
+            gl.clearColor(0, 0, 0, 0)
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            fbo.bind()
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            
+            shaderman.shaders.show.begin()
+            quad_vao.bind().draw()
+        }
+        send_fbo.end()
+        //if (frame % 2 == 0) 
+        {
+            senders.forEach(send => {
+                let [x, y] = send.pos
+                let [w, h] = send.dim
+                gl.getTextureSubImage(send_fbo.textures[0], 0, x, y, 0, w, h, 1,
+                    gl.RGBA, gl.UNSIGNED_BYTE, send.data.byteLength, send.data)
+                send.sender.send(send.data, w, h)
+            })
+        }
+
+        
         // first, overlay in the receivers:
         fbo.begin()
         {
@@ -327,6 +393,7 @@ class App extends Window {
             gl.enable(gl.DEPTH_TEST)
             gl.depthMask(false)
 
+            // old frame:
             fbo.bind()
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
@@ -336,6 +403,7 @@ class App extends Window {
             shaderman.shaders.show.begin()
             quad_vao.bind().draw()
 
+            // new inputs:
             receivers.forEach(recv => {
                 if (recv.receiver.video_into(recv.tex.data)) {
                     received = 1
@@ -374,75 +442,6 @@ class App extends Window {
         }
         fbo.end()
 
-        fbo.begin()
-        {
-            let { width, height } = fbo
-            gl.viewport(0, 0, width, height);
-            gl.clearColor(0, 0, 0, 0)
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            gl.enable(gl.DEPTH_TEST)
-            // gl.enable(gl.BLEND);
-            // gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-            gl.depthMask(false)
-
-            fbo.bind()
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-            if (isFloor) {
-                lidar_filter_fbo.bind(0,1)
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.BORDER);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.BORDER);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            }
-            
-            shaderman.shaders.demo.begin()
-            //shaderman.shaders.verify.begin()
-            .uniform("u_tex_lidar", 1)
-            .uniform("u_use_lidar", +isFloor)
-            .uniform("u_frame", frame)
-            .uniform("u_random", [Math.random(), Math.random(), Math.random(), Math.random()])
-            .uniform("u_unique", this.unique)
-
-            wall_vao.bind().draw()
-            
-            gl.disable(gl.BLEND)
-            gl.depthMask(true)
-        }
-        fbo.end()
-
-        send_fbo.begin()
-        {
-            let { width, height } = send_fbo
-            gl.viewport(0, 0, width, height);
-            gl.clearColor(0, 0, 0, 0)
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-            fbo.bind()
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            
-            shaderman.shaders.show.begin()
-            quad_vao.bind().draw()
-        }
-        send_fbo.end()
-
-
-        if (frame % 2 == 0) 
-        {
-            senders.forEach(send => {
-                let [x, y] = send.pos
-                let [w, h] = send.dim
-                gl.getTextureSubImage(send_fbo.textures[0], 0, x, y, 0, w, h, 1,
-                    gl.RGBA, gl.UNSIGNED_BYTE, send.data.byteLength, send.data)
-                send.sender.send(send.data, w, h)
-            })
-        }
 
         final_fbo.begin()
         {

@@ -21,9 +21,9 @@ void main() {
     vec3 cubical = v_color.xyz*2-1;
     vec3 spherical = normalize(cubical-0.5);
     out0 = vec4(v_uv, 0, 1);
-    //out0 = vec4(normal*0.5+0.5, 1);
+    out0 += vec4(normal*0.5+0.5, 1);
     // out0 = v_color;
-    out0 = vec4(spherical*0.5+0.5, 1);
+    //out0 = vec4(spherical*0.5+0.5, 1);
 	//out0 = texture(u_tex_feedback, v_uv);
 
     
@@ -31,6 +31,9 @@ void main() {
     vec2 ut = 1./dim;
     ivec2 texel = ivec2(v_uv * dim);
     float iTime = u_frame / 30. + u_unique * 100.;
+
+    vec4 old = texture(u_tex_feedback, v_uv);
+    //out0 = old;
 
     // drift:
     // we want to be able to take a 3D drift direction and convert it into a 2D texture coordinate direction
@@ -68,8 +71,10 @@ void main() {
     vec4 r4 = hash42(texel + dim*u_random.xy);
     //if (mod(u_frame, 263000) <= 1.) 
     if (r4.a > 0.95) {
-        out0.rgb = r4.rgb;
+        //out0.rgb = r4.rgb;
+        
     }
+
 
     if (u_use_lidar > 0.) {
         vec4 lidar = texture(u_tex_lidar, v_uv);

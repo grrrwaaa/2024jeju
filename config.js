@@ -24,22 +24,20 @@ let res_wallF = [1920, 1080]
 let mm_floor = [7.750, 15.790]
 let mm_wallF = [7.750, 6.900]
 
-let mm_wall0 = [15.790, 5.345]
+// console.log("pix/m content x", 1872 / 7.750)
+// console.log("pix/m content y", 1272 / 5.345)
+// console.log("pix/m content z", 3840 / 15.790)
 
-console.log("pix/m content x", 1872 / 7.750)
-console.log("pix/m content y", 1272 / 5.345)
-console.log("pix/m content z", 3840 / 15.790)
-
-console.log("pix/m projection x", 1920 / 7.750)
-console.log("pix/m projection y", 1080 / 5.345)
-console.log("pix/m projection z", 3240 / 15.790)
+// console.log("pix/m projection x", 1920 / 7.750)
+// console.log("pix/m projection y", 1080 / 5.345)
+// console.log("pix/m projection z", 3240 / 15.790)
 
 
 return {
     meters: {
         x: 7.750,
         y: 6.900,
-        y0: 5.345,
+        y0: 5.1,
         z: 15.790,
 
         // // estimate size of gable section
@@ -51,12 +49,12 @@ return {
         // w_top: 3.050, //1.757, //3.050, //1.757
 
         // estimate size of gable section
-        y_gable: 3.4, // 2.85, // 3.58??  
+        y_gable: 3.45, // 2.85, // 3.58??  
         // estimated angle in radians
-        a_gable: 1.08, // 0.95,
+        a_gable: 1.02, // 0.95,
         // horizontal distance from wall to top section:
         x_top: 2.9965, // 2.350, 
-        w_top: 1.757, //3.050, //1.757
+        w_top: 1.75, //3.050, //1.757
     },
     mode: "development",
     machines: {

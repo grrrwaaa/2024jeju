@@ -21,6 +21,6 @@ void main() {
 	vec4 a = texture(u_tex, v_uv);
     out0 = a;
 
-    out0.rgb = 1.-a.www * hsl2rgb(vec3(0.5*dot(a.xy-XYo, vec2(1,0)), abs(a.z-0.5), 0.85));
+    //out0.rgb = 1.-a.www * hsl2rgb(vec3(0.5*dot(a.xy-XYo, vec2(1,0)), abs(a.z-0.5), 0.85));
     
 }
