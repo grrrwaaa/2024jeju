@@ -7,6 +7,8 @@ const { gl, glfw, glutils, Window, Shaderman } = require("../anode_gl/index.js")
 const ndi = require("../anode_ndi/index.js")
 const ndi_texture = require("./ndi.js")
 
+const server = require("./server.js")
+
 let shaderman
 let show = 1
 
@@ -14,11 +16,14 @@ class App extends Window {
 
     constructor(options, common) {
         super(options)
+
         // have to manually install this:
         this.draw = App.prototype.draw
         this.onkey = App.prototype.onkey
 
         let wall_flat_geom
+
+        this.wall_U = [0, 0, 0]
 
         console.log("app", options.width, options.height)
 
@@ -43,6 +48,7 @@ class App extends Window {
                         geom.colors[j+3] = 1
                     }
                     wall_flat_geom = geom
+                    this.wall_U = [0, 0, -1]
                 } break;
                 case "E": {
                     let geom = glutils.makeQuad3D({ div })
@@ -58,6 +64,7 @@ class App extends Window {
                         geom.colors[j+3] = 1
                     }
                     wall_flat_geom = geom
+                    this.wall_U = [0, 1, 0]
                 } break;
                 case "L": {
                     let texmatrix = mat3.create()
@@ -115,6 +122,7 @@ class App extends Window {
 
                     let geom = glutils.geomAppend(geom1, glutils.geomAppend(geom2, geom3))
                     wall_flat_geom = geom
+                    this.wall_U = [0, 0, -1]
                 } break;
                 case "R": {
                     let texmatrix = mat3.create()
@@ -171,6 +179,7 @@ class App extends Window {
 
                     let geom = glutils.geomAppend(geom1, glutils.geomAppend(geom2, geom3))
                     wall_flat_geom = geom
+                    this.wall_U = [0, 0, -1]
                 } break;
                 default: {
                     wall_flat_geom = glutils.makeQuad3D({div})
@@ -201,13 +210,15 @@ class App extends Window {
         shaderman = new Shaderman(gl)
 
         this.senders.forEach(send => {
-            send.sender = new ndi.Sender(send.name)
+            //send.sender = new ndi.Sender(send.name)
             send.data = new Uint8Array(4 * send.dim[0] * send.dim[1])
         })
 
         this.receivers.forEach(recv => {
-            recv.receiver = new ndi.Receiver(recv.name)
+            //recv.receiver = new ndi.Receiver(recv.name)
             recv.tex = glutils.createTexture(gl, { width: recv.dim[0], height: recv.dim[1] }).allocate().bind().submit()
+
+            server.requestService(recv.name, recv.tex.data)
         })
 
 
@@ -224,6 +235,8 @@ class App extends Window {
             common,
             unique: Math.random(),
         })
+
+        common.allapps[options.title] = this
 
         // special case for floor:
         if (this.title == "F") {
@@ -326,6 +339,11 @@ class App extends Window {
             gl.depthMask(false)
 
             fbo.bind()
+            // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
+            // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
+            // using this one to reduce weird artefacts at edges
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -346,6 +364,7 @@ class App extends Window {
             .uniform("u_frame", frame)
             .uniform("u_random", [Math.random(), Math.random(), Math.random(), Math.random()])
             .uniform("u_unique", this.unique)
+            .uniform("u_wall_u", this.wall_U)
 
             wall_vao.bind().draw()
             
@@ -378,7 +397,8 @@ class App extends Window {
                 let [w, h] = send.dim
                 gl.getTextureSubImage(send_fbo.textures[0], 0, x, y, 0, w, h, 1,
                     gl.RGBA, gl.UNSIGNED_BYTE, send.data.byteLength, send.data)
-                send.sender.send(send.data, w, h)
+                //send.sender.send(send.data, w, h)
+                server.sendData(send.name, send.data)
             })
         }
 
@@ -404,37 +424,72 @@ class App extends Window {
             quad_vao.bind().draw()
 
             // new inputs:
-            receivers.forEach(recv => {
-                if (recv.receiver.video_into(recv.tex.data)) {
-                    received = 1
+            //if (frame % 2) 
+            {
+                receivers.forEach(recv => {
 
-                    let [w, h] = recv.dim
-                    let [x, y] = recv.pos
-                    let a = recv.angle
+                    {
+                        received = 1
+
+                        let [w, h] = recv.dim
+                        let [x, y] = recv.pos
+                        let a = recv.angle
+
+                        recv.tex.bind().submit()
                         
-                    recv.tex.bind().submit()
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-                    let modelmatrix = mat4.create()
-                    let projmatrix = mat4.create()
+                        let modelmatrix = mat4.create()
+                        let projmatrix = mat4.create()
 
-                    //mat4.frustum(projmatrix, 0, fbo.width, 0, fbo.height, -1, 1)
-                    mat4.ortho(projmatrix, 0, fbo.width, 0, fbo.height, 0, 1)
+                        //mat4.frustum(projmatrix, 0, fbo.width, 0, fbo.height, -1, 1)
+                        mat4.ortho(projmatrix, 0, fbo.width, 0, fbo.height, 0, 1)
 
-                    mat4.translate(modelmatrix, modelmatrix, [x, y, 0])
-                    mat4.rotateZ(modelmatrix, modelmatrix, a)
-                    mat4.scale(modelmatrix, modelmatrix, [w, h, 1])
+                        mat4.translate(modelmatrix, modelmatrix, [x, y, 0])
+                        mat4.rotateZ(modelmatrix, modelmatrix, a)
+                        mat4.scale(modelmatrix, modelmatrix, [w, h, 1])
 
 
-                    shaderman.shaders.pixelrect.begin()
-                    .uniform("u_modelmatrix", modelmatrix)
-                    .uniform("u_projmatrix", projmatrix)
-                    unit_quad_vao.bind().draw()
-                }
-            })
+                        shaderman.shaders.pixelrect.begin()
+                        .uniform("u_modelmatrix", modelmatrix)
+                        .uniform("u_projmatrix", projmatrix)
+                        unit_quad_vao.bind().draw()
+                    }
+
+                    // if (recv.receiver.video_into(recv.tex.data)) {
+                    //     received = 1
+
+                    //     let [w, h] = recv.dim
+                    //     let [x, y] = recv.pos
+                    //     let a = recv.angle
+                            
+                    //     recv.tex.bind().submit()
+                    //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                    //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                    //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+                    //     let modelmatrix = mat4.create()
+                    //     let projmatrix = mat4.create()
+
+                    //     //mat4.frustum(projmatrix, 0, fbo.width, 0, fbo.height, -1, 1)
+                    //     mat4.ortho(projmatrix, 0, fbo.width, 0, fbo.height, 0, 1)
+
+                    //     mat4.translate(modelmatrix, modelmatrix, [x, y, 0])
+                    //     mat4.rotateZ(modelmatrix, modelmatrix, a)
+                    //     mat4.scale(modelmatrix, modelmatrix, [w, h, 1])
+
+
+                    //     shaderman.shaders.pixelrect.begin()
+                    //     .uniform("u_modelmatrix", modelmatrix)
+                    //     .uniform("u_projmatrix", projmatrix)
+                    //     unit_quad_vao.bind().draw()
+                    // }
+                })
+            }
 
             
             gl.disable(gl.BLEND)
@@ -463,7 +518,7 @@ class App extends Window {
         final_fbo.end()
 
         gl.viewport(0, 0, width, height);
-        gl.clearColor(0, 0.25, 0, 0)
+        gl.clearColor(0, 0, 0, 0)
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST)
 

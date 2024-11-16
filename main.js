@@ -45,7 +45,9 @@ let common = {
             res: [3840, 2160],
             show: 2
         }
-    }
+    }, 
+
+    allapps: {},
 }
 
 {
@@ -266,8 +268,8 @@ let F = new App({
         { name: "FE", dim: [16, 1872], pos: [3840-16, 0] },
     ],
     receivers: [
-        { name: "LF", dim: [3840, 16], pos: [0, 1872 - overlap], angle: 0 },
-        { name: "RF", dim: [3840, 16], pos: [0, overlap-16], angle: 0 },
+       { name: "LF", dim: [3840, 16], pos: [0, 1872 - overlap], angle: 0 },
+         { name: "RF", dim: [3840, 16], pos: [0, overlap-16], angle: 0 },
         { name: "EF", dim: [16, 1872], pos: [3840-overlap, 0], angle: 0 },
     ],
 }, common)
@@ -282,9 +284,9 @@ let E = new App({
 
     config: common.machines.E,
     senders: [
-        { name: "EF", dim: [16, 1872], pos: [0, 0] },
+         { name: "EF", dim: [16, 1872], pos: [0, 0] },
         { name: "EL", dim: [1272, 16], pos: [0, 1872-16] },
-        { name: "ET", dim: [16, 406], pos: [1752-16, (1872 - 406)/2] },
+         { name: "ET", dim: [16, 406], pos: [1752-16, (1872 - 406)/2] },
         { name: "ER", dim: [1272, 16], pos: [0, 0] },
     ],
     receivers: [
@@ -307,13 +309,15 @@ let L = new App({
 
     config: common.machines.L,
     senders: [
-        { name: "LF", dim: [3840, 16], pos: [0, 0] },
+       { name: "LF", dim: [3840, 16], pos: [0, 0] },
+       { name: "LR", dim: [3840, 16], pos: [0, 2582-16] },
         { name: "LE", dim: [16, 2582], pos: [3840-16, 0] },
     ],
     receivers: [
-        { name: "FL", dim: [3840, 16], pos: [0, overlap-16], angle: 0 },
+         { name: "FL", dim: [3840, 16], pos: [0, overlap-16], angle: 0 },
         { name: "EL", dim: [1272, 16], pos: [3840-overlap+16, 0], angle: Math.PI/2 },
         { name: "ET", dim: [16, 406], pos: [3840-overlap+16, 2582], angle: Math.PI },
+         { name: "RL", dim: [3840, 16], pos: [0, 2582-overlap], angle: 0},
     ],
 }, common)
 
@@ -327,13 +331,15 @@ let R = new App({
 
     config: common.machines.R,
     senders: [
-        { name: "RF", dim: [3840, 16], pos: [0, 2582-16] },
+       { name: "RF", dim: [3840, 16], pos: [0, 2582-16] },
         { name: "RE", dim: [16, 2582], pos: [3840-16, 0] },
+        { name: "RL", dim: [3840, 16], pos: [0, 406+16] },
     ],
     receivers: [
         { name: "FR", dim: [3840, 16], pos: [0, 2582-overlap], angle: 0 },
         { name: "ER", dim: [1272, 16], pos: [3840-overlap, 2582], angle: -Math.PI/2 },
         { name: "ET", dim: [16, 406], pos: [3840-overlap, 0], angle: 0 },
+        { name: "LR", dim: [3840, 16], pos: [0, 406+overlap], angle: 0},
     ],
 }, common)
 

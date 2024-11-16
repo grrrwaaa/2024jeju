@@ -99,7 +99,11 @@ class App extends Window {
         if (down) {
 
             switch(key) {
-
+                case 70: { // f
+                    
+                    this.setFullscreen(!this.fullscreen);
+                    break;
+                }
             }
         }
     }
