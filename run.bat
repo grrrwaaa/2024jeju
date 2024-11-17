@@ -4,4 +4,4 @@ rem start "" /b /min play.maxpat
 
 rem node index.js
 
-node node_modules\nodemon\bin\nodemon.js ndi-test.js
+node node_modules\nodemon\bin\nodemon.js render.js

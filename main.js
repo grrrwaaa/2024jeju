@@ -350,7 +350,7 @@ let P = new AppPreviz({
     pos: [5700/win_div, 50],
 
     sources: { L, R, F, E }
-})
+}, common)
 
 // let a2 = new App({
 //     title: "a2",

@@ -6,8 +6,10 @@ const { vec2, vec3, vec4, quat, mat2, mat2d, mat3, mat4} = require("gl-matrix")
 const { gl, glfw, glutils, Window, Shaderman } = require("../anode_gl/index.js")
 const ndi = require("../anode_ndi/index.js")
 const ndi_texture = require("./ndi.js")
-
+const Params = require("./params.js")
 const server = require("./server.js")
+
+let sequence = new Params("sequence.js")
 
 let shaderman
 let show = 1
@@ -265,8 +267,14 @@ class App extends Window {
         let { senders, receivers } = this
         let { lidar_stream, lidar_fbo, lidar_filter_fbo, lidar_vao } = this
 
-        const isFloor = (this.title == "F");
+        // getTime() gives ms since epoch
+        // wrap it in the duration:
+        let seconds = this.common.seconds || (new Date().getTime() / 1000) % sequence._duration
 
+        // update parameters:
+        sequence.step(seconds)
+
+        const isFloor = (this.title == "F");
         // special case for floor:
         if (isFloor) {
             // only process lidar input if we received data:
@@ -361,10 +369,11 @@ class App extends Window {
             //shaderman.shaders.verify.begin()
             .uniform("u_tex_lidar", 1)
             .uniform("u_use_lidar", +isFloor)
-            .uniform("u_frame", frame)
+            .uniform("u_seconds", seconds)
             .uniform("u_random", [Math.random(), Math.random(), Math.random(), Math.random()])
             .uniform("u_unique", this.unique)
             .uniform("u_wall_u", this.wall_U)
+            .uniformsFrom(sequence)
 
             wall_vao.bind().draw()
             
@@ -456,38 +465,9 @@ class App extends Window {
                         shaderman.shaders.pixelrect.begin()
                         .uniform("u_modelmatrix", modelmatrix)
                         .uniform("u_projmatrix", projmatrix)
+                        .uniform("u_rot", a)
                         unit_quad_vao.bind().draw()
                     }
-
-                    // if (recv.receiver.video_into(recv.tex.data)) {
-                    //     received = 1
-
-                    //     let [w, h] = recv.dim
-                    //     let [x, y] = recv.pos
-                    //     let a = recv.angle
-                            
-                    //     recv.tex.bind().submit()
-                    //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                    //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                    //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-                    //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-                    //     let modelmatrix = mat4.create()
-                    //     let projmatrix = mat4.create()
-
-                    //     //mat4.frustum(projmatrix, 0, fbo.width, 0, fbo.height, -1, 1)
-                    //     mat4.ortho(projmatrix, 0, fbo.width, 0, fbo.height, 0, 1)
-
-                    //     mat4.translate(modelmatrix, modelmatrix, [x, y, 0])
-                    //     mat4.rotateZ(modelmatrix, modelmatrix, a)
-                    //     mat4.scale(modelmatrix, modelmatrix, [w, h, 1])
-
-
-                    //     shaderman.shaders.pixelrect.begin()
-                    //     .uniform("u_modelmatrix", modelmatrix)
-                    //     .uniform("u_projmatrix", projmatrix)
-                    //     unit_quad_vao.bind().draw()
-                    // }
                 })
             }
 
@@ -513,7 +493,11 @@ class App extends Window {
             
             shaderman.shaders.final.begin()
             .uniform("u_rotate", this.final_rotate)
-            quad_vao.bind().draw()
+            .uniform("u_wall_u", this.wall_U)
+            .uniform("u_seconds", seconds)
+            .uniformsFrom(sequence)
+            //quad_vao.bind().draw()
+            wall_vao.bind().draw()
         }
         final_fbo.end()
 
@@ -534,7 +518,7 @@ class App extends Window {
         quad_vao.bind().draw()
         
         if (Math.floor(t+dt) > Math.floor(t)) {
-            console.log(`fps ${1/dt}`)
+            console.log(`fps ${Math.round(1/dt)} seconds ${Math.round(seconds)} ${sequence._name} (${Math.round(100 * sequence._time/sequence._duration)}%)`)
         }
     }
 

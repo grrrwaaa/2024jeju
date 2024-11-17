@@ -6,7 +6,7 @@ precision mediump float;
 uniform sampler2D u_tex_feedback;
 uniform sampler2D u_tex_lidar;
 uniform float u_use_lidar;
-uniform float u_frame;
+uniform float u_seconds;
 uniform vec4 u_random;
 uniform float u_unique;
 uniform vec3 u_wall_u;
@@ -19,7 +19,7 @@ in mat3 v_xyz2uv;
 layout(location = 0) out vec4 out0;
 
 void main() {
-    float t = u_frame / 60;
+    float t = u_seconds;
     vec3 normal = normalize(v_normal);
     vec3 cubical = v_color.xyz*2-1;
     vec3 spherical = normalize(cubical);
@@ -53,7 +53,7 @@ void main() {
     ivec2 dim = textureSize(u_tex_feedback, 0);
     vec2 ut = 1./dim;
     ivec2 texel = ivec2(v_uv * dim);
-    float iTime = u_frame / 30. + u_unique * 100.;
+    float iTime = u_seconds;
 
     vec4 old = texture(u_tex_feedback, v_uv);
     //out0 = old;

@@ -4,8 +4,12 @@ const path = require("path")
 const { vec2, vec3, vec4, quat, mat2, mat2d, mat3, mat4} = require("gl-matrix")
 
 const { gl, glfw, glutils, Window, Shaderman } = require("../anode_gl/index.js")
-const ndi = require("../anode_ndi/index.js")
-const ndi_texture = require("./ndi.js")
+
+const Text = require("./text.js")
+const Params = require("./params.js")
+
+let sequence = new Params("sequence.js")
+let timeoffset = 0
 
 let shaderman
 let show = 1
@@ -33,12 +37,24 @@ class App extends Window {
             }
         })
         this.shaderman = new Shaderman(gl)
+        this.text = new Text(gl)
+        this.common = common
     }
 
     draw(gl) {
         let { t, dt, frame, dim } = this
         let [ width, height ] = dim
         let { shaderman } = this
+
+        let seconds = ((new Date().getTime() / 1000)) % sequence._duration
+        if (this.pointer.buttons[1]){ 
+            let s = this.pointer.pos[0] * sequence._duration
+            timeoffset = s - seconds
+        }
+        seconds = (seconds + timeoffset) % sequence._duration
+        this.common.seconds = seconds
+
+        sequence.step(seconds)
 
         // update camera:
         {
@@ -90,6 +106,25 @@ class App extends Window {
             wall.fbo.bind()
             wall.vao.bind().draw()
         }
+
+
+
+        gl.enable(gl.BLEND)
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+
+        let textmatrix = mat4.create()
+        let s = 0.02
+        mat4.translate(textmatrix, textmatrix, [-1, 1-s, 0])
+        mat4.scale(textmatrix, textmatrix, [s,s,s])
+        this.text.clear()
+        .write(`fps ${Math.round(1/dt)} seconds ${Math.round(seconds)} ${sequence._name} (${Math.round(100 * seconds/sequence._duration)}%)`)
+        .write(JSON.stringify(sequence._current, null, "  "))
+        .submit()
+        this.text.draw({
+            modelmatrix:textmatrix
+        })
+
+        gl.disable(gl.BLEND)
     }
 
     onkey(key, scan, down, mod) {
