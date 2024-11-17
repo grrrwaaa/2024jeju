@@ -90,7 +90,7 @@ class Params {
         }
 
         // get nearest datasets:
-        let from = this._seq.filter(o => o._time <= time)[0] || this._first
+        let from = this._seq.slice().reverse().filter(o => o._time <= time)[0] || this._first
         let to = this._seq.filter(o => o._time > time)[0] || this._last
         // set defaults:
         from = Object.assign({}, this._default, from)

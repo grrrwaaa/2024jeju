@@ -8,6 +8,7 @@ uniform float u_lightness;
 uniform float u_hue;
 uniform float u_huerange;
 uniform float u_saturation;
+uniform float u_gamma;
 
 in vec2 v_uv;
 in vec3 v_normal;
@@ -52,7 +53,8 @@ void main() {
 
     vec3 flow = uv2xyz * vec3(input.xy-XYo, 0);
 
-    out0.rgb = pow(1.-input.w, 1.2) * hsl2rgb(vec3(u_hue + u_huerange*dot(flow, vec3(-1, 0, 0)), u_saturation * abs(input.z-0.5), u_lightness));
+    out0.rgb = (1.-input.w) * hsl2rgb(vec3(u_hue + u_huerange*dot(flow, vec3(-1, 0, 0)), u_saturation * abs(input.z-0.5), u_lightness));
+    out0.rgb = pow(out0.rgb, vec3(u_gamma));
     //out0.rgb = 1.-input.www * hsl2rgb(vec3(0.5*sin(2.*length(input.xy)), abs(input.z-0.5), 0.85));
     //out0.rgb = 1.-input.www * hsl2rgb(vec3(0.5, 0.5, 0.85));
     //out0 = vec4(flow*0.5+0.5, 1);

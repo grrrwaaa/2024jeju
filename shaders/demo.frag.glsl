@@ -12,6 +12,7 @@ uniform vec4 u_random;
 uniform float u_unique;
 uniform vec3 u_wall_u;
 uniform float u_descend;
+uniform float u_grain;
 
 in vec2 v_uv;
 in vec3 v_normal;
@@ -313,7 +314,7 @@ void main() {
     // }
     
     // add some noise
-    OUT.xy += 0.1 * (hash23(vec3(texel + dim*u_random.xy, frame))-0.5);
+    OUT.xy += u_grain * (hash23(vec3(texel + dim*u_random.xy, frame))-0.5);
 
     
     // // boundary:

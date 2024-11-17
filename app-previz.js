@@ -51,7 +51,7 @@ class App extends Window {
             let s = this.pointer.pos[0] * sequence._duration
             timeoffset = s - seconds
         }
-        seconds = (seconds + timeoffset) % sequence._duration
+        seconds = (seconds + timeoffset  + sequence._duration) % sequence._duration
         this.common.seconds = seconds
 
         sequence.step(seconds)
