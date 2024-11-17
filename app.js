@@ -358,7 +358,7 @@ class App extends Window {
             }
             
             shaderman.shaders.demo.begin()
-            shaderman.shaders.verify.begin()
+            //shaderman.shaders.verify.begin()
             .uniform("u_tex_lidar", 1)
             .uniform("u_use_lidar", +isFloor)
             .uniform("u_frame", frame)

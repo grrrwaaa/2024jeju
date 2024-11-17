@@ -9,13 +9,16 @@ uniform float u_use_lidar;
 uniform float u_frame;
 uniform vec4 u_random;
 uniform float u_unique;
+uniform vec3 u_wall_u;
 
 in vec2 v_uv;
+in vec3 v_normal;
+in vec4 v_color;
 
 layout(location = 0) out vec4 out0;
 
 // "zero" value of the velocity vector
-float XYo = 0.;
+float XYo = 0.5;
 
 ivec2 dim = textureSize(u_tex_feedback, 0);
 vec2 texelsize = 1./dim;
@@ -39,13 +42,41 @@ float line2(vec2 pt, vec2 start, vec2 end) {
 
 
 void main() {
-    ivec2 texel = ivec2(v_uv * dim);
+    float t = u_frame / 60;
+    vec3 normal = normalize(v_normal);
+    vec3 cubical = v_color.xyz*2-1;
+    vec3 spherical = normalize(cubical);
+    // normal for a spherical coordinate space:
+    vec3 sphnormal = normal;// -spherical; // normal, -cubical, or -spherical?
+    sphnormal = -cubical;
+    sphnormal = -spherical;
+    // get UV vectors in 3D space:
+    vec3 unit_u = normalize(u_wall_u);
+    vec3 unit_v = normalize(cross(sphnormal, unit_u));
+    // one more to get it properly spherical:
+    unit_u = normalize(cross(unit_v, sphnormal));
+    // get conversion matrices between spaces:
+    // result.xyz in in 3D space. input.z is along normal (typically 0?)
+    mat3 uv2xyz = mat3(unit_u, unit_v, sphnormal);
+    // result.xy is in UV space (result.z is along normal):
+    mat3 xyz2uv = transpose(uv2xyz);
 
+    vec3 drift = vec3(8*sin(t), 5*sin(t*0.654), 4*(cos(t)-0.3)); // rotate(vec3(1, 0, 0), spherical, t);
+    //drift = v_normal * 4.;
+    //drift += rotate(vec3(5, 0, 0), cubical, -t) + vec3(0, 0, -3);
+    drift = 0.5*vec3(3.*sin(t + 5*cubical.z), -3*cos(0.1*t), -4*(cos(t + 2.*cubical.x)+0.5));
+    drift *= 0.4;
+    vec2 duv = (xyz2uv * drift).xy;
+
+
+    ivec2 texel = ivec2(v_uv * dim);
     vec4 OUT = vec4(0);
     float iTime = u_frame / 30. + u_unique * 100.;
     vec2 DIM = dim;
-    vec2 COORD = //vec2(texel); //
-                v_uv * (dim);
+    //vec2 COORD = vec2(texel); //
+    vec2 COORD = v_uv * (dim);
+
+    COORD -= duv;
 
 
     // past neighborhood states (per flow)
@@ -64,12 +95,12 @@ void main() {
     // new velocity derived from neighbourhood average
     // should this be p.xy rather than avg.xy?
     // either the velocity or the pressure should be diffused, but not both
-    float blend = 0.; //sin(iTime)*0.5+0.5;  // I like blend=0 more, it gives more turbulence; 1 is more smoky
+    float blend = 1.; //sin(iTime)*0.5+0.5;  // I like blend=0 more, it gives more turbulence; 1 is more smoky
     //OUT.xy = avg.xy + force;
     OUT.xy = mix(p.xy, avg.xy, blend) + force; 
     
     // variance in the velocity (A.xy) near me creates pressure/convergence/disorder in me
-    float press = -0.25*(e.x + n.y - w.x - s.y);
+    float press = -0.25*(e.x - w.x + n.y - s.y);
     // should this be avg.z rather than p.z  ?
     //OUT.z = p.z + press;
     OUT.z = mix(avg.z, p.z, blend) + press;
@@ -87,7 +118,7 @@ void main() {
     
     // optional decays
     // xy or z, don't need to do both
-    // OUT.xy *= 0.99;
+    // OUT.xy = (OUT.xy - XYo)*0.99 + XYo;
     OUT.z = OUT.z*0.99999;
     OUT.w = OUT.w*0.99999;
 
@@ -96,7 +127,7 @@ void main() {
     float d = line2(COORD, DIM/2. - DIM.y*0.2* vec2(sin(iTime*0.42),cos(iTime*0.32)), DIM/2. + DIM.y*0.6* vec2(sin(iTime*.1618),cos(iTime*.18)));
     if (u_use_lidar < 0.5 && d < 1.) 
     {
-        OUT += exp(-d*0.5) * vec4(cos(iTime*0.26), sin(iTime*0.45), 0, 1.);
+        //OUT += exp(-d*0.5) * vec4(cos(iTime*0.26), sin(iTime*0.45), 0, 1.);
     }
 
     vec4 rnd = hash43(vec3(texel + dim*u_random.xy, u_frame));
@@ -104,7 +135,7 @@ void main() {
     if (u_use_lidar > 0.) {
         vec4 lidar = texture(u_tex_lidar, v_uv);
         OUT.xy += lidar.xy * cos(lidar.z * 6.2 + iTime);
-        OUT.xy = mix(OUT.xy, lidar.xy * cos(lidar.z * 6.2 + iTime), pow(lidar.w, 4.));
+        OUT.xy = mix(OUT.xy, XYo + lidar.xy * cos(lidar.z * 6.2 + iTime), pow(lidar.w, 4.));
         OUT.z += lidar.z; // * lidar.w;
         OUT.w += lidar.z * lidar.w * rnd.w;
     }
@@ -113,6 +144,7 @@ void main() {
     // }
     
      OUT.xy += 0.1 * (hash23(vec3(texel + dim*u_random.xy, u_frame))-0.5);
+
     
     // boundary:
     float b = 2.;
@@ -123,6 +155,15 @@ void main() {
     
     OUT.z = clamp(OUT.z, 0., 1.);
     OUT.w = clamp(OUT.w, 0., 1.);
+
+    
+    vec3 target = normalize(vec3(sin(t/5), cos(t/3)*0.4, sin(t/4)+0.5));
+    vec3 dirxyz = target - sphnormal;
+    vec2 diruv = (xyz2uv * dirxyz).xy;
+    float g = exp(-30.*abs(length(dirxyz)-0.1*sin(iTime/3)));
+    //OUT = vec4(diruv * exp(-30.*abs(length(dirxyz)-0.2)), 0, 1);
+    OUT.xy += g*diruv*(cos(iTime)+0.5);
+    OUT.w += 0.1*g;
 
     out0 = OUT;
 

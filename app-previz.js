@@ -50,8 +50,8 @@ class App extends Window {
             let hs = 0, vs = 0
 
             if (this.pointer.buttons[0]){ 
-                nav.looky += this.pointer.vel[0]
-                nav.lookx = -this.pointer.pos[1]/3
+                nav.looky += this.pointer.vel[0]*2
+                nav.lookx = -this.pointer.pos[1]/2
             }
 
             // mat4.frustum(nav.projmatrix, 
