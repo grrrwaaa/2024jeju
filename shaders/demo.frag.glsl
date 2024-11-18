@@ -20,8 +20,9 @@ in vec4 v_color;
 
 layout(location = 0) out vec4 out0;
 
-// "zero" value of the velocity vector
+// "origin zero" value of the velocity vector set to 0.5 so that we can represent positive and negative flows in a 0..1 range
 float XYo = 0.5;
+float Zo = 0.5;
 
 ivec2 dim = textureSize(u_tex_feedback, 0);
 vec2 texelsize = 1./dim;
@@ -221,7 +222,7 @@ void main() {
     vec4 avg = (n+s+e+w)*0.25;
     // ordered difference in the pressure/convergence/disorder (A.z) 
     // creates velocity in me (OUT.xy)
-    vec2 force = -0.25*vec2(e.z-w.z, n.z-s.z);
+    vec2 force = -0.25*vec2(e.z-w.z, n.z-s.z); // don't need to balance Zo here
 
     force *= 1.;// + 0.5*sin(u_frame * 0.1);
     // new velocity derived from neighbourhood average
@@ -251,7 +252,7 @@ void main() {
     // optional decays
     // xy or z, don't need to do both
     // OUT.xy = (OUT.xy - XYo)*0.99 + XYo;
-    OUT.z = OUT.z*0.99999;
+    OUT.z = Zo + (OUT.z-Zo)*0.99999;
     OUT.w = OUT.w*0.99999;
 
     OUT.xy += duv*0.001;
@@ -309,19 +310,9 @@ void main() {
         OUT.z += lidar.z; // * lidar.w;
         OUT.w += lidar.z * lidar.w * rnd.w;
     }
-    // if (iMouse.z > 0. && length(iMouse.xy - COORD) < 4.) {
-    //     OUT = vec4(COORD/DIM - 0.5 + XYo, 0., 1.);
-    // }
     
     // add some noise
     OUT.xy += u_grain * (hash23(vec3(texel + dim*u_random.xy, frame))-0.5);
-
-    
-    // // boundary:
-    // float b = 2.;
-    // if (COORD.x < b || COORD.y < b || DIM.x-COORD.x < b || DIM.y-COORD.y < b) {
-    //     OUT.z = 0.;
-    // }
 
     
     OUT.z = clamp(OUT.z, 0., 1.);
@@ -332,7 +323,7 @@ void main() {
     vec3 dirxyz = target - sphnormal;
     vec2 diruv = (xyz2uv * dirxyz).xy;
     float g = exp(-250.*abs(length(dirxyz)-0.1*sin(t)));
-    //OUT = vec4(diruv * exp(-30.*abs(length(dirxyz)-0.2)), 0, 1);
+    //OUT = vec4(XYo + diruv * exp(-30.*abs(length(dirxyz)-0.2)), Zo, 1);
     OUT.xy += g*diruv*(cos(iTime)+0.25);
     OUT.w += 0.1*g;
 
@@ -361,7 +352,7 @@ void main() {
     
     // init:
     // if (mod(u_frame, 263000) <= 1.) {
-    //     out0 = mix(vec4(XYo, XYo, 0.1, 0.1), hash42(texel + dim*u_random.xy), 0.1);
+    //     out0 = mix(vec4(XYo, XYo, Zo, 0.1), hash42(texel + dim*u_random.xy), 0.1);
     // }
 
     //out0 = A(COORD); //texture(u_tex_feedback, gl_FragCoord.xy / dim.xy);

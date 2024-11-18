@@ -347,11 +347,9 @@ class App extends Window {
             gl.depthMask(false)
 
             fbo.bind()
+            // using this one to reduce weird artefacts at edges
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
-            // using this one to reduce weird artefacts at edges
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
             // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -492,7 +490,6 @@ class App extends Window {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             
             shaderman.shaders.final.begin()
-            .uniform("u_rotate", this.final_rotate)
             .uniform("u_wall_u", this.wall_U)
             .uniform("u_seconds", seconds)
             .uniformsFrom(sequence)
@@ -514,7 +511,8 @@ class App extends Window {
         //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         // }
-        shaderman.shaders.show.begin()
+        shaderman.shaders.render.begin()
+        .uniform("u_rotate", this.final_rotate)
         quad_vao.bind().draw()
         
         if (Math.floor(t+dt) > Math.floor(t)) {

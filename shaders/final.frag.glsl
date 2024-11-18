@@ -18,6 +18,7 @@ layout(location = 0) out vec4 out0;
 
 // "zero" value of the velocity vector
 float XYo = 0.5;
+float Zo = 0.5;
 
 vec3 hsl2rgb( in vec3 c )
 {
@@ -46,15 +47,30 @@ void main() {
     // result.xy is in UV space (result.z is along normal):
     mat3 xyz2uv = transpose(uv2xyz);
 
+    ivec2 dim = textureSize(u_tex, 0);
+    vec2 ut = 1./dim;
 
     out0 = vec4(v_uv, 0, 1);
 	vec4 input = texture(u_tex, v_uv);
-    out0 = input;
-
+    // rotate input.xy (flow)
     vec3 flow = uv2xyz * vec3(input.xy-XYo, 0);
+    input.xy = flow.xy + XYo;
 
-    out0.rgb = (1.-input.w) * hsl2rgb(vec3(u_hue + u_huerange*dot(flow, vec3(-1, 0, 0)), u_saturation * abs(input.z-0.5), u_lightness));
-    out0.rgb = pow(out0.rgb, vec3(u_gamma));
+    out0 = input;
+    out0.zw = vec2(input.w);
+    out0 = vec4(input.z);
+
+    vec4 n = texture(u_tex, v_uv + ut*vec2( 0, 1)),
+         s = texture(u_tex, v_uv + ut*vec2( 0,-1)),
+         e = texture(u_tex, v_uv + ut*vec2( 1, 0)),
+         w = texture(u_tex, v_uv + ut*vec2(-1, 0));
+
+    // this could be a used as a kind of caustic, but the grain noise tends to dominate it:
+    float press = -0.25*(e.x - w.x + n.y - s.y);
+    //out0 = vec4(press*8. + 0.5);
+
+    // out0.rgb = (1.-input.w) * hsl2rgb(vec3(u_hue + u_huerange*dot(flow, vec3(-1, 0, 0)), u_saturation * abs(input.z-0.5), u_lightness));
+    // out0.rgb = pow(out0.rgb, vec3(u_gamma));
     //out0.rgb = 1.-input.www * hsl2rgb(vec3(0.5*sin(2.*length(input.xy)), abs(input.z-0.5), 0.85));
     //out0.rgb = 1.-input.www * hsl2rgb(vec3(0.5, 0.5, 0.85));
     //out0 = vec4(flow*0.5+0.5, 1);
