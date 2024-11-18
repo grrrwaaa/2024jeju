@@ -11,6 +11,8 @@ return {
             u_hue: 0.61,
             u_huerange: 0.15,
             u_saturation: 0.7,
+
+            u_deposit_rate: 4,
         },
 
 

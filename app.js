@@ -197,6 +197,9 @@ class App extends Window {
         let fbo = glutils.makeGbufferPair(gl, options.config.content_res[0], options.config.content_res[1], [
             { float: true, mipmap: false, wrap: gl.CLAMP_TO_EDGE }, 
         ])
+        let physarum_fbo = glutils.makeGbufferPair(gl, options.config.content_res[0], options.config.content_res[1], [
+            { float: true, mipmap: false, wrap: gl.CLAMP_TO_EDGE }, 
+        ])
 
         let send_fbo = glutils.makeGbuffer(gl, fbo.width, fbo.height, [
             { float: false, mipmap: false, wrap: gl.CLAMP_TO_EDGE }, 
@@ -230,7 +233,7 @@ class App extends Window {
             wall_vao: glutils.createVao(gl, wall_flat_geom),
             quad_vao: glutils.createVao(gl, glutils.makeQuad()),
             unit_quad_vao: glutils.createVao(gl, glutils.makeQuad({ min: 0, max: 1 })),
-            send_fbo, fbo, final_fbo,
+            send_fbo, fbo, physarum_fbo, final_fbo, 
 
             room_geom: glutils.geomFromOBJ(fs.readFileSync(`models/${this.title}.obj`, "utf8"), { soup: true }),
 
@@ -263,7 +266,7 @@ class App extends Window {
     draw(gl) {
         let { t, dt, frame, dim } = this
         let [ width, height ] = dim
-        let { quad_vao, wall_vao, unit_quad_vao, send_fbo, fbo, final_fbo } = this
+        let { quad_vao, wall_vao, unit_quad_vao, send_fbo, fbo, physarum_fbo, final_fbo } = this
         let { senders, receivers } = this
         let { lidar_stream, lidar_fbo, lidar_filter_fbo, lidar_vao } = this
 
@@ -475,7 +478,30 @@ class App extends Window {
         }
         fbo.end()
 
+        physarum_fbo.begin()
+        {
+            let { width, height } = fbo
+            gl.viewport(0, 0, width, height);
+            gl.clearColor(0, 0, 0, 0)
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.enable(gl.DEPTH_TEST)
 
+            physarum_fbo.bind()
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            shaderman.shaders.physarum.begin()
+            .uniform("u_random", [Math.random(), Math.random(), Math.random(), Math.random()])
+            .uniform("u_unique", this.unique)
+            .uniform("u_wall_u", this.wall_U)
+            .uniform("u_seconds", seconds)
+            .uniform("u_init", +(frame < 1))
+            .uniformsFrom(sequence)
+            wall_vao.bind().draw()
+        }
+        physarum_fbo.end()
+        
         final_fbo.begin()
         {
             let { width, height } = send_fbo
@@ -488,13 +514,29 @@ class App extends Window {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+            physarum_fbo.bind(0, 1)
             
             shaderman.shaders.final.begin()
+            .uniform("u_tex_physarum", 1)
             .uniform("u_wall_u", this.wall_U)
             .uniform("u_seconds", seconds)
             .uniformsFrom(sequence)
             //quad_vao.bind().draw()
             wall_vao.bind().draw()
+
+            // final_fbo.bind()
+            // shaderman.shaders.physarum.begin()
+            // .uniform("u_random", [Math.random(), Math.random(), Math.random(), Math.random()])
+            // .uniform("u_unique", this.unique)
+            // .uniform("u_wall_u", this.wall_U)
+            // .uniform("u_seconds", seconds)
+            // .uniformsFrom(sequence)
+            // wall_vao.bind().draw()
+
+            // physarum_fbo.bind()
+            // shaderman.shaders.show.begin()
+            // quad_vao.bind().draw()
         }
         final_fbo.end()
 
@@ -504,7 +546,7 @@ class App extends Window {
         gl.enable(gl.DEPTH_TEST)
 
         final_fbo.bind()
-        // if (isFLoor) {
+        // if (this.isFLoor) {
         //     lidar_filter_fbo.bind()
         //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);

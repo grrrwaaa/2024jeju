@@ -2,6 +2,7 @@
 precision mediump float;
 
 uniform sampler2D u_tex;
+uniform sampler2D u_tex_physarum;
 uniform vec3 u_wall_u;
 uniform float u_seconds;
 uniform float u_lightness;
@@ -56,6 +57,9 @@ void main() {
     vec3 flow = uv2xyz * vec3(input.xy-XYo, 0);
     input.xy = flow.xy + XYo;
 
+    
+	vec4 physarum = texture(u_tex_physarum, v_uv);
+
     out0 = input;
     out0.zw = vec2(input.w);
     out0 = vec4(input.z) * 0.5;
@@ -74,6 +78,8 @@ void main() {
     out0.rgb += hsl2rgb(vec3(0.4-0.5*input.w, 0.8, 0.8))*input.w*input.w*input.w*0.5;
 
     out0 += caustic;
+
+    out0 += physarum.w;
     // out0.rgb = (1.-input.w) * hsl2rgb(vec3(u_hue + u_huerange*dot(flow, vec3(-1, 0, 0)), u_saturation * abs(input.z-0.5), u_lightness));
     // out0.rgb = pow(out0.rgb, vec3(u_gamma));
     //out0.rgb = 1.-input.www * hsl2rgb(vec3(0.5*sin(2.*length(input.xy)), abs(input.z-0.5), 0.85));
