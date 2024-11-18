@@ -4,7 +4,7 @@ return {
             _name: "devel",
             _time: 600,
             u_descend: 0,
-            u_grain: 0.1,
+            u_grain: 0.01,
 
             u_gamma: 1.2,
             u_lightness: 0.6,

@@ -58,7 +58,8 @@ void main() {
 
     out0 = input;
     out0.zw = vec2(input.w);
-    out0 = vec4(input.z);
+    out0 = vec4(input.z) * 0.5;
+    
 
     vec4 n = texture(u_tex, v_uv + ut*vec2( 0, 1)),
          s = texture(u_tex, v_uv + ut*vec2( 0,-1)),
@@ -66,9 +67,13 @@ void main() {
          w = texture(u_tex, v_uv + ut*vec2(-1, 0));
 
     // this could be a used as a kind of caustic, but the grain noise tends to dominate it:
-    float press = -0.25*(e.x - w.x + n.y - s.y);
-    //out0 = vec4(press*8. + 0.5);
+    float caustic = -0.25*(e.x - w.x + n.y - s.y) * 8.;
 
+    out0.rgb *= hsl2rgb(vec3(0.6, 0.5 + 0.5*spherical.y, 0.6+0.2*spherical.y));
+
+    out0.rgb += hsl2rgb(vec3(0.4-0.5*input.w, 0.8, 0.8))*input.w*input.w*input.w*0.5;
+
+    out0 += caustic;
     // out0.rgb = (1.-input.w) * hsl2rgb(vec3(u_hue + u_huerange*dot(flow, vec3(-1, 0, 0)), u_saturation * abs(input.z-0.5), u_lightness));
     // out0.rgb = pow(out0.rgb, vec3(u_gamma));
     //out0.rgb = 1.-input.www * hsl2rgb(vec3(0.5*sin(2.*length(input.xy)), abs(input.z-0.5), 0.85));

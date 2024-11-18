@@ -38,7 +38,8 @@ class App extends Window {
                 looky: Math.PI * 0/4,
                 boom: 1,
                 fov: 1.4, // radians
-            
+                eye_height: 1.4,
+
                 move: [0, 0, 0], 
                 turn: 0,
 
@@ -83,7 +84,8 @@ class App extends Window {
             if (this.pointer.buttons[0]){ 
                 nav.looky += this.pointer.vel[0]*2
                 nav.looky += (this.pointer.pos[0]-0.5)*((this.pointer.pos[0]-0.5)* (this.pointer.pos[0]-0.5))*nav.fov*nav.fov/10
-                nav.lookx = (this.pointer.pos[1]-0.5)*3
+
+                nav.lookx = (this.pointer.pos[1]-0.5)*Math.abs(this.pointer.pos[1]-0.55)*6
             }
 
             nav.fov *= 1 + 0.1*this.pointer.scroll[1]
@@ -100,14 +102,13 @@ class App extends Window {
             let FAR = 100
             mat4.perspective(projmatrix, nav.fov, aspect, NEAR, FAR)
             
-            let eye_height = 1.8
             let a = (1 - 0.7*Math.sin(t/8))// Math.PI * 1/2
 
             mat4.identity(viewmatrix)
             mat4.rotateX(viewmatrix, viewmatrix, nav.lookx)
             mat4.translate(viewmatrix, viewmatrix, [0, 0, nav.boom / nav.fov])
             mat4.rotateY(viewmatrix, viewmatrix, nav.looky)
-            mat4.translate(viewmatrix, viewmatrix, [-nav.feet[0], -eye_height, -nav.feet[2]])
+            mat4.translate(viewmatrix, viewmatrix, [-nav.feet[0], -nav.eye_height, -nav.feet[2]])
             
             
             

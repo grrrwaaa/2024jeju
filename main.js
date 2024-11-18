@@ -345,7 +345,7 @@ let R = new App({
 
 let P = new AppPreviz({
     title: "previz",
-    width: 8000 / win_div,
+    width: 9600 / win_div,
     height: 8000 / win_div,
     pos: [5700/win_div, 50],
 
