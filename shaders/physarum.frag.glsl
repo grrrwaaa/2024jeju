@@ -20,15 +20,17 @@ in vec4 v_color;
 
 float dt = 1/30.;
 float u_deposit_rate = 8;
-float blur_rate = 0.2;
-float decay_rate = 0.99;
+float blur_rate = 0.95;
+float decay_rate = 0.97;
 float sensor_angle = pi * 0.2;
-float sensor_distance = 30.;
-float turn_angle = pi * 0.005;
-float wander_angle = pi * 0.5;
+// smaller makes their trails narrower
+// larger (hundreds) makes them more like flocks
+float sensor_distance = 350.;
+float turn_angle = pi * 0.01;
+float wander_angle = pi * 0.02;
 float speed = 400.;
-float spawn_distance = 200.;
-float spawn_threshold = 0.05;
+float spawn_distance = 100.;
+float spawn_threshold = 0.005;
 float spawn_mix = 0.;
 
 layout(location = 0) out vec4 out0;
@@ -210,10 +212,10 @@ void main() {
             } else if (f0 > f1 && f2 > f1) {
                 // turn randomly
                 //wander
-                P.z = mod(P.z + wander_angle*(rand(vec3(P.xy, t))-0.5), 1.);
             } else {
                 // no turn
             }
+                P.z = mod(P.z + wander_angle*(rand(vec3(P.xy, t))-0.5), 1.);
         } 
     }
 

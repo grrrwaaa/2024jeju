@@ -21,6 +21,8 @@ layout(location = 0) out vec4 out0;
 float XYo = 0.5;
 float Zo = 0.5;
 
+vec2 dim = textureSize(u_tex, 0);
+
 vec3 hsl2rgb( in vec3 c )
 {
     vec3 rgb = clamp( abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),6.0)-3.0)-1.0, 0.0, 1.0 );
@@ -73,13 +75,22 @@ void main() {
     // this could be a used as a kind of caustic, but the grain noise tends to dominate it:
     float caustic = -0.25*(e.x - w.x + n.y - s.y) * 8.;
 
+
     out0.rgb *= hsl2rgb(vec3(0.6, 0.5 + 0.5*spherical.y, 0.6+0.2*spherical.y));
 
-    out0.rgb += hsl2rgb(vec3(0.4-0.5*input.w, 0.8, 0.8))*input.w*input.w*input.w*0.5;
+    vec3 aura = hsl2rgb(vec3(0.4-0.5*input.w, 0.8, 0.8))*input.w*input.w*input.w*0.5;
 
+    out0.rgb += aura;
     out0 += caustic;
+    out0 += pow(physarum.w,1.5)*1.5;
 
-    out0 += physarum.w;
+    // more phys: 
+    // debug: out0 = vec4(physarum.xy/dim, physarum.z, 1.);
+
+    float dist = length(gl_FragCoord.xy - physarum.xy);
+    float dots = exp(-0.9*dist);
+    out0 += vec4(dots)*0.75;
+
     // out0.rgb = (1.-input.w) * hsl2rgb(vec3(u_hue + u_huerange*dot(flow, vec3(-1, 0, 0)), u_saturation * abs(input.z-0.5), u_lightness));
     // out0.rgb = pow(out0.rgb, vec3(u_gamma));
     //out0.rgb = 1.-input.www * hsl2rgb(vec3(0.5*sin(2.*length(input.xy)), abs(input.z-0.5), 0.85));

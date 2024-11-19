@@ -17,5 +17,5 @@ void main() {
     out0 = input;
 
     //out0 = vec4(input.xy/dim.xy + 0.5, 0, 1);
-    out0 = vec4(input.w);
+    //out0 = vec4(input.w);
 }

@@ -489,6 +489,8 @@ class App extends Window {
             physarum_fbo.bind()
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             shaderman.shaders.physarum.begin()
@@ -524,19 +526,6 @@ class App extends Window {
             .uniformsFrom(sequence)
             //quad_vao.bind().draw()
             wall_vao.bind().draw()
-
-            // final_fbo.bind()
-            // shaderman.shaders.physarum.begin()
-            // .uniform("u_random", [Math.random(), Math.random(), Math.random(), Math.random()])
-            // .uniform("u_unique", this.unique)
-            // .uniform("u_wall_u", this.wall_U)
-            // .uniform("u_seconds", seconds)
-            // .uniformsFrom(sequence)
-            // wall_vao.bind().draw()
-
-            // physarum_fbo.bind()
-            // shaderman.shaders.show.begin()
-            // quad_vao.bind().draw()
         }
         final_fbo.end()
 
