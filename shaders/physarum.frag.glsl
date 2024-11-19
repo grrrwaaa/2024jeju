@@ -67,7 +67,7 @@ float sensor_angle = pi * 0.2;
 // larger (hundreds) makes them more like flocks
 float sensor_distance = 30.;
 float turn_angle = pi * 0.03;
-float wander_angle = pi * 0.03;
+float wander_angle = pi * 0.06;
 float speed = 100.;
 float spawn_distance = 100.;
 float spawn_threshold = 0.;
@@ -76,7 +76,7 @@ float spawn_mix = 0.1;
 
 // higher means less likely to spawn on caustics.
 float caustic_spawn = 0.06;
-float aura_spawn = 0.4;
+float aura_spawn = 0.42;
 
 // normally 1:
 float fluid_effect_speed = 3;
