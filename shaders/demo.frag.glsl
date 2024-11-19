@@ -3,9 +3,12 @@ precision mediump float;
 #include "lib.hash.glsl"
 #include "lib.glsl"
 #include "hg.glsl"
+#include "common.glsl"
 
 uniform sampler2D u_tex_feedback;
 uniform sampler2D u_tex_lidar;
+uniform sampler2D u_tex_spherical;
+uniform sampler2D u_tex_normal;
 uniform float u_use_lidar;
 uniform float u_seconds;
 uniform vec4 u_random;
@@ -177,30 +180,14 @@ float sdRoundBox( vec3 p, vec3 b, float r )
 void main() {
     float t = u_seconds;
     float frame = t*60.;
-    vec3 normal = normalize(v_normal);
-    vec3 cubical = v_color.xyz*2-1;
-    vec3 spherical = normalize(cubical);
-    // normal for a spherical coordinate space:
-    vec3 sphnormal = normal;// -spherical; // normal, -cubical, or -spherical?
-    sphnormal = -cubical;
-    sphnormal = -spherical;
-    // get UV vectors in 3D space:
-    vec3 unit_u = normalize(u_wall_u);
-    vec3 unit_v = normalize(cross(sphnormal, unit_u));
-    // one more to get it properly spherical:
-    unit_u = normalize(cross(unit_v, sphnormal));
-    // get conversion matrices between spaces:
-    // result.xyz in in 3D space. input.z is along normal (typically 0?)
-    mat3 uv2xyz = mat3(unit_u, unit_v, sphnormal);
-    // result.xy is in UV space (result.z is along normal):
-    mat3 xyz2uv = transpose(uv2xyz);
 
-    vec3 drift = vec3(8*sin(t), 5*sin(t*0.654), 4*(cos(t)-0.3)); // rotate(vec3(1, 0, 0), spherical, t);
-    //drift = v_normal * 4.;
-    //drift += rotate(vec3(5, 0, 0), cubical, -t) + vec3(0, 0, -3);
-    drift = 0.5*vec3(3.*sin(t + 5*cubical.z), -u_descend - 3*cos(0.1*t), -4*(cos(t + 2.*cubical.x)+0.1));
-    drift *= 0.4;
-    vec2 duv = (xyz2uv * drift).xy;
+    vec3 normal = texture(u_tex_normal, v_uv).xyz; //normalize(v_normal);
+    vec3 spherical = texture(u_tex_spherical, v_uv).xyz;
+    vec3 sphnormal = -spherical;
+    mat3 uv2xyz, xyz2uv;
+    coordinates1(normal, spherical, u_wall_u, uv2xyz, xyz2uv);
+    vec3 drift;
+    vec2 duv = getDrift(u_seconds, u_descend, spherical, xyz2uv, drift);
 
 
     vec4 OUT = vec4(0);

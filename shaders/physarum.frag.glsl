@@ -3,8 +3,12 @@ precision mediump float;
 #include "lib.hash.glsl"
 #include "lib.glsl"
 #include "hg.glsl"
+#include "common.glsl"
 
 uniform sampler2D u_tex_feedback;
+uniform sampler2D u_tex_fluid;
+uniform sampler2D u_tex_spherical;
+uniform sampler2D u_tex_normal;
 uniform float u_seconds;
 uniform vec4 u_random;
 uniform float u_unique;
@@ -18,33 +22,84 @@ in vec2 v_uv;
 in vec3 v_normal;
 in vec4 v_color;
 
+// "origin zero" value of the velocity vector set to 0.5 so that we can represent positive and negative flows in a 0..1 range
+float XYo = 0.5;
+float Zo = 0.5;
+
+/*
 float dt = 1/30.;
 float u_deposit_rate = 8;
 float blur_rate = 0.95;
 float decay_rate = 0.97;
-float sensor_angle = pi * 0.2;
+float sensor_angle = pi * 0.5;
 // smaller makes their trails narrower
 // larger (hundreds) makes them more like flocks
-float sensor_distance = 350.;
-float turn_angle = pi * 0.01;
-float wander_angle = pi * 0.02;
+float sensor_distance = 300.;
+float turn_angle = pi * 0.39;
+float wander_angle = pi * 0.01;
 float speed = 400.;
 float spawn_distance = 100.;
 float spawn_threshold = 0.005;
 float spawn_mix = 0.;
 
+float dt = 1/30.;
+float u_deposit_rate = 8;
+float blur_rate = 0.5;
+float decay_rate = 0.99;
+float sensor_angle = pi * 0.2;
+// smaller makes their trails narrower
+// larger (hundreds) makes them more like flocks
+float sensor_distance = 50.;
+float turn_angle = pi * 0.01;
+float wander_angle = pi * 0.00;
+float speed = 300.;
+float spawn_distance = 50.;
+float spawn_threshold = 0.05;
+float spawn_mix = 0.;
+*/
+
+float dt = 1/30.;
+float u_deposit_rate = 8;
+float blur_rate = 0.1;
+float decay_rate = 0.97;
+float sensor_angle = pi * 0.2;
+// smaller makes their trails narrower
+// larger (hundreds) makes them more like flocks
+float sensor_distance = 30.;
+float turn_angle = pi * 0.03;
+float wander_angle = pi * 0.03;
+float speed = 100.;
+float spawn_distance = 100.;
+float spawn_threshold = 0.;
+float spawn_mix = 0.1;
+
+
+// higher means less likely to spawn on caustics.
+float caustic_spawn = 0.06;
+float aura_spawn = 0.4;
+
+// normally 1:
+float fluid_effect_speed = 3;
+float drift_effect_speed = 0.5;
+float trail_effect_speed = 4;
+
+// search radius:
+#define N 4
+
 layout(location = 0) out vec4 out0;
 
 vec2 dim = textureSize(u_tex_feedback, 0);
+vec2 ut = 1./dim;
 
 // get particle at U
 vec4 get(vec2 U) {
-    return texture(u_tex_feedback, U/dim);
+ //   return texture(u_tex_feedback, U/dim);
+    return texelFetch(u_tex_feedback, ivec2(U), 0);
 }
 // what the particle senses (from inputs?)
 float getfield(in vec2 U) {
     //return mix(B(U).w, C(U).g, 0.95);
-    return get(U).w;
+    return texture(u_tex_feedback, U/dim).w;
 }
 
 
@@ -81,46 +136,37 @@ void swap (inout vec4 Q, vec2 U, vec2 r) {
 void main() {
     float t = u_seconds;
     float frame = t*60.;
-    vec3 normal = normalize(v_normal);
-    vec3 cubical = v_color.xyz*2-1;
-    vec3 spherical = normalize(cubical);
-    // normal for a spherical coordinate space:
-    vec3 sphnormal = normal;// -spherical; // normal, -cubical, or -spherical?
-    sphnormal = -cubical;
-    sphnormal = -spherical;
-    // get UV vectors in 3D space:
-    vec3 unit_u = normalize(u_wall_u);
-    vec3 unit_v = normalize(cross(sphnormal, unit_u));
-    // one more to get it properly spherical:
-    unit_u = normalize(cross(unit_v, sphnormal));
-    // get conversion matrices between spaces:
-    // result.xyz in in 3D space. input.z is along normal (typically 0?)
-    mat3 uv2xyz = mat3(unit_u, unit_v, sphnormal);
-    // result.xy is in UV space (result.z is along normal):
-    mat3 xyz2uv = transpose(uv2xyz);
+    vec3 normal = texture(u_tex_normal, v_uv).xyz; //normalize(v_normal);
+    vec3 spherical = texture(u_tex_spherical, v_uv).xyz;
+    vec3 sphnormal = -spherical;
+    mat3 uv2xyz, xyz2uv;
+    coordinates1(normal, spherical, u_wall_u, uv2xyz, xyz2uv);
 
-    vec3 drift = vec3(8*sin(t), 5*sin(t*0.654), 4*(cos(t)-0.3)); // rotate(vec3(1, 0, 0), spherical, t);
-    //drift = v_normal * 4.;
-    //drift += rotate(vec3(5, 0, 0), cubical, -t) + vec3(0, 0, -3);
-    drift = 0.5*vec3(3.*sin(t + 5*cubical.z), -u_descend - 3*cos(0.1*t), -4*(cos(t + 2.*cubical.x)+0.1));
-    drift *= 0.4;
-    vec2 duv = (xyz2uv * drift).xy;
+    vec3 drift;
+    vec2 duv = getDrift(u_seconds, u_descend, spherical, xyz2uv, drift);
+    vec4 fluid = texture(u_tex_fluid, v_uv);
+
+    vec2 dv = duv*drift_effect_speed + (fluid.xy - XYo)*fluid_effect_speed;
+
+
+    // sensor_distance *= (1 + 0.8*spherical.y);
+    // spawn_distance *= (1 + 0.5*spherical.y);
 
 
     vec2 U = gl_FragCoord.xy;
+    vec4 rnd = hash43(vec3(U + dim*u_random.xy, frame));
     //U -= duv;
 
-    vec4 input = texture(u_tex_feedback, U/dim);
+    vec4 input = texture(u_tex_feedback, (U-duv)/dim);
     out0 = vec4(input);
 
     // FIND NEAREST PARTICLE
     vec4 P = get(U);
-    float trail = P.w;
     // in each axis consider a couple of steps:
     // if particle.xy there is actually closer to our pixel, use that particle instead
     if (true) {
-        for (int y=-2; y<=2; y++) {
-            for (int x=-2; x<2; x++) {
+        for (int y=-N; y<=N; y++) {
+            for (int x=-N; x<N; x++) {
                 vec4 n = get(U+vec2(x, y));
                 if (length(U-n.xy) < length(U-P.xy)) P = n;
             }
@@ -136,10 +182,27 @@ void main() {
         swap(P,U,vec2(-2,2));
         swap(P,U,vec2(-2,-2));
     }
-    float dist = length(U - P.xy);
-    // old trail value where this particle is:
-    float oldtrail = get(P.xy).w;
+    // distance to nearest particle:
+    float dist = length(P.xy - U);
 
+
+    vec4 n = texture(u_tex_fluid, v_uv + ut*(vec2( 0, 1)-dv)),
+         s = texture(u_tex_fluid, v_uv + ut*(vec2( 0,-1)-dv)),
+         e = texture(u_tex_fluid, v_uv + ut*(vec2( 1, 0)-dv)),
+         w = texture(u_tex_fluid, v_uv + ut*(vec2(-1, 0)-dv));
+
+
+    n = texture(u_tex_fluid, (U-dv + vec2(0, 1))/dim);   
+    s = texture(u_tex_fluid, (U-dv + vec2(0,-1))/dim);   
+    e = texture(u_tex_fluid, (U-dv + vec2( 1, 0))/dim);   
+    w = texture(u_tex_fluid, (U-dv + vec2(-1, 0))/dim);    
+    // this could be a used as a kind of caustic, but the grain noise tends to dominate it:
+    float caustic = -0.25*(e.x - w.x + n.y - s.y) * 8.;
+    float aura = fluid.w*fluid.w*fluid.w;
+    vec4 fluid_avg = 0.25*(n+s+e+w);
+
+
+    float trail = getfield(U-dv);
     // generate new trail value for this pixel:
     { 
         // trails:
@@ -153,11 +216,16 @@ void main() {
         }
         float avg = sum/ 9.;
         */
-        float n = get(U+vec2(0,1)).w;
-        float s = get(U+vec2(0,-1)).w;
-        float e = get(U+vec2(1,0)).w;
-        float w = get(U+vec2(-1,0)).w;
+        // float n = get(U+vec2(0,1)).w;
+        // float s = get(U+vec2(0,-1)).w;
+        // float e = get(U+vec2(1,0)).w;
+        // float w = get(U+vec2(-1,0)).w;
+        float n = getfield(U+vec2(0,1)-dv);
+        float s = getfield(U+vec2(0,-1)-dv);
+        float e = getfield(U+vec2(1,0)-dv);
+        float w = getfield(U+vec2(-1,0)-dv);
         float avg = 0.25*(n+s+e+w);
+        //
         trail = mix(trail, avg, blur_rate);
 
         // decay:
@@ -170,13 +238,24 @@ void main() {
 
     //if (spawn_mix)
     // spawn if particle is too far away
-    if (dist > spawn_distance) { // && oldtrail > spawn_threshold) {
+    if (
+    //     dist >= spawn_distance 
+    // || caustic > caustic_spawn
+    //|| 
+    caustic_spawn < caustic*rnd.y || 
+    aura_spawn < pow(fluid.w, 5)*rnd.x
+    //|| rnd.x < fluid.w //aura*rnd.x > aura_spawn
+    ) { //} && oldtrail >= spawn_threshold) {
         P.xy = mix(P.xy, U, spawn_mix);
         P.z = rand(P.xy);
     }
     //P.xy = mix(P.xy, U, spawn_mix);
 
     // now we have our nearest particle
+    
+    
+    // old trail value where this particle is:
+    float oldtrail = get(P.xy).w;
     
     // get direction matrix:
     // forced rotation
@@ -221,7 +300,32 @@ void main() {
 
     // move it:
     rot = rotate_mat(twopi * P.z);
-    P.xy += (rot * vec2(speed*dt*oldtrail, 0.));
+    vec2 vel;
+    vel += (rot * vec2(trail_effect_speed*oldtrail, 0.));
+    //P.xy += (rot * vec2(speed*dt*oldtrail, 0.));
+
+    // get fluid at this particle:
+    vec4 Pfluid = texture(u_tex_fluid, P.xy/dim);
+    vel += (Pfluid.xy - XYo) * fluid_effect_speed;
+
+    // move with drift:
+    //P.xy += duv;
+    //P.x += sin(U.x);
+
+    // get spherical at this particle:
+    vec3 Pspherical = texture(u_tex_spherical, P.xy/dim).xyz;
+    vec3 Pnormal = texture(u_tex_normal, P.xy/dim).xyz;
+    mat3 Puv2xyz, Pxyz2uv;
+    coordinates1(Pnormal, -Pspherical, u_wall_u, Puv2xyz, Pxyz2uv);
+    vec3 Pdrift;
+    vec2 Pduv = getDrift(t, u_descend, Pspherical, Pxyz2uv, drift);
+    P.xy += Pduv * vec2(1, -1) * drift_effect_speed;
+
+    
+    P.xy += vel;
+    // get new z:
+    P.z = mod((atan(vel.y, vel.x))/twopi, 1);
+    
 
     out0.xyz = P.xyz;
 

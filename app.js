@@ -192,8 +192,29 @@ class App extends Window {
         }
 
         wall_flat_geom = glutils.geomFromOBJ(fs.readFileSync(`models/${this.title}_flat.obj`, "utf8"))
+        let wall_vao = glutils.createVao(gl, wall_flat_geom)
+        
+        shaderman = new Shaderman(gl)
         
         // i.e. are we the first window to be created? If so, create global resources:
+        let fbo_coords = glutils.makeGbuffer(gl, options.config.content_res[0], options.config.content_res[1], [
+            { float: true, mipmap: false, wrap: gl.CLAMP_TO_EDGE }, // spherical
+            { float: true, mipmap: false, wrap: gl.CLAMP_TO_EDGE }, // normal 
+        ])
+        // create coordinates:
+        fbo_coords.begin()
+        {
+            let { width, height } = fbo_coords
+            gl.viewport(0, 0, width, height);
+            gl.clearColor(0, 0, 0, 0)
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.enable(gl.DEPTH_TEST)
+            shaderman.shaders.coords.begin()
+            .uniform("u_wall_u", this.wall_U)
+            wall_vao.bind().draw()
+        }
+        fbo_coords.end()
+
         let fbo = glutils.makeGbufferPair(gl, options.config.content_res[0], options.config.content_res[1], [
             { float: true, mipmap: false, wrap: gl.CLAMP_TO_EDGE }, 
         ])
@@ -212,7 +233,6 @@ class App extends Window {
         console.log("content", options.config.content_res)
 
         
-        shaderman = new Shaderman(gl)
 
         this.senders.forEach(send => {
             //send.sender = new ndi.Sender(send.name)
@@ -230,10 +250,10 @@ class App extends Window {
 
         // VAOs can't be shared between windows, so we have to create one per window:
         Object.assign(this, { 
-            wall_vao: glutils.createVao(gl, wall_flat_geom),
+            wall_vao,
             quad_vao: glutils.createVao(gl, glutils.makeQuad()),
             unit_quad_vao: glutils.createVao(gl, glutils.makeQuad({ min: 0, max: 1 })),
-            send_fbo, fbo, physarum_fbo, final_fbo, 
+            fbo_coords, send_fbo, fbo, physarum_fbo, final_fbo, 
 
             room_geom: glutils.geomFromOBJ(fs.readFileSync(`models/${this.title}.obj`, "utf8"), { soup: true }),
 
@@ -266,7 +286,7 @@ class App extends Window {
     draw(gl) {
         let { t, dt, frame, dim } = this
         let [ width, height ] = dim
-        let { quad_vao, wall_vao, unit_quad_vao, send_fbo, fbo, physarum_fbo, final_fbo } = this
+        let { quad_vao, wall_vao, unit_quad_vao, fbo_coords, send_fbo, fbo, physarum_fbo, final_fbo } = this
         let { senders, receivers } = this
         let { lidar_stream, lidar_fbo, lidar_filter_fbo, lidar_vao } = this
 
@@ -337,6 +357,7 @@ class App extends Window {
 
         let received = 0
 
+        
 
         fbo.begin()
         {
@@ -366,9 +387,13 @@ class App extends Window {
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             }
             
+            fbo_coords.bind(0, 2)
+            fbo_coords.bind(1, 3)
             shaderman.shaders.demo.begin()
             //shaderman.shaders.verify.begin()
             .uniform("u_tex_lidar", 1)
+            .uniform("u_tex_spherical", 2)
+            .uniform("u_tex_normal", 3)
             .uniform("u_use_lidar", +isFloor)
             .uniform("u_seconds", seconds)
             .uniform("u_random", [Math.random(), Math.random(), Math.random(), Math.random()])
@@ -486,6 +511,17 @@ class App extends Window {
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             gl.enable(gl.DEPTH_TEST)
 
+            fbo.bind(0, 1)
+            // using this one to reduce weird artefacts at edges
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
+            // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+            fbo_coords.bind(0, 2)
+            fbo_coords.bind(1, 3)
             physarum_fbo.bind()
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
@@ -493,7 +529,12 @@ class App extends Window {
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+
             shaderman.shaders.physarum.begin()
+            .uniform("u_tex_fluid", 1)
+            .uniform("u_tex_spherical", 2)
+            .uniform("u_tex_normal", 3)
             .uniform("u_random", [Math.random(), Math.random(), Math.random(), Math.random()])
             .uniform("u_unique", this.unique)
             .uniform("u_wall_u", this.wall_U)
@@ -518,9 +559,13 @@ class App extends Window {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
             physarum_fbo.bind(0, 1)
+            fbo_coords.bind(0, 2)
+            fbo_coords.bind(1, 3)
             
             shaderman.shaders.final.begin()
             .uniform("u_tex_physarum", 1)
+            .uniform("u_tex_spherical", 2)
+            .uniform("u_tex_normal", 3)
             .uniform("u_wall_u", this.wall_U)
             .uniform("u_seconds", seconds)
             .uniformsFrom(sequence)
