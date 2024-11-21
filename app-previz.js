@@ -13,6 +13,7 @@ let timeoffset = 0
 
 let shaderman
 let show = 1
+let showtext = 1
 
 // let nav = {
 //     viewmatrix: mat4.create(),
@@ -162,20 +163,22 @@ class App extends Window {
             wall.vao.bind().draw()
         }
 
-        gl.enable(gl.BLEND)
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-        let textmatrix = mat4.create()
-        let s = 0.02
-        mat4.translate(textmatrix, textmatrix, [-1, 1-s, 0])
-        mat4.scale(textmatrix, textmatrix, [s,s,s])
-        this.text.clear()
-        .write(`fps ${Math.round(1/dt)} seconds ${Math.round(seconds)} ${sequence._name} (${Math.round(100 * seconds/sequence._duration)}%)`)
-        .write(JSON.stringify(sequence._current, null, "  "))
-        .submit()
-        this.text.draw({
-            modelmatrix:textmatrix
-        })
-        gl.disable(gl.BLEND)
+        if (showtext) {
+            gl.enable(gl.BLEND)
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+            let textmatrix = mat4.create()
+            let s = 0.02
+            mat4.translate(textmatrix, textmatrix, [-1, 1-s, 0])
+            mat4.scale(textmatrix, textmatrix, [s,s,s])
+            this.text.clear()
+            .write(`fps ${Math.round(1/dt)} seconds ${Math.round(seconds)} ${sequence._name} (${Math.round(100 * seconds/sequence._duration)}%)`)
+            .write(JSON.stringify(sequence._current, null, "  "))
+            .submit()
+            this.text.draw({
+                modelmatrix:textmatrix
+            })
+            gl.disable(gl.BLEND)
+        }
     }
 
     onkey(key, scan, down, mod) {
@@ -219,6 +222,13 @@ class App extends Window {
                     
                     this.setFullscreen(!this.fullscreen);
                     break;
+                }
+                case 84: {
+                    showtext = !showtext;
+                    break;
+                }
+                default: {
+                    console.log("key", key)
                 }
             }
         }

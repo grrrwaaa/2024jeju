@@ -539,7 +539,7 @@ class App extends Window {
             .uniform("u_unique", this.unique)
             .uniform("u_wall_u", this.wall_U)
             .uniform("u_seconds", seconds)
-            .uniform("u_init", +(frame < 1))
+            //.uniform("u_init", +(frame < 1))
             .uniformsFrom(sequence)
             wall_vao.bind().draw()
         }

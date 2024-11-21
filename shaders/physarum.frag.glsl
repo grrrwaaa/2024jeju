@@ -29,59 +29,49 @@ float Zo = 0.5;
 /*
 float dt = 1/30.;
 float u_deposit_rate = 8;
-float blur_rate = 0.95;
-float decay_rate = 0.97;
-float sensor_angle = pi * 0.5;
+float u_blur_rate = 0.95;
+float u_decay_rate = 0.97;
+float u_sensor_angle = pi * 0.5;
 // smaller makes their trails narrower
 // larger (hundreds) makes them more like flocks
-float sensor_distance = 300.;
-float turn_angle = pi * 0.39;
-float wander_angle = pi * 0.01;
+float u_sensor_distance = 300.;
+float u_turn_angle = pi * 0.39;
+float u_wander_angle = pi * 0.01;
 float speed = 400.;
 float spawn_distance = 100.;
-float spawn_threshold = 0.005;
-float spawn_mix = 0.;
+float u_spawn_threshold = 0.005;
+float u_spawn_mix = 0.;
 
 float dt = 1/30.;
 float u_deposit_rate = 8;
-float blur_rate = 0.5;
-float decay_rate = 0.99;
-float sensor_angle = pi * 0.2;
+float u_blur_rate = 0.5;
+float u_decay_rate = 0.99;
+float u_sensor_angle = pi * 0.2;
 // smaller makes their trails narrower
 // larger (hundreds) makes them more like flocks
-float sensor_distance = 50.;
-float turn_angle = pi * 0.01;
-float wander_angle = pi * 0.00;
+float u_sensor_distance = 50.;
+float u_turn_angle = pi * 0.01;
+float u_wander_angle = pi * 0.00;
 float speed = 300.;
 float spawn_distance = 50.;
-float spawn_threshold = 0.05;
-float spawn_mix = 0.;
+float u_spawn_threshold = 0.05;
+float u_spawn_mix = 0.;
 */
 
-float dt = 1/30.;
-float u_deposit_rate = 8;
-float blur_rate = 0.1;
-float decay_rate = 0.97;
-float sensor_angle = pi * 0.2;
-// smaller makes their trails narrower
-// larger (hundreds) makes them more like flocks
-float sensor_distance = 30.;
-float turn_angle = pi * 0.03;
-float wander_angle = pi * 0.06;
-float speed = 100.;
-float spawn_distance = 100.;
-float spawn_threshold = 0.;
-float spawn_mix = 0.1;
+uniform float u_caustic_spawn;
+uniform float u_aura_spawn; 
+uniform float u_spawn_threshold;
+uniform float u_sensor_distance;
+uniform float u_sensor_angle;
+uniform float u_turn_angle;
+uniform float u_wander_angle;
+uniform float u_fluid_effect_speed;
+uniform float u_drift_effect_speed;
+uniform float u_trail_effect_speed;
+uniform float u_deposit_rate;
+uniform float u_blur_rate;
+uniform float u_decay_rate;
 
-
-// higher means less likely to spawn on caustics.
-float caustic_spawn = 0.06;
-float aura_spawn = 0.42;
-
-// normally 1:
-float fluid_effect_speed = 3;
-float drift_effect_speed = 0.5;
-float trail_effect_speed = 4;
 
 // search radius:
 #define N 4
@@ -146,10 +136,10 @@ void main() {
     vec2 duv = getDrift(u_seconds, u_descend, spherical, xyz2uv, drift);
     vec4 fluid = texture(u_tex_fluid, v_uv);
 
-    vec2 dv = duv*drift_effect_speed + (fluid.xy - XYo)*fluid_effect_speed;
+    vec2 dv = duv*u_drift_effect_speed + (fluid.xy - XYo)*u_fluid_effect_speed;
 
 
-    // sensor_distance *= (1 + 0.8*spherical.y);
+    // u_sensor_distance *= (1 + 0.8*spherical.y);
     // spawn_distance *= (1 + 0.5*spherical.y);
 
 
@@ -226,36 +216,36 @@ void main() {
         float w = getfield(U+vec2(-1,0)-dv);
         float avg = 0.25*(n+s+e+w);
         //
-        trail = mix(trail, avg, blur_rate);
+        trail = mix(trail, avg, u_blur_rate);
 
         // decay:
-        trail *= decay_rate;
+        trail *= u_decay_rate;
 
         // deposit from nearest particle:
-        trail += (u_deposit_rate * dt * exp(-dist*dist));
+        trail += (u_deposit_rate * exp(-dist*dist));
     }
     out0.w = trail;
 
-    //if (spawn_mix)
-    // spawn if particle is too far away
-    if (
-    //     dist >= spawn_distance 
-    // || caustic > caustic_spawn
-    //|| 
-    caustic_spawn < caustic*rnd.y || 
-    aura_spawn < pow(fluid.w, 5)*rnd.x
-    //|| rnd.x < fluid.w //aura*rnd.x > aura_spawn
-    ) { //} && oldtrail >= spawn_threshold) {
-        P.xy = mix(P.xy, U, spawn_mix);
+    // old trail value where this particle is:
+    float oldtrail = get(P.xy).w;
+    
+    float nearby = 1.;//-exp(-dist);
+
+    if ((
+        (1.-u_caustic_spawn) < caustic*rnd.y*nearby
+        || (1.-u_aura_spawn) < pow(fluid.w, 5)*rnd.x *nearby)
+        && oldtrail >= u_spawn_threshold
+    ) { //} && oldtrail >= u_spawn_threshold) {
+    
+        float u_spawn_mix = 0.1;
+        P.xy = mix(P.xy, U, u_spawn_mix);
         P.z = rand(P.xy);
     }
-    //P.xy = mix(P.xy, U, spawn_mix);
+    //P.xy = mix(P.xy, U, 0.00001*rnd.z*rnd.z);
 
     // now we have our nearest particle
     
     
-    // old trail value where this particle is:
-    float oldtrail = get(P.xy).w;
     
     // get direction matrix:
     // forced rotation
@@ -264,8 +254,8 @@ void main() {
     
     if (true) {
         // this could all be precomputed?
-        float sd = sensor_distance;// * oldtrail*oldtrail;
-        mat2 sense_rot = rotate_mat(sensor_angle);
+        float sd = u_sensor_distance;// * oldtrail*oldtrail;
+        mat2 sense_rot = rotate_mat(u_sensor_angle);
         vec2 s1 = vec2(sd, 0.);
         vec2 s2 = sense_rot * s1;
         vec2 s0 = s1 * sense_rot;
@@ -284,29 +274,29 @@ void main() {
             // Jeff Jones version
             if (f0 > f2 && f0 > f1) {
                 // turn left:
-                P.z = mod(P.z - turn_angle, 1.);
+                P.z = mod(P.z - u_turn_angle, 1.);
             } else if (f2 > f0 && f2 > f1) {
                 // turn right:
-                P.z = mod(P.z + turn_angle, 1.);
+                P.z = mod(P.z + u_turn_angle, 1.);
             } else if (f0 > f1 && f2 > f1) {
                 // turn randomly
                 //wander
             } else {
                 // no turn
             }
-                P.z = mod(P.z + wander_angle*(rand(vec3(P.xy, t))-0.5), 1.);
+                P.z = mod(P.z + u_wander_angle*(rand(vec3(P.xy, t))-0.5), 1.);
         } 
     }
 
     // move it:
     rot = rotate_mat(twopi * P.z);
     vec2 vel;
-    vel += (rot * vec2(trail_effect_speed*oldtrail, 0.));
+    vel += (rot * vec2(u_trail_effect_speed*oldtrail, 0.));
     //P.xy += (rot * vec2(speed*dt*oldtrail, 0.));
 
     // get fluid at this particle:
     vec4 Pfluid = texture(u_tex_fluid, P.xy/dim);
-    vel += (Pfluid.xy - XYo) * fluid_effect_speed;
+    vel += (Pfluid.xy - XYo) * u_fluid_effect_speed;
 
     // move with drift:
     //P.xy += duv;
@@ -319,7 +309,7 @@ void main() {
     coordinates1(Pnormal, -Pspherical, u_wall_u, Puv2xyz, Pxyz2uv);
     vec3 Pdrift;
     vec2 Pduv = getDrift(t, u_descend, Pspherical, Pxyz2uv, drift);
-    P.xy += Pduv * vec2(1, -1) * drift_effect_speed;
+    P.xy += Pduv * vec2(1, -1) * u_drift_effect_speed;
 
     
     P.xy += vel;
