@@ -3,15 +3,44 @@ return {
         {
             _name: "devel",
             _time: 600,
-            u_descend: 0,
-            u_grain: 0.01, // up to 0.03
 
+            // overall contrast -- 1 is no change, >1 is deeper contrast (darker darks), <1 is softer (lighter)
             u_gamma: 1.2,
-            u_lightness: 0.6,
-            u_hue: 0.61,
-            u_huerange: 0.15,
-            u_saturation: 0.7,
+            // color intensity; 1 is no change, 0 is greyscale, 2 is oversaturated
+            u_saturation: 1,
 
+            // visual intensities:
+            u_final_pressure: 0.5,
+            u_final_aura: 0.5,
+            u_final_trails: 0.2,
+            u_final_creatures: 0.75,
+
+            // colors:
+            u_creatures_rgb: [0.8, 0.01, 0.01],
+            // base color of ocean (hue, sat, lightness in 0..1)
+            u_ocean_hsl: [0.6, 0.5, 0.6],
+            // how this varies by vertical 
+            u_ocean_hsl_variation: [0., 0.5, 0.2],
+            // base color of aura (hue, sat, lightness in 0..1)
+            u_aura_hsl: [0.4, 0.8, 0.8],
+            // how this varies by aura intensity:
+            u_aura_hsl_variation: [-0.5, 0., 0.],
+            
+            // behaviours:
+
+            // -8 to 8? if we are descending or rising in the ocean. 0 means neither, negative is descending
+            u_descend: 0,
+
+            // 0-0.03: amount of sandy dust in the fluid currents
+            // setting to 0 will create more glassy smooth surface but also let human currents travel farther; feels more deep oceah
+            u_grain: 0.01,
+            // 0 or 1, changes how the fluid currents travel; subtle effect but I like 1 better than 0
+            u_fluid_mode: 1.0,
+            // should be 1 or very slightly less than 1. Probably 1 is ok. 
+            u_fluid_pressure_decay: 0.99999,
+            u_fluid_matter_decay: 0.99999,
+
+            // creatures:
             // 0..1
             // higher values make it more likely to spawn on (caustics/auras)
             u_caustic_spawn : 0.9, 

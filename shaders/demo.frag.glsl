@@ -15,7 +15,11 @@ uniform vec4 u_random;
 uniform float u_unique;
 uniform vec3 u_wall_u;
 uniform float u_descend;
+
 uniform float u_grain;
+uniform float u_fluid_mode;
+uniform float u_fluid_pressure_decay;
+uniform float u_fluid_matter_decay;
 
 in vec2 v_uv;
 in vec3 v_normal;
@@ -215,7 +219,7 @@ void main() {
     // new velocity derived from neighbourhood average
     // should this be p.xy rather than avg.xy?
     // either the velocity or the pressure should be diffused, but not both
-    float blend = 1.; //sin(iTime)*0.5+0.5;  // I like blend=0 more, it gives more turbulence; 1 is more smoky
+    float blend = u_fluid_mode; //sin(iTime)*0.5+0.5;  // I like blend=0 more, it gives more turbulence; 1 is more smoky
     //OUT.xy = avg.xy + force;
     OUT.xy = mix(p.xy, avg.xy, blend) + force; 
     
@@ -239,8 +243,8 @@ void main() {
     // optional decays
     // xy or z, don't need to do both
     // OUT.xy = (OUT.xy - XYo)*0.99 + XYo;
-    OUT.z = Zo + (OUT.z-Zo)*0.99999;
-    OUT.w = OUT.w*0.99999;
+    OUT.z = Zo + (OUT.z-Zo)*u_fluid_pressure_decay;
+    OUT.w = OUT.w*u_fluid_matter_decay;
 
     OUT.xy += duv*0.001;
     
