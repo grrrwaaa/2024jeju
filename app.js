@@ -9,7 +9,6 @@ const ndi_texture = require("./ndi.js")
 const Params = require("./params.js")
 const server = require("./server.js")
 
-let sequence = new Params("sequence.js")
 
 let shaderman
 let show = 1
@@ -246,6 +245,9 @@ class App extends Window {
             server.requestService(recv.name, recv.tex.data)
         })
 
+        
+        let sequence = common.sequence || new Params("sequence.js")
+        common.sequence = sequence
 
 
         // VAOs can't be shared between windows, so we have to create one per window:
@@ -259,6 +261,7 @@ class App extends Window {
 
             common,
             unique: Math.random(),
+            sequence,
         })
 
         common.allapps[options.title] = this
@@ -284,7 +287,7 @@ class App extends Window {
     }
 
     draw(gl) {
-        let { t, dt, frame, dim } = this
+        let { t, dt, frame, dim, sequence } = this
         let [ width, height ] = dim
         let { quad_vao, wall_vao, unit_quad_vao, fbo_coords, send_fbo, fbo, physarum_fbo, final_fbo } = this
         let { senders, receivers } = this
@@ -620,7 +623,7 @@ class App extends Window {
                 case 55:
                 case 56:
                 case 57: {
-                    
+                    this.sequence.stage(key-48);
                     break;
                 }
                 // case 61: { // =

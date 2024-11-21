@@ -15,6 +15,7 @@ uniform vec4 u_random;
 uniform float u_unique;
 uniform vec3 u_wall_u;
 uniform float u_descend;
+uniform float u_drift_amount;
 
 uniform float u_grain;
 uniform float u_fluid_mode;
@@ -191,7 +192,7 @@ void main() {
     mat3 uv2xyz, xyz2uv;
     coordinates1(normal, spherical, u_wall_u, uv2xyz, xyz2uv);
     vec3 drift;
-    vec2 duv = getDrift(u_seconds, u_descend, spherical, xyz2uv, drift);
+    vec2 duv = getDrift(u_seconds, u_descend, u_drift_amount, spherical, xyz2uv, drift);
 
 
     vec4 OUT = vec4(0);

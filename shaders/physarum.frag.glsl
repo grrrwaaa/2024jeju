@@ -14,6 +14,7 @@ uniform vec4 u_random;
 uniform float u_unique;
 uniform vec3 u_wall_u;
 uniform float u_descend;
+uniform float u_drift_amount;
 uniform float u_init;
 
 //uniform float u_deposit_rate;
@@ -133,7 +134,7 @@ void main() {
     coordinates1(normal, spherical, u_wall_u, uv2xyz, xyz2uv);
 
     vec3 drift;
-    vec2 duv = getDrift(u_seconds, u_descend, spherical, xyz2uv, drift);
+    vec2 duv = getDrift(u_seconds, u_descend, u_drift_amount, spherical, xyz2uv, drift);
     vec4 fluid = texture(u_tex_fluid, v_uv);
 
     vec2 dv = duv*u_drift_effect_speed + (fluid.xy - XYo)*u_fluid_effect_speed;
@@ -308,7 +309,7 @@ void main() {
     mat3 Puv2xyz, Pxyz2uv;
     coordinates1(Pnormal, -Pspherical, u_wall_u, Puv2xyz, Pxyz2uv);
     vec3 Pdrift;
-    vec2 Pduv = getDrift(t, u_descend, Pspherical, Pxyz2uv, drift);
+    vec2 Pduv = getDrift(t, u_descend, u_drift_amount, Pspherical, Pxyz2uv, drift);
     P.xy += Pduv * vec2(1, -1) * u_drift_effect_speed;
 
     

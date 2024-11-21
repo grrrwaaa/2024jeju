@@ -8,7 +8,6 @@ const { gl, glfw, glutils, Window, Shaderman } = require("../anode_gl/index.js")
 const Text = require("./text.js")
 const Params = require("./params.js")
 
-let sequence = new Params("sequence.js")
 let timeoffset = 0
 
 let shaderman
@@ -31,8 +30,14 @@ class App extends Window {
         this.draw = App.prototype.draw
         this.onkey = App.prototype.onkey
 
+        let sequence = common.sequence || new Params("sequence.js")
+        common.sequence = sequence
+        sequence.stage(sequence._count-1)
+
         Object.assign(this, {
             common,
+            sequence,
+
             nav: {
                 feet: [4, 0, 0],
                 lookx: 0,
@@ -60,7 +65,7 @@ class App extends Window {
     }
 
     draw(gl) {
-        let { t, dt, frame, dim } = this
+        let { t, dt, frame, dim, sequence } = this
         let [ width, height ] = dim
         let { shaderman } = this
         let { nav } = this
@@ -218,6 +223,19 @@ class App extends Window {
         if (down) {
 
             switch(key) {
+                case 48: // 0
+                case 49: // 1
+                case 50:
+                case 51:
+                case 52:
+                case 53:
+                case 54:
+                case 55:
+                case 56:
+                case 57: {
+                    this.sequence.stage(key-48);
+                    break;
+                }
                 case 70: { // f
                     
                     this.setFullscreen(!this.fullscreen);

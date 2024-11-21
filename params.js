@@ -58,6 +58,8 @@ class Params {
         this._first = first
         this._last = last
 
+        Object.assign({}, this._default)
+
         // define properties:
         for (let k of Object.keys(def)) {
             // skip hidden names
@@ -71,16 +73,27 @@ class Params {
         }
 
         console.log("loaded params", this._path, this._mtime, this)
-
+        this.stage(this._stage)
 
         return this
     }
 
+    stage(i) {
+        this._stage = i
+        if (this._stage === undefined) return;
+            
+        this._current = Object.assign({}, this._seq[this._stage % this._count])
+    }
+
+
     step(time) {
+
         // watch for params reload:
         if (this._mtime != fs.statSync(this._path).mtimeMs) {
             this.load(this._path)
         }
+
+        if (this._stage != undefined) return;
 
         // nothing to animate?
         if (this._count < 2) {

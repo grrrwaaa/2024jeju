@@ -13,8 +13,9 @@ uniform float u_seconds;
 uniform float u_lightness;
 uniform float u_saturation;
 uniform float u_gamma;
+uniform float u_ink_mode;
 uniform float u_descend;
-
+uniform float u_drift_amount;
 uniform float u_final_pressure;
 uniform float u_final_aura;
 uniform float u_final_trails;
@@ -24,6 +25,9 @@ uniform vec3 u_ocean_hsl_variation;
 uniform vec3 u_aura_hsl;
 uniform vec3 u_aura_hsl_variation;
 uniform vec3 u_creatures_rgb;
+uniform vec3 u_creatures_rgb1;
+uniform vec3 u_creatures_hsl;
+uniform vec3 u_creatures_hsl_inside;
 
 in vec2 v_uv;
 in vec3 v_normal;
@@ -49,7 +53,7 @@ void main() {
     coordinates1(normal, spherical, u_wall_u, uv2xyz, xyz2uv);
 
     vec3 drift;
-    vec2 duv = getDrift(u_seconds, u_descend, spherical, xyz2uv, drift);
+    vec2 duv = getDrift(u_seconds, u_descend, u_drift_amount, spherical, xyz2uv, drift);
 
     ivec2 dim = textureSize(u_tex_fluid, 0);
     vec2 ut = 1./dim;
@@ -69,6 +73,7 @@ void main() {
     float caustic = -0.25*(e.x - w.x + n.y - s.y) * 10.;
 
     float matter = fluid.w*fluid.w*fluid.w;
+    float ink = pow(1.-fluid.w, 2.);
 
 
 	vec4 physarum = texture(u_tex_physarum, v_uv);
@@ -85,16 +90,23 @@ void main() {
     vec3 aura = hsl2rgb(u_aura_hsl + fluid.w*u_aura_hsl_variation)*matter*u_final_aura;
     out0.rgb += aura;
 
-    out0 += caustic;
-    out0 += pow(physarum.w,1.5)*u_final_trails;
 
+    out0 += caustic;
     // more phys: 
     // debug: out0 = vec4(physarum.xy/dim, physarum.z, 1.);
 
+
+
     float dots = exp(-0.9*length(gl_FragCoord.xy - physarum.xy));
-    out0 += vec4(u_creatures_rgb, 0 )*dots*u_final_creatures;//(0.7, 1, 0.9, 0,) (0.3, 0.7, 0.5, 0), alien shrimp (0.8, 0.01, 0.01, 0)
+    vec3 creature_color = hsl2rgb(mix(u_creatures_hsl, u_creatures_hsl_inside, pow(physarum.w, 2.)));
+    out0.rgb += creature_color*dots*u_final_creatures;//(0.7, 1, 0.9, 0,) (0.3, 0.7, 0.5, 0), alien shrimp (0.8, 0.01, 0.01, 0)
 
+    vec3 oldstyle = ink*hsl2rgb(vec3(0.3+0.4*dot(fluid.xy, vec2(1,0)), 0.8*abs(fluid.z), 0.95));
+    out0.rgb = mix(out0.rgb, oldstyle, u_ink_mode);
+    //vec3(0.8+(fluid.xyz)*0.2);//mix(out0*vec4(1.-fluid.w), out0+vec4(1.-fluid.w), 0.5);
 
+    out0 += pow(physarum.w,1.5)*u_final_trails;
+    
     // final pass:
     out0.rgb = adjustSaturation(out0.rgb, u_saturation-1.);
     out0.rgb = pow(out0.rgb, vec3(u_gamma));
