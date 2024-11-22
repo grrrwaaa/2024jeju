@@ -21,6 +21,7 @@ uniform float u_grain;
 uniform float u_fluid_mode;
 uniform float u_fluid_pressure_decay;
 uniform float u_fluid_matter_decay;
+uniform float u_fluid_velocity_decay;
 
 in vec2 v_uv;
 in vec3 v_normal;
@@ -246,7 +247,7 @@ void main() {
     // OUT.xy = (OUT.xy - XYo)*0.99 + XYo;
     OUT.z = Zo + (OUT.z-Zo)*u_fluid_pressure_decay;
     OUT.w = OUT.w*u_fluid_matter_decay;
-
+    OUT.xy = XYo + (OUT.xy - XYo)*u_fluid_velocity_decay;
     OUT.xy += duv*0.001;
     
     // // optional add forces

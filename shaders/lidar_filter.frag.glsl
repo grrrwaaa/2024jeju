@@ -11,6 +11,8 @@ uniform sampler2D u_tex_input;
 // .w is the long-term averaged background to subtract
 uniform sampler2D u_tex0;
 
+uniform float u_seconds;
+
 // texture resolution
 uniform vec2 u_resolution;
 
@@ -80,5 +82,11 @@ void main() {
     //out0.xyz = vec3(intensity);
     out0.z = intensity;
     out0.w = background;
+
+    if (u_seconds < 0.3) {
+        //out0 = vec4(0);
+        //out0.z = 0;
+        out0.z = 0;
+    }
     
 }

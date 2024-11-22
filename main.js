@@ -17,6 +17,7 @@ let win_div = 4
 
 let common = {
     overlap,
+    dev: true,
 
     lidar_dim: [240*3, 320],
 

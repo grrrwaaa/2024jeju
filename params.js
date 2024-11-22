@@ -72,7 +72,7 @@ class Params {
             });
         }
 
-        console.log("loaded params", this._path, this._mtime, this)
+        //console.log("loaded params", this._path, this._mtime, this)
         this.stage(this._stage)
 
         return this
@@ -82,7 +82,7 @@ class Params {
         this._stage = i
         if (this._stage === undefined) return;
             
-        this._current = Object.assign({}, this._seq[this._stage % this._count])
+        this._current = Object.assign({}, this._seq[(this._stage + this._count) % this._count])
     }
 
 
@@ -133,6 +133,7 @@ class Params {
                 this._current[k] = mix(from[k], to[k], this._fade)
             }
         }
+
         return this
     }
 }

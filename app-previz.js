@@ -32,7 +32,7 @@ class App extends Window {
 
         let sequence = common.sequence || new Params("sequence.js")
         common.sequence = sequence
-        sequence.stage(sequence._count-1)
+        //sequence.stage(sequence._count-1)
 
         Object.assign(this, {
             common,
@@ -223,6 +223,10 @@ class App extends Window {
         if (down) {
 
             switch(key) {
+                case 32: {
+                    this.common.pause = !this.common.pause
+                    break;
+                }
                 case 48: // 0
                 case 49: // 1
                 case 50:
@@ -233,7 +237,7 @@ class App extends Window {
                 case 55:
                 case 56:
                 case 57: {
-                    this.sequence.stage(key-48);
+                    this.sequence.stage(key-48 - 1);
                     break;
                 }
                 case 70: { // f

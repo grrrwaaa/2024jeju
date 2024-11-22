@@ -53,6 +53,8 @@ const server = net.createServer()
 server.on('error', (error) => {
     log("tcp_server", "error", error)
     server.close()
+
+    process.exit(-1)
 })
 
 let registered = {}
@@ -84,10 +86,6 @@ server.listen(PORT, myIP, () => {
     console.log("tcp_server", "info", 'Server is IP4/IP6 : ' + address.family)
 })
 
-// sockets.forEach((sock, index, array) => {
-//     sock.write(dataBuffer)	
-// })
-
 function sendData(name, data) {
     // need list of sockets interested in this name
     if (!registered[name]) return;
@@ -96,8 +94,6 @@ function sendData(name, data) {
         sock.write(data)
     }
 }
-
-console.log("server", server)
 
 // now to register interest:
 let received = {}
@@ -152,6 +148,11 @@ function requestService(name, bytes) {
 
     client.on('close', () => {
         console.log('Connection closed')
+
+        // schedule a reconnection attempt:
+        setTimeout(function() {
+            requestService(name, bytes)
+        }, 1000)
     })
 }
 

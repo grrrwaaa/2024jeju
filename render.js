@@ -18,6 +18,7 @@ let win_div = 4
 
 let common = {
     overlap,
+    dev: false,
 
     lidar_dim: [240*3, 320],
 
@@ -46,7 +47,9 @@ let common = {
             res: [1920, 1080],
             show: 4
         }
-    }
+    },
+
+    allapps: []
 }
 
 const ipconfig = {

@@ -1,5 +1,6 @@
 const fs = require("fs")
 const path = require("path")
+const exec = require('child_process').exec;
 
 const { vec2, vec3, vec4, quat, mat2, mat2d, mat3, mat4} = require("gl-matrix")
 
@@ -12,6 +13,7 @@ const server = require("./server.js")
 
 let shaderman
 let show = 1
+let seconds = 0
 
 class App extends Window {
 
@@ -295,14 +297,33 @@ class App extends Window {
 
         // getTime() gives ms since epoch
         // wrap it in the duration:
-        let seconds = this.common.seconds || (new Date().getTime() / 1000) % sequence._duration
+        let newseconds = this.common.seconds || (new Date().getTime() / 1000) % sequence._duration
+
+        const isFloor = (this.title == "F");
+        if (newseconds < seconds && isFloor) {
+            console.log("init")
+            
+            let child = exec("git pull", function(err, stdout, stderr){
+                if(err != null){
+                    return console.error(new Error(err));
+                }else if(typeof(stderr) != "string"){
+                    return console.error(new Error(stderr));
+                }else{
+                    return console.log(stdout);
+                }
+            });
+        }
+        seconds = newseconds
 
         // update parameters:
         sequence.step(seconds)
 
-        const isFloor = (this.title == "F");
+
         // special case for floor:
         if (isFloor) {
+
+            // zero out the lidar:
+
             // only process lidar input if we received data:
             if (lidar_stream.frame) {
                 lidar_stream.frame = 0
@@ -351,6 +372,7 @@ class App extends Window {
                     shaderman.shaders.lidar_filter.begin()
                     .uniform("u_tex0", 0)
                     .uniform("u_tex_input", 1)
+                    .uniform("u_seconds", seconds)
                     .uniform("u_resolution", [width, height])
                     quad_vao.bind().draw()
                 }
@@ -603,65 +625,16 @@ class App extends Window {
     onkey(key, scan, down, mod) {
         let shift = mod % 2
         let ctrl = Math.floor(mod/2) % 2
-
         if (down) {
 
             switch(key) {
-                // case 32: {
-                //     pause = !pause; 
-                //     console.log("pause", pause)
-                //     break;
-                // }
-        
-                case 48: // 0
-                case 49: // 1
-                case 50:
-                case 51:
-                case 52:
-                case 53:
-                case 54:
-                case 55:
-                case 56:
-                case 57: {
-                    this.sequence.stage(key-48);
-                    break;
-                }
-                // case 61: { // =
-                //     win_div = (win_div == 2) ? 4 : 2;
-                //     window.dim = [screen_dim[0]/win_div, screen_dim[1]/win_div]
-                //     break;
-                // }
-
                 case 70: { // f
-                    
                     this.setFullscreen(!this.fullscreen);
                     break;
                 }
-                // case 82: { // r
-                //     restoreAllState()
-                //     break;
-                // }
-                // case 83: { // s
-                //     saveAllState()
-                //     break;
-                // }
-                
-                case 290: 
-                case 291:
-                case 292:
-                case 293:
-                case 294:
-                case 295:
-                { // F1
-                    show = key - 290
-                    break;
-                }
-                default: console.log(key, scan, down, mod)
             }
-        }
 
-        if (shift && down) {
-        }	
+        }
     }
 
 }
