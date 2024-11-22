@@ -32,7 +32,7 @@ class Params {
         let ext = path.extname(this._path)
         let json = {}
         if (ext == ".js") {
-            json = new Function(fs.readFileSync(this._path, "utf-8"))() 
+            json = new Function("fs", fs.readFileSync(this._path, "utf-8"))(fs) 
         } else if (ext == ".json") {
             json = JSON.parse(fs.readFileSync(this.path))
         }
