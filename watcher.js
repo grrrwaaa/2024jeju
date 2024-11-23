@@ -19,4 +19,4 @@ function gitpull() {
 gitpull()
 setTimeout(function() {
     gitpull()
-}, 10*60*1000)
+}, 1*1000)
