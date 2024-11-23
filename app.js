@@ -16,7 +16,7 @@ let show = 1
 let seconds = 0
 
 function gitpull() {
-    let child = exec("git pull", function(err, stdout, stderr){
+    let child = exec("git pull --no-edit", function(err, stdout, stderr){
         if(err != null){
             return console.error(new Error(err));
         }else if(typeof(stderr) != "string"){
