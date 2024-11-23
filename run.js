@@ -1,39 +1,27 @@
+const fs = require("fs")
 const forever = require('forever-monitor');
 
-const child = new (forever.Monitor)('render.js', {
+let changed = 0
+
+let child = new (forever.Monitor)('render.js', {
     //silent: true,
     args: []
 });
-
 child.on('exit', function () {
-    console.log('your-filename.js has exited after 3 restarts');
+    console.log('exit');
 });
+
+setInterval(function() {
+    if (changed) {
+        child.kill()
+        changed = 0
+    }
+}, 1000)
 
 child.start();
 
+fs.watch(".", (eventType, filename) => {
+    console.log('File "' + filename + '" was changed: ' + eventType);
 
-// const pm2 = require('pm2')
-
-// pm2.connect(function(err) {
-//   if (err) {
-//     console.error(err);
-//     process.exit(2);
-//   }
-//   pm2.start([
-//     {
-//       script: "render.js",
-//       output: "/dev/stdout",
-//       error: "/dev/stderr",
-//       watch: true,
-        
-//     // Specify delay between watch interval
-//     watch_delay: 1000,
-
-//     },
-//   ]
-//     , function(err, proc) {
-//       if(err) {
-//         throw err
-//       }
-//     });
-// })
+    changed = 1
+});
