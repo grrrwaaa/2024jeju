@@ -10,6 +10,11 @@ const ndi_texture = require("./ndi.js")
 const Params = require("./params.js")
 const server = require("./server.js")
 
+let monitors = glfw.getMonitors()
+for (let monitor of monitors) {
+    let mode = glfw.getVideoMode(monitor)
+    console.log(`monitor ${mode.width}x${mode.height}, ${mode.refreshRate}`)
+}
 
 let shaderman
 let show = 1
