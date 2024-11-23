@@ -17,6 +17,6 @@ function gitpull() {
 }
 
 gitpull()
-setTimeout(function() {
+setInterval(function() {
     gitpull()
 }, 1*1000)
