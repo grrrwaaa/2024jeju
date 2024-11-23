@@ -1,4 +1,5 @@
 const fs = require("fs")
+const path = require("path")
 const forever = require('forever-monitor');
 
 let changed = 0
@@ -23,5 +24,5 @@ child.start();
 fs.watch(".", (eventType, filename) => {
     console.log('File "' + filename + '" was changed: ' + eventType);
 
-    changed = 1
+    if (path.extname(filename) == ".js") changed = 1
 });
