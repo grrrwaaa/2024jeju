@@ -12,7 +12,7 @@ Window.syncfps = 60
 
 let overlap = 4
 let decorated = true
-let fullscreen = false
+let fullscreen = true
 
 let win_div = 4
 
