@@ -19,4 +19,4 @@ function gitpull() {
 gitpull()
 setInterval(function() {
     gitpull()
-}, 1*1000)
+}, 10*1000)
