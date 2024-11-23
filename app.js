@@ -15,6 +15,18 @@ let shaderman
 let show = 1
 let seconds = 0
 
+function gitpull() {
+    let child = exec("git pull", function(err, stdout, stderr){
+        if(err != null){
+            return console.error(new Error(err));
+        }else if(typeof(stderr) != "string"){
+            return console.error(new Error(stderr));
+        }else{
+            return console.log(stdout);
+        }
+    });
+}
+
 class App extends Window {
 
     constructor(options, common) {
@@ -268,8 +280,12 @@ class App extends Window {
 
         common.allapps[options.title] = this
 
+    
         // special case for floor:
         if (this.title == "F") {
+
+            gitpull()
+            
             Object.assign(this, {
                 // this is the lidar data stream over NDI:
                 lidar_stream: ndi_texture(gl, "TOF_NDI"),
@@ -303,15 +319,7 @@ class App extends Window {
         if (newseconds < seconds && isFloor) {
             console.log("init")
             
-            let child = exec("git pull", function(err, stdout, stderr){
-                if(err != null){
-                    return console.error(new Error(err));
-                }else if(typeof(stderr) != "string"){
-                    return console.error(new Error(stderr));
-                }else{
-                    return console.log(stdout);
-                }
-            });
+            gitpull()
         }
         seconds = newseconds
 
