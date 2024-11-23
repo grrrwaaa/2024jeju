@@ -16,15 +16,15 @@ let show = 1
 let seconds = 0
 
 function gitpull() {
-    let child = exec("git pull --no-edit", function(err, stdout, stderr){
-        if(err != null){
-            return console.error(new Error(err));
-        }else if(typeof(stderr) != "string"){
-            return console.error(new Error(stderr));
-        }else{
-            return console.log(stdout);
-        }
-    });
+    // let child = exec("git pull --no-edit", function(err, stdout, stderr){
+    //     if(err != null){
+    //         return console.error(new Error(err));
+    //     }else if(typeof(stderr) != "string"){
+    //         return console.error(new Error(stderr));
+    //     }else{
+    //         return console.log(stdout);
+    //     }
+    // });
 }
 
 class App extends Window {
