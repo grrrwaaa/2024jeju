@@ -306,6 +306,8 @@ class App extends Window {
                     { float: true, mipmap: false, wrap: gl.BORDER }
                 ]), 
             })
+        } else {
+            server.requestJSON("Fstate", { seconds: 0 })
         }
     }
 
@@ -316,26 +318,18 @@ class App extends Window {
         let { senders, receivers } = this
         let { lidar_stream, lidar_fbo, lidar_filter_fbo, lidar_vao } = this
 
-        // getTime() gives ms since epoch
-        // wrap it in the duration:
-        let newseconds = this.common.seconds || (new Date().getTime() / 1000) % sequence._duration
-
         const isFloor = (this.title == "F");
-        if (newseconds < seconds && isFloor) {
-            console.log("init")
-            
-            gitpull()
-        }
-        seconds = newseconds
-
-        // update parameters:
-        sequence.step(seconds)
-
 
         // special case for floor:
         if (isFloor) {
 
+            // getTime() gives ms since epoch
+            // wrap it in the duration:
+            seconds = this.common.seconds || (new Date().getTime() / 1000) % sequence._duration
+            this.common.seconds = seconds
+
             // zero out the lidar:
+            server.sendData("Fstate", "\0"+JSON.stringify({ seconds }))
 
             // only process lidar input if we received data:
             if (lidar_stream.frame) {
@@ -391,7 +385,17 @@ class App extends Window {
                 }
                 lidar_filter_fbo.end()
             }
+        } else {
+            // not floor
+            let state = server.getData("Fstate").dst
+            seconds = state.seconds
         }
+
+        
+
+        // update parameters:
+        sequence.step(seconds)
+
 
         let received = 0
 
@@ -630,7 +634,7 @@ class App extends Window {
         quad_vao.bind().draw()
         
         if (Math.floor(t+dt) > Math.floor(t)) {
-            console.log(`fps ${Math.round(1/dt)} seconds ${Math.round(seconds)} ${sequence._name} (${Math.round(100 * sequence._time/sequence._duration)}%)`)
+            console.log(`${this.title}: fps ${Math.round(1/dt)} seconds ${Math.round(seconds)} ${sequence._name} (${Math.round(100 * sequence._time/sequence._duration)}%)`)
         }
     }
 

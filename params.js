@@ -87,7 +87,7 @@ class Params {
 
 
     step(time) {
-
+        
         // watch for params reload:
         if (this._mtime != fs.statSync(this._path).mtimeMs) {
             this.load(this._path)

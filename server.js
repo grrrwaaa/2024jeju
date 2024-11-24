@@ -118,6 +118,8 @@ function requestService(name, bytes) {
 
     client.on('data', buf => {
 
+
+
         // dst is a UInt8array wrapper 
         // idx is the byte index into this array that is currently written
         let { dst, idx } = state
@@ -156,16 +158,78 @@ function requestService(name, bytes) {
     })
 }
 
+function requestJSON(name, init={}) {
+    const client = new net.Socket()
+    const host = name2ip[name[0]]
+
+    const state = {
+        name, 
+        dst: init,
+        idx: 0,
+    }
+
+    received[name] = state
+
+    client.connect(PORT, host, function() {
+        console.log('Connected', name)
+        // send message to server to register this socket as interested in this name:
+        client.write(name)
+    })
+
+    client.on('data', buf => {
+
+        let msg = buf.toString().split("\0").pop()
+        if (msg) {
+            state.dst = JSON.parse(msg)
+        }
+
+        // // dst is a UInt8array wrapper 
+        // // idx is the byte index into this array that is currently written
+        // let { dst, idx } = state
+        // let msgbyteidx = 0
+        // let bytes_remain = buf.byteLength
+
+        // // the bytes received could be a partial buffer
+        // // it could even be multiple buffers
+        // // there's no guarantees of anything here
+        // // except that the bytes arrive in order
+        // while(bytes_remain) {
+
+        //     // copy as much as we can:
+        //     let part_bytes = Math.min(bytes_remain, dst.byteLength - idx)
+        //     // get that slice from the received data:
+        //     let src = new Uint8Array(buf.buffer, msgbyteidx, part_bytes)
+        //     // copy into our local buffer
+        //     dst.set(src, idx)
+        //     // move on
+        //     bytes_remain -= part_bytes
+        //     msgbyteidx += part_bytes
+        //     idx += part_bytes
+        //     if (idx >= dst.byteLength) idx = 0;
+        // }
+        // // update stream marker:
+        // state.idx = idx
+    })
+
+    client.on('close', () => {
+        console.log('Connection closed')
+
+        // schedule a reconnection attempt:
+        setTimeout(function() {
+            requestService(name, bytes)
+        }, 1000)
+    })
+}
+
 function getData(name) {
     return received[name]
 }
-
 
 module.exports = {
     name2ip, 
     myIP, localhost,
 
     sendData,
-    requestService,
+    requestService, requestJSON,
     getData,
 }
