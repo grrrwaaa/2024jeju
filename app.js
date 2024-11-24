@@ -20,7 +20,8 @@ let shaderman
 let show = 1
 let seconds = 0
 
-let SEND_FLOAT = 1
+let SEND_FLOAT = 0
+let SEND_RATE_DIV = 3
 
 function gitpull() {
     // let child = exec("git pull --no-edit", function(err, stdout, stderr){
@@ -252,17 +253,20 @@ class App extends Window {
 
         console.log("content", options.config.content_res)
 
-        
-
         this.senders.forEach(send => {
-            //send.sender = new ndi.Sender(send.name)
-            //send.data = new Float32Array(4 * send.dim[0] * send.dim[1])
-            send.data = new Uint8Array(4 * (SEND_FLOAT ? 4 : 1) * send.dim[0] * send.dim[1])
+            if (send.name[2] == "*") {
+                send.data = new Uint8Array(4 * 4 * send.dim[0] * send.dim[1])
+            } else {
+                send.data = new Uint8Array(4 * (SEND_FLOAT ? 4 : 1) * send.dim[0] * send.dim[1])
+            }
         })
 
         this.receivers.forEach(recv => {
-            //recv.receiver = new ndi.Receiver(recv.name)
-            recv.tex = glutils.createTexture(gl, { float: SEND_FLOAT, width: recv.dim[0], height: recv.dim[1] }).allocate().bind().submit()
+            if (recv.name[2] == "*") {
+                recv.tex = glutils.createTexture(gl, { float: true, width: recv.dim[0], height: recv.dim[1] }).allocate().bind().submit()
+            } else {
+                recv.tex = glutils.createTexture(gl, { float: SEND_FLOAT, width: recv.dim[0], height: recv.dim[1] }).allocate().bind().submit()
+            }
 
             server.requestService(recv.name, recv.tex.data)
         })
@@ -321,20 +325,24 @@ class App extends Window {
         let { senders, receivers } = this
         let { lidar_stream, lidar_fbo, lidar_filter_fbo, lidar_vao } = this
 
+
         const isFloor = (this.title == "F");
         const isExit = (this.title == "E")
+
+        seconds += dt
 
         if (isExit) {
             // getTime() gives ms since epoch
             // wrap it in the duration:
-            seconds = this.common.seconds || (new Date().getTime() / 1000) % sequence._duration
+            seconds = (t + sequence._duration + this.common.timeoffset) % sequence._duration //this.common.seconds || (new Date().getTime() / 1000) % sequence._duration
+            
             this.common.seconds = seconds
             const state = { seconds }
             server.sendData("Estate", "\0"+JSON.stringify(state))
             server.sendMax(state)
         } else {
-            let state = server.getData("Estate").dst
-            seconds = state.seconds
+            let state = server.getData("Estate")
+            if (state && state.dst) seconds = state.dst.seconds
         }
         // update parameters:
         sequence.step(seconds)
@@ -397,7 +405,6 @@ class App extends Window {
             }
         } 
 
-        let received = 0
         fbo.begin()
         {
             let { width, height } = fbo
@@ -438,6 +445,7 @@ class App extends Window {
             .uniform("u_random", [Math.random(), Math.random(), Math.random(), Math.random()])
             .uniform("u_unique", this.unique)
             .uniform("u_wall_u", this.wall_U)
+            .uniform("u_init", frame < 10 ? 1 : 0)
             .uniformsFrom(sequence)
 
             wall_vao.bind().draw()
@@ -448,7 +456,7 @@ class App extends Window {
         fbo.end()
 
         
-        if (frame % 2 == 0) 
+        //if (SEND_RATE_DIV <= 1 || (frame % SEND_RATE_DIV) == 0) 
         {
             if (!SEND_FLOAT) {
                 send_fbo.begin()
@@ -469,11 +477,15 @@ class App extends Window {
                 }
                 send_fbo.end()
             }
-            
-            senders.forEach(send => {
+
+            // spread the load:
+            let send = senders[frame % senders.length]
+           //senders.forEach(send => {
                 let [x, y] = send.pos
                 let [w, h] = send.dim
-                if (SEND_FLOAT) {
+                if (send.name[2] == "*") {
+                    gl.getTextureSubImage(physarum_fbo.readbuffer.textures[0], 0, x, y, 0, w, h, 1, gl.RGBA, gl.FLOAT, send.data.byteLength, send.data)
+                } else if (SEND_FLOAT) {
                     gl.getTextureSubImage(fbo.readbuffer.textures[0], 0, x, y, 0, w, h, 1, gl.RGBA, gl.FLOAT, send.data.byteLength, send.data)
                 } else {
                     gl.getTextureSubImage(send_fbo.textures[0], 0, x, y, 0, w, h, 1, gl.RGBA, gl.UNSIGNED_BYTE, send.data.byteLength, send.data)
@@ -481,10 +493,9 @@ class App extends Window {
                 
                 //console.log("sending")
                 server.sendData(send.name, send.data)
-            })
+           // })
         }
 
-        
         // first, overlay in the receivers:
         fbo.begin()
         {
@@ -505,14 +516,15 @@ class App extends Window {
             shaderman.shaders.show.begin()
             quad_vao.bind().draw()
 
-            // new inputs:
-            if (frame % 2) 
+            // new inputs
+            // no particular need to condition this one.
+            //if (SEND_RATE_DIV <= 1 || (frame % SEND_RATE_DIV) == 0) 
             {
                 receivers.forEach(recv => {
 
+                    if (recv.name[2] == null && server.getData(recv.name).frame) 
                     {
-                        received = 1
-
+                        
                         let [w, h] = recv.dim
                         let [x, y] = recv.pos
                         let a = recv.angle
@@ -557,6 +569,7 @@ class App extends Window {
             gl.clearColor(0, 0, 0, 0)
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             gl.enable(gl.DEPTH_TEST)
+            gl.depthMask(false)
 
             fbo.bind(0, 1)
             // using this one to reduce weird artefacts at edges
@@ -589,6 +602,45 @@ class App extends Window {
             //.uniform("u_init", +(frame < 1))
             .uniformsFrom(sequence)
             wall_vao.bind().draw()
+
+            {
+                receivers.forEach(recv => {
+
+                    if (recv.name[2] == "*" && server.getData(recv.name).frame) 
+                    {
+                        let [w, h] = recv.dim
+                        let [x, y] = recv.pos
+                        let a = recv.angle
+
+                        recv.tex.bind().submit()
+                        
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+                        let modelmatrix = mat4.create()
+                        let projmatrix = mat4.create()
+
+                        //mat4.frustum(projmatrix, 0, fbo.width, 0, fbo.height, -1, 1)
+                        mat4.ortho(projmatrix, 0, fbo.width, 0, fbo.height, 0, 1)
+
+                        mat4.translate(modelmatrix, modelmatrix, [x, y, 0])
+                        mat4.rotateZ(modelmatrix, modelmatrix, a)
+                        mat4.scale(modelmatrix, modelmatrix, [w, h, 1])
+
+
+                        shaderman.shaders.physrect.begin()
+                        .uniform("u_modelmatrix", modelmatrix)
+                        .uniform("u_projmatrix", projmatrix)
+                        .uniform("u_rot", a)
+                        unit_quad_vao.bind().draw()
+                    }
+                })
+            }
+
+            gl.disable(gl.BLEND)
+            gl.depthMask(true)
         }
         physarum_fbo.end()
         
@@ -645,6 +697,7 @@ class App extends Window {
         if (Math.floor(t+dt) > Math.floor(t)) {
             console.log(`${this.title}: fps ${Math.round(1/dt)} seconds ${Math.round(seconds)} ${sequence._name} (${Math.round(100 * sequence._time/sequence._duration)}%)`)
         }
+
     }
 
     

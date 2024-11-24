@@ -190,11 +190,6 @@ function sendData(name, data) {
 
 // now to register interest:
 let received = {
-    Estate: {
-        dst: {
-            seconds: 0
-        }
-    }
 }
 
 function requestService(name, bytes) {
@@ -205,6 +200,7 @@ function requestService(name, bytes) {
         name, 
         dst: new Uint8Array(bytes.buffer),
         idx: 0,
+        frame: 0
     }
 
     received[name] = state
@@ -230,7 +226,6 @@ function requestService(name, bytes) {
         // there's no guarantees of anything here
         // except that the bytes arrive in order
         while(bytes_remain) {
-
             // copy as much as we can:
             let part_bytes = Math.min(bytes_remain, dst.byteLength - idx)
             // get that slice from the received data:
@@ -241,7 +236,10 @@ function requestService(name, bytes) {
             bytes_remain -= part_bytes
             msgbyteidx += part_bytes
             idx += part_bytes
-            if (idx >= dst.byteLength) idx = 0;
+            if (idx >= dst.byteLength) {
+                idx = 0;
+                state.frame++
+            }
         }
         // update stream marker:
         state.idx = idx
@@ -265,6 +263,7 @@ function requestJSON(name, init={}) {
         name, 
         dst: init,
         idx: 0,
+        frame: 0
     }
 
     received[name] = state
@@ -280,34 +279,8 @@ function requestJSON(name, init={}) {
         let msg = buf.toString().split("\0").pop()
         if (msg) {
             state.dst = JSON.parse(msg)
+            state.frame++
         }
-
-        // // dst is a UInt8array wrapper 
-        // // idx is the byte index into this array that is currently written
-        // let { dst, idx } = state
-        // let msgbyteidx = 0
-        // let bytes_remain = buf.byteLength
-
-        // // the bytes received could be a partial buffer
-        // // it could even be multiple buffers
-        // // there's no guarantees of anything here
-        // // except that the bytes arrive in order
-        // while(bytes_remain) {
-
-        //     // copy as much as we can:
-        //     let part_bytes = Math.min(bytes_remain, dst.byteLength - idx)
-        //     // get that slice from the received data:
-        //     let src = new Uint8Array(buf.buffer, msgbyteidx, part_bytes)
-        //     // copy into our local buffer
-        //     dst.set(src, idx)
-        //     // move on
-        //     bytes_remain -= part_bytes
-        //     msgbyteidx += part_bytes
-        //     idx += part_bytes
-        //     if (idx >= dst.byteLength) idx = 0;
-        // }
-        // // update stream marker:
-        // state.idx = idx
     })
 
     client.on('close', () => {

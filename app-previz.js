@@ -7,6 +7,7 @@ const { gl, glfw, glutils, Window, Shaderman } = require("../anode_gl/index.js")
 
 const Text = require("./text.js")
 const Params = require("./params.js")
+const server = require("./server.js")
 
 let timeoffset = 0
 
@@ -72,14 +73,17 @@ class App extends Window {
 
         let seconds = 0
         if (sequence._duration) {
-            seconds = ((new Date().getTime() / 1000)) % sequence._duration
+            let state = server.getData("Estate").dst
+            seconds = state.seconds
             if (this.pointer.buttons[1]){ 
-                let s = this.pointer.pos[0] * sequence._duration
-                timeoffset = s - seconds
+                // let s = this.pointer.pos[0] * sequence._duration
+                // timeoffset = s - seconds
+                // this.common.timeoffset = timeoffset
+                this.common.timeoffset += this.pointer.vel[0] * sequence._duration
+                console.log(this.pointer)
             }
-            seconds = (seconds + timeoffset  + sequence._duration) % sequence._duration
+            //seconds = (seconds + timeoffset  + sequence._duration) % sequence._duration
         } 
-        this.common.seconds = seconds
 
         sequence.step(seconds)
 

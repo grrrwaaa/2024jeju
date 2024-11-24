@@ -16,6 +16,7 @@ uniform float u_unique;
 uniform vec3 u_wall_u;
 uniform float u_descend;
 uniform float u_drift_amount;
+uniform float u_init;
 
 uniform float u_grain;
 uniform float u_fluid_mode;
@@ -351,5 +352,9 @@ void main() {
     //out0 = A(COORD); //texture(u_tex_feedback, gl_FragCoord.xy / dim.xy);
 
     //out0.xy += 0.1 * (hash23(vec3(texel + dim*u_random.xy, frame))-0.5);
+
+    if (u_init > 0.) {
+        out0 = vec4(XYo, XYo, Zo, 0.);
+    }
 
 }
