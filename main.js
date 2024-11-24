@@ -10,7 +10,7 @@ const AppPreviz = require("./app-previz.js")
 // sync on the global Window, not on each window:
 Window.syncfps = 60
 
-let overlap = 16
+let overlap = 4
 let decorated = false
 
 let win_div = 4
@@ -264,14 +264,14 @@ let F = new App({
 
     config: common.machines.F,
     senders: [
-        { name: "FL", dim: [3840, 16], pos: [0, 1872 - 16] },
-        { name: "FR", dim: [3840, 16], pos: [0, 0] },
-        { name: "FE", dim: [16, 1872], pos: [3840-16, 0] },
+        { name: "FL", dim: [3840, overlap], pos: [0, 1872 - overlap] },
+        { name: "FR", dim: [3840, overlap], pos: [0, 0] },
+        { name: "FE", dim: [overlap, 1872], pos: [3840-overlap, 0] },
     ],
     receivers: [
-       { name: "LF", dim: [3840, 16], pos: [0, 1872 - overlap], angle: 0 },
-         { name: "RF", dim: [3840, 16], pos: [0, overlap-16], angle: 0 },
-        { name: "EF", dim: [16, 1872], pos: [3840-overlap, 0], angle: 0 },
+       { name: "LF", dim: [3840, overlap], pos: [0, 1872 - overlap], angle: 0 },
+         { name: "RF", dim: [3840, overlap], pos: [0, overlap-overlap], angle: 0 },
+        { name: "EF", dim: [overlap, 1872], pos: [3840-overlap, 0], angle: 0 },
     ],
 }, common)
 
@@ -285,18 +285,18 @@ let E = new App({
 
     config: common.machines.E,
     senders: [
-         { name: "EF", dim: [16, 1872], pos: [0, 0] },
-        { name: "EL", dim: [1272, 16], pos: [0, 1872-16] },
-         { name: "ET", dim: [16, 406], pos: [1752-16, (1872 - 406)/2] },
-        { name: "ER", dim: [1272, 16], pos: [0, 0] },
+         { name: "EF", dim: [overlap, 1872], pos: [0, 0] },
+        { name: "EL", dim: [1272, overlap], pos: [0, 1872-overlap] },
+         { name: "ET", dim: [overlap, 406], pos: [1752-overlap, (1872 - 406)/2] },
+        { name: "ER", dim: [1272, overlap], pos: [0, 0] },
     ],
     receivers: [
-        { name: "FE", dim: [16, 1872], pos: [overlap-16, 0], angle: 0 },
-        { name: "LE", dim: [16, 2582], pos: [0, 1872], angle: -Math.PI/2 },
-        { name: "LE", dim: [16, 2582], pos: [590, 2970], angle: -2.57 },
-        { name: "LE", dim: [16, 2582], pos: [1752, 3305], angle: -Math.PI },
-        { name: "RE", dim: [16, 2582], pos: [2582, overlap-16], angle: Math.PI/2 },
-        { name: "RE", dim: [16, 2582], pos: [1985, 1070], angle: 2.57 },
+        { name: "FE", dim: [overlap, 1872], pos: [overlap-overlap, 0], angle: 0 },
+        { name: "LE", dim: [overlap, 2582], pos: [0, 1872], angle: -Math.PI/2 },
+        { name: "LE", dim: [overlap, 2582], pos: [590, 2970], angle: -2.57 },
+        { name: "LE", dim: [overlap, 2582], pos: [1752, 3305], angle: -Math.PI },
+        { name: "RE", dim: [overlap, 2582], pos: [2582, overlap-overlap], angle: Math.PI/2 },
+        { name: "RE", dim: [overlap, 2582], pos: [1985, 1070], angle: 2.57 },
     ],
 }, common)
 
@@ -310,15 +310,15 @@ let L = new App({
 
     config: common.machines.L,
     senders: [
-       { name: "LF", dim: [3840, 16], pos: [0, 0] },
-       { name: "LR", dim: [3840, 16], pos: [0, 2582-16] },
-        { name: "LE", dim: [16, 2582], pos: [3840-16, 0] },
+       { name: "LF", dim: [3840, overlap], pos: [0, 0] },
+       { name: "LR", dim: [3840, overlap], pos: [0, 2582-overlap] },
+        { name: "LE", dim: [overlap, 2582], pos: [3840-overlap, 0] },
     ],
     receivers: [
-         { name: "FL", dim: [3840, 16], pos: [0, overlap-16], angle: 0 },
-        { name: "EL", dim: [1272, 16], pos: [3840-overlap+16, 0], angle: Math.PI/2 },
-        { name: "ET", dim: [16, 406], pos: [3840-overlap+16, 2582], angle: Math.PI },
-         { name: "RL", dim: [3840, 16], pos: [0, 2582-overlap], angle: 0},
+         { name: "FL", dim: [3840, overlap], pos: [0, overlap-overlap], angle: 0 },
+        { name: "EL", dim: [1272, overlap], pos: [3840-overlap+overlap, 0], angle: Math.PI/2 },
+        { name: "ET", dim: [overlap, 406], pos: [3840-overlap+overlap, 2582], angle: Math.PI },
+         { name: "RL", dim: [3840, overlap], pos: [0, 2582-overlap], angle: 0},
     ],
 }, common)
 
@@ -332,15 +332,15 @@ let R = new App({
 
     config: common.machines.R,
     senders: [
-       { name: "RF", dim: [3840, 16], pos: [0, 2582-16] },
-        { name: "RE", dim: [16, 2582], pos: [3840-16, 0] },
-        { name: "RL", dim: [3840, 16], pos: [0, 406+16] },
+       { name: "RF", dim: [3840, overlap], pos: [0, 2582-overlap] },
+        { name: "RE", dim: [overlap, 2582], pos: [3840-overlap, 0] },
+        { name: "RL", dim: [3840, overlap], pos: [0, 406+overlap] },
     ],
     receivers: [
-        { name: "FR", dim: [3840, 16], pos: [0, 2582-overlap], angle: 0 },
-        { name: "ER", dim: [1272, 16], pos: [3840-overlap, 2582], angle: -Math.PI/2 },
-        { name: "ET", dim: [16, 406], pos: [3840-overlap, 0], angle: 0 },
-        { name: "LR", dim: [3840, 16], pos: [0, 406+overlap], angle: 0},
+        { name: "FR", dim: [3840, overlap], pos: [0, 2582-overlap], angle: 0 },
+        { name: "ER", dim: [1272, overlap], pos: [3840-overlap, 2582], angle: -Math.PI/2 },
+        { name: "ET", dim: [overlap, 406], pos: [3840-overlap, 0], angle: 0 },
+        { name: "LR", dim: [3840, overlap], pos: [0, 406+overlap], angle: 0},
     ],
 }, common)
 

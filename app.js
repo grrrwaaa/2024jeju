@@ -20,6 +20,8 @@ let shaderman
 let show = 1
 let seconds = 0
 
+let SEND_FLOAT = 1
+
 function gitpull() {
     // let child = exec("git pull --no-edit", function(err, stdout, stderr){
     //     if(err != null){
@@ -254,12 +256,13 @@ class App extends Window {
 
         this.senders.forEach(send => {
             //send.sender = new ndi.Sender(send.name)
-            send.data = new Uint8Array(4 * send.dim[0] * send.dim[1])
+            //send.data = new Float32Array(4 * send.dim[0] * send.dim[1])
+            send.data = new Uint8Array(4 * (SEND_FLOAT ? 4 : 1) * send.dim[0] * send.dim[1])
         })
 
         this.receivers.forEach(recv => {
             //recv.receiver = new ndi.Receiver(recv.name)
-            recv.tex = glutils.createTexture(gl, { width: recv.dim[0], height: recv.dim[1] }).allocate().bind().submit()
+            recv.tex = glutils.createTexture(gl, { float: SEND_FLOAT, width: recv.dim[0], height: recv.dim[1] }).allocate().bind().submit()
 
             server.requestService(recv.name, recv.tex.data)
         })
@@ -444,31 +447,39 @@ class App extends Window {
         }
         fbo.end()
 
-        send_fbo.begin()
+        
+        if (frame % 2 == 0) 
         {
-            let { width, height } = send_fbo
-            gl.viewport(0, 0, width, height);
-            gl.clearColor(0, 0, 0, 0)
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-            fbo.bind()
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            if (!SEND_FLOAT) {
+                send_fbo.begin()
+                {
+                    let { width, height } = send_fbo
+                    gl.viewport(0, 0, width, height);
+                    gl.clearColor(0, 0, 0, 0)
+                    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    
+                    fbo.bind()
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                    
+                    shaderman.shaders.show.begin()
+                    quad_vao.bind().draw()
+                }
+                send_fbo.end()
+            }
             
-            shaderman.shaders.show.begin()
-            quad_vao.bind().draw()
-        }
-        send_fbo.end()
-        //if (frame % 2 == 0) 
-        {
             senders.forEach(send => {
                 let [x, y] = send.pos
                 let [w, h] = send.dim
-                gl.getTextureSubImage(send_fbo.textures[0], 0, x, y, 0, w, h, 1,
-                    gl.RGBA, gl.UNSIGNED_BYTE, send.data.byteLength, send.data)
-                //send.sender.send(send.data, w, h)
+                if (SEND_FLOAT) {
+                    gl.getTextureSubImage(fbo.readbuffer.textures[0], 0, x, y, 0, w, h, 1, gl.RGBA, gl.FLOAT, send.data.byteLength, send.data)
+                } else {
+                    gl.getTextureSubImage(send_fbo.textures[0], 0, x, y, 0, w, h, 1, gl.RGBA, gl.UNSIGNED_BYTE, send.data.byteLength, send.data)
+                }
+                
+                //console.log("sending")
                 server.sendData(send.name, send.data)
             })
         }
@@ -495,7 +506,7 @@ class App extends Window {
             quad_vao.bind().draw()
 
             // new inputs:
-            //if (frame % 2) 
+            if (frame % 2) 
             {
                 receivers.forEach(recv => {
 

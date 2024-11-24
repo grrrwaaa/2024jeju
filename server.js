@@ -189,7 +189,13 @@ function sendData(name, data) {
 }
 
 // now to register interest:
-let received = {}
+let received = {
+    Estate: {
+        dst: {
+            seconds: 0
+        }
+    }
+}
 
 function requestService(name, bytes) {
     const client = new net.Socket()
