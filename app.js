@@ -20,6 +20,7 @@ let shaderman
 let show = 1
 let seconds = 0
 
+let SEND_PHYS = 1
 let SEND_FLOAT = 0
 let SEND_RATE_DIV = 3
 
