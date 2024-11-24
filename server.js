@@ -3,8 +3,10 @@ const assert = require("assert"),
     os = require("os"),
     path = require("path")
 const net = require('net')
+const udp = require('dgram');
 
 const PORT = 8888
+const MAX_PORT = 7400
 
 // this code only happens once. 
 let ip2name = {
@@ -48,6 +50,97 @@ if (localhost) {
         E: myIP
     }
 }
+
+let maxclient = udp.createSocket('udp4');
+
+function padString(s) {
+    // 4-byte padding:
+    let plen = Math.ceil((s.length+1)/4)*4
+    s = s.padEnd(plen, '\0')
+    return Buffer.from(s)
+}
+
+function sendMax(msg) {
+    if (maxclient) {
+        for (let [key, value] of Object.entries(msg)) {
+            switch (typeof value) {
+                case "number": {
+                    let res = []
+                    res.push(...padString("/"+key))
+                    res.push(44, 102, 0,  0) //...padString(",f"))
+                    // reverse for endianness
+                    res.push(...([...Buffer.from(new Float32Array([value]).buffer)].reverse()))
+                    maxclient.send(Buffer.from(res), MAX_PORT,'localhost');
+                    break;
+                }
+                case "string": {
+                    let res = []
+                    res.push(...padString("/"+key))
+                    res.push(44, 115, 0,  0) //...padString(",s"))
+                    res.push(...padString(value))
+                    maxclient.send(Buffer.from(res), MAX_PORT,'localhost');
+                    break;
+                }
+            }
+        }
+
+    }
+}
+
+//let maxserver
+
+// function startMaxServer() {
+//     maxserver = udp.createSocket('udp4');
+
+
+//     // emits when any error occurs
+//     maxserver.on('error',function(error){
+//         console.error('Error: ' + error);
+//         maxserver.close();
+//         maxserver = null
+//         process.exit(-1)
+//     });
+
+//     // emits on new datagram msg
+//     maxserver.on('message',function(msg,info){
+//         console.log('Data received from client : ' + msg.toString());
+
+//     });
+
+//     //emits when socket is ready and listening for datagram msgs
+//     maxserver.on('listening',function(){
+//         const address = maxserver.address();
+//         console.log('maxserver is listening at port' + address.port);
+//         console.log('maxserver ip :' + address.address);
+//         console.log('maxserver is IP4/IP6 : ' + address.family);
+//     });
+
+//     //emits after the socket is closed using socket.close();
+//     maxserver.on('close',function(){
+//         console.log('maxserver is closed !');
+//         maxserver = null
+
+//         setTimeout(function() {
+//             startMaxServer()
+//         }, 2000)
+//     });
+
+//     maxserver.bind(MAX_PORT);
+// }
+
+// function sendMax(msg) {
+//     if (!maxserver) return
+//     //sending msg
+//     maxserver.send(msg, MAX_PORT, 'localhost', function(error){
+//         if(error){
+//             console.error(error);
+//         }
+//     });
+// }
+
+// startMaxServer()
+
+//////////////////////////////////////  ;;;;;;;;;;;;;;;;;;;;;;;
 
 const server = net.createServer()
 server.on('error', (error) => {
@@ -229,7 +322,7 @@ module.exports = {
     name2ip, 
     myIP, localhost,
 
-    sendData,
+    sendData, sendMax,
     requestService, requestJSON,
     getData,
 }

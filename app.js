@@ -307,7 +307,7 @@ class App extends Window {
                 ]), 
             })
         } else {
-            server.requestJSON("Fstate", { seconds: 0 })
+            server.requestJSON("Estate", { seconds: 0 })
         }
     }
 
@@ -319,18 +319,25 @@ class App extends Window {
         let { lidar_stream, lidar_fbo, lidar_filter_fbo, lidar_vao } = this
 
         const isFloor = (this.title == "F");
+        const isExit = (this.title == "E")
 
-        // special case for floor:
-        if (isFloor) {
-
+        if (isExit) {
             // getTime() gives ms since epoch
             // wrap it in the duration:
             seconds = this.common.seconds || (new Date().getTime() / 1000) % sequence._duration
             this.common.seconds = seconds
+            const state = { seconds }
+            server.sendData("Estate", "\0"+JSON.stringify(state))
+            server.sendMax(state)
+        } else {
+            let state = server.getData("Estate").dst
+            seconds = state.seconds
+        }
+        // update parameters:
+        sequence.step(seconds)
 
-            // zero out the lidar:
-            server.sendData("Fstate", "\0"+JSON.stringify({ seconds }))
-
+        // special case for floor:
+        if (isFloor) {
             // only process lidar input if we received data:
             if (lidar_stream.frame) {
                 lidar_stream.frame = 0
@@ -385,22 +392,9 @@ class App extends Window {
                 }
                 lidar_filter_fbo.end()
             }
-        } else {
-            // not floor
-            let state = server.getData("Fstate").dst
-            seconds = state.seconds
-        }
-
-        
-
-        // update parameters:
-        sequence.step(seconds)
-
+        } 
 
         let received = 0
-
-        
-
         fbo.begin()
         {
             let { width, height } = fbo
