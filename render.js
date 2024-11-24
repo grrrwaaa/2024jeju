@@ -7,12 +7,12 @@ const { gl, glfw, glutils, Window, Shaderman } = require("../anode_gl/index.js")
 const App = require("./app.js")
 const AppPreviz = require("./app-previz.js")
 
-// sync on the global Window, not on each window:
-Window.syncfps = 60
+
 
 let overlap = 4
 let decorated = true
 let fullscreen = false
+let sync = true
 
 let win_div = 4
 
@@ -72,7 +72,7 @@ process.argv.forEach(function (val, index) {
             title = val;
             break;
         default: {
-            
+
         }
     }
 });
@@ -102,6 +102,7 @@ switch (title) {
             pos: [3840 / win_div, 2582 / win_div],
             decorated,
             fullscreen,
+            sync,
             final_rotate: 1,
         
             config: common.machines.E,
@@ -123,6 +124,7 @@ switch (title) {
             pos: [0, 0],
             decorated,
             fullscreen,
+            sync,
         
             config: common.machines.L,
             senders: [
@@ -143,6 +145,7 @@ switch (title) {
             pos: [0, (2582 + 1872) / win_div],
             decorated,
             fullscreen,
+            sync,
             final_rotate: 2,
         
             config: common.machines.R,
@@ -165,6 +168,7 @@ switch (title) {
             pos: [0, 2582 / win_div],
             decorated,
             fullscreen,
+            sync,
             final_rotate: 3,
         
             config: common.machines.F,

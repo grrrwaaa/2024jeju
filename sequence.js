@@ -7,7 +7,8 @@ function load(s, time) {
 
 return {
     _seq: [
-        load("ink.js", 0),
+        load("start.js", 0),
+        //load("ink.js", 30),
         load("descend.js", 60),
         load("blobs.js", 180),
         load("blobs_wild.js", 250),

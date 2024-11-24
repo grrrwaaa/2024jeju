@@ -5,7 +5,7 @@ vec2 getDrift(float t, float descend, float drift_amount, vec3 spherical, mat3 x
     //drift = v_normal * 4.;
     //drift += rotate(vec3(5, 0, 0), spherical, -t) + vec3(0, 0, -3);
     drift = 0.5*vec3(3.*sin(t + 5*spherical.z), -descend - 3*cos(0.1*t), -4*(cos(t + 2.*spherical.x)+0.));
-    drift *= drift_amount * 0.5;
+    drift *= drift_amount * 0.75;
     vec2 duv = (xyz2uv * drift).xy;
     return duv;
 }

@@ -1,6 +1,6 @@
 return {
     _name: "ink",
-    _time: 0,
+    _time: 30,
 
     // overall contrast -- 1 is no change, >1 is deeper contrast (darker darks), <1 is softer (lighter)
     u_gamma: 1.2,            // color intensity; 1 is no change, 0 is greyscale, 2 is oversaturated
@@ -38,8 +38,8 @@ return {
     // 0 or 1, changes how the fluid currents travel; subtle effect but I like 1 better than 0
     u_fluid_mode: 1,
     // should be 1 or very slightly less than 1. Probably 1 is ok. 
-    u_fluid_pressure_decay: 0.99,
-    u_fluid_matter_decay: 0.999,
+    u_fluid_pressure_decay: 0.9999,
+    u_fluid_matter_decay: 0.9999,
     u_fluid_velocity_decay: 1,
 
     // creatures:
