@@ -331,7 +331,7 @@ class App extends Window {
                 ]), 
             })
         } else {
-            server.requestJSON("Estate", { seconds: 0 })
+            server.requestJSON("Estate")
         }
     }
 
