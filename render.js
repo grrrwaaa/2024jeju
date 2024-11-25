@@ -7,11 +7,13 @@ const { gl, glfw, glutils, Window, Shaderman } = require("../anode_gl/index.js")
 const App = require("./app.js")
 const AppPreviz = require("./app-previz.js")
 
-
+process.on('uncaughtException', function (err) {
+    console.log(err);
+});
 
 let overlap = 4
 let decorated = true
-let fullscreen = false
+let fullscreen = true
 let sync = false
 
 let win_div = 4
