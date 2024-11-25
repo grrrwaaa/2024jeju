@@ -27,7 +27,8 @@
   "nodemonConfig": {
     "ignore": [
       "*.json",
-      "sequence.js"
+      "sequence.js",
+      "presets"
     ]
   }
 }

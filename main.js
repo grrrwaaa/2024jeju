@@ -12,13 +12,20 @@ Window.syncfps = 60
 
 let overlap = 1
 let decorated = false
-
 let win_div = 4
+let preset = "presets/default.js"
+
+// print process.argv
+process.argv.forEach(function (val, index) {
+    if (index > 1) preset = val
+});
 
 let common = {
     overlap,
     dev: true,
     timeoffset: 0,
+
+    preset,
 
     lidar_dim: [240*3, 320],
 
