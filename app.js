@@ -333,7 +333,6 @@ class App extends Window {
         }
 
         if (this.title != "E") {
-            console.log("looking for Estate")
             server.requestJSON("Estate")
         }
     }
