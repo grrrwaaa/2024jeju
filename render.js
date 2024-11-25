@@ -11,7 +11,7 @@ const AppPreviz = require("./app-previz.js")
 
 let overlap = 4
 let decorated = true
-let fullscreen = false
+let fullscreen = true
 let sync = true
 
 let win_div = 4
