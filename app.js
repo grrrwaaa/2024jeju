@@ -16,6 +16,7 @@ for (let monitor of monitors) {
     console.log(`monitor ${mode.width}x${mode.height}, ${mode.refreshRate}`)
 }
 
+let screenshot = 0
 let shaderman
 let show = 1
 let seconds = 0
