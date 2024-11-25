@@ -370,7 +370,8 @@ class App extends Window {
         // special case for floor:
         if (isFloor) {
             // only process lidar input if we received data:
-            if (lidar_stream.frame) {
+            //if (lidar_stream.frame) 
+            {
                 lidar_stream.frame = 0
 
                 // first, use the calibration .obj geometry to resample the texture
