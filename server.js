@@ -272,7 +272,7 @@ function requestJSON(name) {
     received[name] = state
 
     client.connect(PORT, host, function() {
-        console.log('Connected', name)
+        console.log('requestJSON connected', name)
         // send message to server to register this socket as interested in this name:
         client.write(name)
     })
