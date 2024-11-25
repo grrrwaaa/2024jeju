@@ -361,7 +361,7 @@ class App extends Window {
 
             //console.log("sending", str)
 
-            server.sendData("Estate", "\0"+str)
+            server.sendData("Estate", "|"+str)
             server.sendMax(state)
         } else {
             let state = server.getData("Estate")

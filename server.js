@@ -279,7 +279,7 @@ function requestJSON(name) {
 
         console.log(buf.toString())
 
-        let msg = buf.toString().split("\0").pop()
+        let msg = buf.toString().split("|").pop()
         if (msg) {
             state.dst = JSON.parse(msg)
             state.frame++
