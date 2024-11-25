@@ -29,7 +29,7 @@ const ipconfig = {
     "192.168.100.54": "E"
 }
 
-const myIP = "127.0.0.1"
+let myIP = "127.0.0.1"
 let islocalhost = true
 let mynames = ["F", "L", "R", "E"]
 
