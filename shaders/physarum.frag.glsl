@@ -319,6 +319,7 @@ void main() {
     
 
     out0.xyz = P.xyz;
+    out0.w = clamp(out0.w, 0., 1.);
 
     //if (u_init > 0.5 || t < 1) out0 = init(U);
     //if (u_init > 0.5) out0 = vec4(0);
