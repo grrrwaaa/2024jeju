@@ -357,7 +357,11 @@ class App extends Window {
             
             this.common.seconds = seconds
             const state = { seconds }
-            server.sendData("Estate", "\0"+JSON.stringify(state))
+            let str = JSON.stringify(state)
+
+            console.log("sending", str)
+
+            server.sendData("Estate", "\0"+str)
             server.sendMax(state)
         } else {
             let state = server.getData("Estate")
