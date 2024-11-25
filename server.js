@@ -277,6 +277,8 @@ function requestJSON(name) {
 
     client.on('data', buf => {
 
+        console.log(buf.toString())
+
         let msg = buf.toString().split("\0").pop()
         if (msg) {
             state.dst = JSON.parse(msg)

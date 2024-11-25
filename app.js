@@ -359,7 +359,7 @@ class App extends Window {
             const state = { seconds }
             let str = JSON.stringify(state)
 
-            console.log("sending", str)
+            //console.log("sending", str)
 
             server.sendData("Estate", "\0"+str)
             server.sendMax(state)
