@@ -17,7 +17,7 @@ let fullscreen = true
 let sync = false
 
 // sync on the global Window, not on each window:
-Window.syncfps = 60
+Window.syncfps = 30
 
 let win_div = 4
 
