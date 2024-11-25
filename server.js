@@ -258,7 +258,9 @@ function requestService(name, bytes) {
         // update stream marker:
         state.idx = idx
     })
-
+    client.on('error', function(ex) {
+        console.error("client error", ex);
+    });
     client.on('close', () => {
         console.log('Connection closed')
 
