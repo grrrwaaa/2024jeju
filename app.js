@@ -330,7 +330,9 @@ class App extends Window {
                     { float: true, mipmap: false, wrap: gl.BORDER }
                 ]), 
             })
-        } else {
+        }
+
+        if (this.title != "E") {
             console.log("looking for Estate")
             server.requestJSON("Estate")
         }
