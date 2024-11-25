@@ -14,6 +14,7 @@ let timeoffset = 0
 let shaderman
 let show = 1
 let showtext = 1
+let seconds = 0
 
 // let nav = {
 //     viewmatrix: mat4.create(),
@@ -71,10 +72,12 @@ class App extends Window {
         let { shaderman } = this
         let { nav } = this
 
-        let seconds = 0
+        seconds += dt
         if (sequence._duration) {
-            let state = server.getData("Estate").dst
-            seconds = state.seconds
+            let state = server.getData("Estate")
+            if (state && state.dst) seconds = state.dst.seconds
+
+            
             if (this.pointer.buttons[1]){ 
                 // let s = this.pointer.pos[0] * sequence._duration
                 // timeoffset = s - seconds
