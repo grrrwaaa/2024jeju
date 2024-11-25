@@ -159,7 +159,7 @@ server.on('connection', sock => {
     sock.on('data', msg => {
         // this would be registering the socket for certain names?
         let name = msg.toString()
-        console.log("someone registered for", name)
+        console.log("someone registered to provide", name)
         if (!registered[name]) registered[name] = []
         registered[name].push(sock)
     })
@@ -197,6 +197,8 @@ let received = {
 function requestService(name, bytes) {
     const client = new net.Socket()
     const host = name2ip[name[0]]
+    
+    console.log("host for", name, host)
 
     const state = {
         name, 
