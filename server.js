@@ -32,7 +32,7 @@ for (const [name, net] of Object.entries(networks)) {
     const familyV4Value = typeof net.family === 'string' ? 'IPv4' : 4
     if (net.family === familyV4Value && !net.internal) {
         let ip = net.address
-        console.log(ip)
+        console.log(ip, ip2name[ip])
         if (ip2name[ip]) {
             myIP = ip
             localhost = false
