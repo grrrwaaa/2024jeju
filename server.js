@@ -159,6 +159,7 @@ server.on('connection', sock => {
     sock.on('data', msg => {
         // this would be registering the socket for certain names?
         let name = msg.toString()
+        console.log("someone registered for", name)
         if (!registered[name]) registered[name] = []
         registered[name].push(sock)
     })
@@ -180,6 +181,7 @@ server.listen(PORT, myIP, () => {
 })
 
 function sendData(name, data) {
+    console.log(name, registered[name])
     // need list of sockets interested in this name
     if (!registered[name]) return;
     
@@ -289,7 +291,7 @@ function requestJSON(name) {
     })
 
     client.on('close', () => {
-        console.log('Connection closed')
+        console.log('Connection closed', name)
 
         // schedule a reconnection attempt:
         setTimeout(function() {

@@ -360,7 +360,6 @@ class App extends Window {
             let str = JSON.stringify(state)
 
             //console.log("sending", str)
-
             server.sendData("Estate", "|"+str)
             server.sendMax(state)
         } else {
