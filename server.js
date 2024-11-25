@@ -255,13 +255,13 @@ function requestService(name, bytes) {
     })
 }
 
-function requestJSON(name, init={}) {
+function requestJSON(name) {
     const client = new net.Socket()
     const host = name2ip[name[0]]
 
     const state = {
         name, 
-        dst: init,
+        dst: null,
         idx: 0,
         frame: 0
     }
