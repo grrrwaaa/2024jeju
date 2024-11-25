@@ -32,6 +32,7 @@ for (const [name, net] of Object.entries(networks)) {
     const familyV4Value = typeof net.family === 'string' ? 'IPv4' : 4
     if (net.family === familyV4Value && !net.internal) {
         let ip = net.address
+        console.log(ip)
         if (ip2name[ip]) {
             myIP = ip
             localhost = false
@@ -197,7 +198,7 @@ let received = {
 function requestService(name, bytes) {
     const client = new net.Socket()
     const host = name2ip[name[0]]
-    
+
     console.log("host for", name, host)
 
     const state = {
