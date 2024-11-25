@@ -16,6 +16,7 @@ let decorated = true
 let fullscreen = true
 let sync = false
 
+
 let win_div = 4
 
 let common = {
