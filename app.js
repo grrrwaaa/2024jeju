@@ -701,6 +701,7 @@ class App extends Window {
         final_fbo.bind()
 
         if (isFloor) {
+            
             //lidar_fbo.bind()
             lidar_filter_fbo.bind()
         }
