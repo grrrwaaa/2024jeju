@@ -331,6 +331,7 @@ class App extends Window {
                 ]), 
             })
         } else {
+            console.log("looking for Estate")
             server.requestJSON("Estate")
         }
     }
