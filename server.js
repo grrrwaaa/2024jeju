@@ -320,7 +320,7 @@ function getData(name) {
 
 module.exports = {
     name2ip, 
-    myIP, localhost,
+    myIP, islocalhost,
 
     sendData, sendMax,
     requestService, requestJSON,
