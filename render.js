@@ -14,7 +14,7 @@ process.on('uncaughtException', function (err) {
 let overlap = 4
 let decorated = true
 let fullscreen = true
-let sync = false
+let sync = true
 
 
 let win_div = 4

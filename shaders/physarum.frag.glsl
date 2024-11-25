@@ -293,7 +293,7 @@ void main() {
     // move it:
     rot = rotate_mat(twopi * P.z);
     vec2 vel;
-    vel += (rot * vec2(u_trail_effect_speed*oldtrail, 0.));
+    vel += (rot * vec2(u_trail_effect_speed*clamp(oldtrail, 0, 1), 0.));
     //P.xy += (rot * vec2(speed*dt*oldtrail, 0.));
 
     // get fluid at this particle:
