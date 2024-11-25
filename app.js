@@ -313,8 +313,6 @@ class App extends Window {
         // special case for floor:
         if (this.title == "F") {
 
-            gitpull()
-            
             Object.assign(this, {
                 // this is the lidar data stream over NDI:
                 lidar_stream: ndi_texture(gl, "TOF_NDI"),
@@ -324,7 +322,6 @@ class App extends Window {
                 ]), 
                 // this is the calibration geometry for it:
                 lidar_vao: glutils.createVao(gl, glutils.geomFromOBJ(fs.readFileSync("models/lidar.obj", "utf8"), { soup: true })),
-
                 // this is the filtered & processed lidar data
                 lidar_filter_fbo: glutils.makeGbufferPair(gl, ...common.lidar_dim, [
                     { float: true, mipmap: false, wrap: gl.BORDER }
