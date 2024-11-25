@@ -265,7 +265,7 @@ class App extends Window {
         ])
 
         let final_fbo = glutils.makeGbuffer(gl, fbo.width, fbo.height, [
-            { float: false, mipmap: false, wrap: gl.CLAMP_TO_EDGE }, 
+            { float: false, mipmap: true, wrap: gl.CLAMP_TO_EDGE }, 
         ])
 
         console.log("content", options.config.content_res)
@@ -703,11 +703,11 @@ class App extends Window {
         if (isFloor) {
             
             //lidar_fbo.bind()
-            lidar_filter_fbo.bind()
+            //lidar_filter_fbo.bind()
         }
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         // if (this.isFLoor) {
         //     lidar_filter_fbo.bind()
