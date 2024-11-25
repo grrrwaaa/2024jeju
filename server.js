@@ -181,7 +181,7 @@ server.listen(PORT, myIP, () => {
 })
 
 function sendData(name, data) {
-    console.log(name, registered[name])
+    //console.log(name, registered[name])
     // need list of sockets interested in this name
     if (!registered[name]) return;
     
