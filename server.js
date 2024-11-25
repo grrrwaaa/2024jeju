@@ -262,6 +262,8 @@ function requestJSON(name) {
     const client = new net.Socket()
     const host = name2ip[name[0]]
 
+    console.log("host for", name, host)
+
     const state = {
         name, 
         dst: null,
