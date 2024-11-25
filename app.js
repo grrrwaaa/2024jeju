@@ -10,6 +10,21 @@ const ndi_texture = require("./ndi.js")
 const Params = require("./params.js")
 const server = require("./server.js")
 
+function dataFlipY(buf, width, height) {
+    let buf1 = new Uint8Array(width*height*4)
+    for (let y=0; y<height; y++) {
+        for (let x=0; x<width; x++) {
+            let idx = (y*width+x)*4
+            let idx1 = ((height-1-y)*width+x)*4
+            buf1[idx1+0] = buf[idx+0]
+            buf1[idx1+1] = buf[idx+1]
+            buf1[idx1+2] = buf[idx+2]
+            buf1[idx1+3] = buf[idx+3]
+        }
+    }
+    return buf1
+}
+
 let monitors = glfw.getMonitors()
 for (let monitor of monitors) {
     let mode = glfw.getVideoMode(monitor)
