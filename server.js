@@ -22,28 +22,37 @@ let name2ip = {
     E: "192.168.100.54"
 }
 
+const ipconfig = {
+    "192.168.100.51": "F",
+    "192.168.100.52": "R",
+    "192.168.100.53": "L",
+    "192.168.100.54": "E"
+}
 
 const myIP = "127.0.0.1"
-const localhost = true
+let islocalhost = true
 let mynames = ["F", "L", "R", "E"]
 
 const networks = os.networkInterfaces()
-for (const [name, net] of Object.entries(networks)) {
-    const familyV4Value = typeof net.family === 'string' ? 'IPv4' : 4
-    if (net.family === familyV4Value && !net.internal) {
-        let ip = net.address
-        console.log(ip, ip2name[ip])
-        if (ip2name[ip]) {
-            myIP = ip
-            localhost = false
-            mynames = [ip2name[ip]]
-            console.log("I am machine", mynames)
+for (const name of Object.keys(networks)) {
+    for (const net of networks[name]) {
+        const familyV4Value = typeof net.family === 'string' ? 'IPv4' : 4
+        if (net.family === familyV4Value && !net.internal) {
+            let ip = net.address
+            console.log("IP", ip)
+            if (ipconfig[ip]) {
+                myIP = ip
+                islocalhost = false
+                mynames = [ip2name[ip]]
+                console.log("I am machine", mynames)
+            }
         }
     }
 }
-console.log("myIP", myIP, localhost)
 
-if (localhost) {
+console.log("myIP", myIP, "local?", islocalhost)
+
+if (islocalhost) {
     name2ip = {
         F: myIP,
         L: myIP,
