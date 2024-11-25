@@ -293,14 +293,14 @@ function requestJSON(name) {
 
     client.on('data', buf => {
 
-        console.log(buf.toString())
+        //console.log(buf.toString())
 
         let msg = buf.toString().split("|").pop()
         if (msg) {
             state.dst = JSON.parse(msg)
             state.frame++
 
-            console.log(state)
+            //console.log(state)
         }
     })
 
