@@ -169,7 +169,7 @@ server.on('connection', sock => {
     sock.on('data', msg => {
         // this would be registering the socket for certain names?
         let name = msg.toString()
-        console.log("someone registered to provide", name)
+        console.log("registered", name)
         if (!registered[name]) registered[name] = []
         registered[name].push(sock)
     })

@@ -347,6 +347,7 @@ class App extends Window {
         const isExit = (this.title == "E")
 
         seconds += dt
+        if (seconds > sequence._duration) seconds -= sequence._duration
 
         if (isExit) {
             // getTime() gives ms since epoch
