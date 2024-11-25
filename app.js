@@ -699,6 +699,21 @@ class App extends Window {
             console.log(`${this.title}: fps ${Math.round(1/dt)} seconds ${Math.round(seconds)} ${sequence._name} (${Math.round(100 * sequence._time/sequence._duration)}%)`)
         }
 
+        if (screenshot) {
+            let x = 0, y = 0
+            let [width, height] = dim
+            let data = new Uint8Array(width*height*4)
+            gl.readPixels(x, y, width, height, gl.RGBA, gl.UNSIGNED_BYTE, data)
+            // // you could write this into a PNG file:
+            const pnglib = require("pngjs").PNG
+            let filename = `screenshot.png`
+            fs.writeFileSync(filename, pnglib.sync.write({
+                width, height,
+                data: dataFlipY(data, width, height)
+            }))
+            console.log("wrote", filename)
+            screenshot = 0
+        }
     }
 
     
@@ -712,6 +727,9 @@ class App extends Window {
                     this.setFullscreen(!this.fullscreen);
                     break;
                 }
+                case 83: {  //"s"
+                    screenshot = 1
+                } break;
             }
 
         }
