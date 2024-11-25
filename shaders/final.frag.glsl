@@ -28,6 +28,7 @@ uniform vec3 u_creatures_rgb;
 uniform vec3 u_creatures_rgb1;
 uniform vec3 u_creatures_hsl;
 uniform vec3 u_creatures_hsl_inside;
+uniform float u_dt;
 
 in vec2 v_uv;
 in vec3 v_normal;
@@ -53,7 +54,7 @@ void main() {
     coordinates1(normal, spherical, u_wall_u, uv2xyz, xyz2uv);
 
     vec3 drift;
-    vec2 duv = getDrift(u_seconds, u_descend, u_drift_amount, spherical, xyz2uv, drift);
+    vec2 duv = getDrift(u_seconds, u_dt, u_descend, u_drift_amount, spherical, xyz2uv, drift);
 
     ivec2 dim = textureSize(u_tex_fluid, 0);
     vec2 ut = 1./dim;

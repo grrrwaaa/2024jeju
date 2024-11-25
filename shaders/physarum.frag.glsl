@@ -16,6 +16,7 @@ uniform vec3 u_wall_u;
 uniform float u_descend;
 uniform float u_drift_amount;
 uniform float u_init;
+uniform float u_dt;
 
 //uniform float u_deposit_rate;
 
@@ -134,7 +135,7 @@ void main() {
     coordinates1(normal, spherical, u_wall_u, uv2xyz, xyz2uv);
 
     vec3 drift;
-    vec2 duv = getDrift(u_seconds, u_descend, u_drift_amount, spherical, xyz2uv, drift);
+    vec2 duv = getDrift(u_seconds, u_dt, u_descend, u_drift_amount, spherical, xyz2uv, drift);
     vec4 fluid = texture(u_tex_fluid, v_uv);
 
     vec2 dv = duv*u_drift_effect_speed + (fluid.xy - XYo)*u_fluid_effect_speed;
@@ -309,17 +310,17 @@ void main() {
     mat3 Puv2xyz, Pxyz2uv;
     coordinates1(Pnormal, -Pspherical, u_wall_u, Puv2xyz, Pxyz2uv);
     vec3 Pdrift;
-    vec2 Pduv = getDrift(t, u_descend, u_drift_amount, Pspherical, Pxyz2uv, drift);
+    vec2 Pduv = getDrift(t, u_dt, u_descend, u_drift_amount, Pspherical, Pxyz2uv, drift);
     P.xy += Pduv * vec2(1, -1) * u_drift_effect_speed;
 
     
-    P.xy += vel;
+    P.xy += vel * u_dt/0.02;
     // get new z:
     P.z = mod((atan(vel.y, vel.x))/twopi, 1);
     
 
     out0.xyz = P.xyz;
-    out0.w = clamp(out0.w, 0., 1.);
+    out0.w = clamp(out0.w, 0., 1.5);
 
     //if (u_init > 0.5 || t < 1) out0 = init(U);
     //if (u_init > 0.5) out0 = vec4(0);

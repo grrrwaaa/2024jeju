@@ -23,6 +23,7 @@ uniform float u_fluid_mode;
 uniform float u_fluid_pressure_decay;
 uniform float u_fluid_matter_decay;
 uniform float u_fluid_velocity_decay;
+uniform float u_dt;
 
 in vec2 v_uv;
 in vec3 v_normal;
@@ -194,7 +195,7 @@ void main() {
     mat3 uv2xyz, xyz2uv;
     coordinates1(normal, spherical, u_wall_u, uv2xyz, xyz2uv);
     vec3 drift;
-    vec2 duv = getDrift(u_seconds, u_descend, u_drift_amount, spherical, xyz2uv, drift);
+    vec2 duv = getDrift(u_seconds, u_dt, u_descend, u_drift_amount, spherical, xyz2uv, drift);
 
 
     vec4 OUT = vec4(0);

@@ -467,6 +467,7 @@ class App extends Window {
             .uniform("u_unique", this.unique)
             .uniform("u_wall_u", this.wall_U)
             .uniform("u_init", seconds < 5 ? 1 : 0)
+            .uniform("u_dt", dt)
             .uniformsFrom(sequence)
 
             wall_vao.bind().draw()
@@ -620,45 +621,46 @@ class App extends Window {
             .uniform("u_unique", this.unique)
             .uniform("u_wall_u", this.wall_U)
             .uniform("u_seconds", seconds)
+            .uniform("u_dt", dt)
             //.uniform("u_init", +(frame < 1))
             .uniformsFrom(sequence)
             wall_vao.bind().draw()
 
-            {
-                receivers.forEach(recv => {
+            // {
+            //     receivers.forEach(recv => {
 
-                    if (recv.name[2] == "*" && server.getData(recv.name).frame) 
-                    {
-                        let [w, h] = recv.dim
-                        let [x, y] = recv.pos
-                        let a = recv.angle
+            //         if (recv.name[2] == "*" && server.getData(recv.name).frame) 
+            //         {
+            //             let [w, h] = recv.dim
+            //             let [x, y] = recv.pos
+            //             let a = recv.angle
 
-                        recv.tex.bind().submit()
+            //             recv.tex.bind().submit()
                         
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            //             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            //             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            //             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            //             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-                        let modelmatrix = mat4.create()
-                        let projmatrix = mat4.create()
+            //             let modelmatrix = mat4.create()
+            //             let projmatrix = mat4.create()
 
-                        //mat4.frustum(projmatrix, 0, fbo.width, 0, fbo.height, -1, 1)
-                        mat4.ortho(projmatrix, 0, fbo.width, 0, fbo.height, 0, 1)
+            //             //mat4.frustum(projmatrix, 0, fbo.width, 0, fbo.height, -1, 1)
+            //             mat4.ortho(projmatrix, 0, fbo.width, 0, fbo.height, 0, 1)
 
-                        mat4.translate(modelmatrix, modelmatrix, [x, y, 0])
-                        mat4.rotateZ(modelmatrix, modelmatrix, a)
-                        mat4.scale(modelmatrix, modelmatrix, [w, h, 1])
+            //             mat4.translate(modelmatrix, modelmatrix, [x, y, 0])
+            //             mat4.rotateZ(modelmatrix, modelmatrix, a)
+            //             mat4.scale(modelmatrix, modelmatrix, [w, h, 1])
 
 
-                        shaderman.shaders.physrect.begin()
-                        .uniform("u_modelmatrix", modelmatrix)
-                        .uniform("u_projmatrix", projmatrix)
-                        .uniform("u_rot", a)
-                        unit_quad_vao.bind().draw()
-                    }
-                })
-            }
+            //             shaderman.shaders.physrect.begin()
+            //             .uniform("u_modelmatrix", modelmatrix)
+            //             .uniform("u_projmatrix", projmatrix)
+            //             .uniform("u_rot", a)
+            //             unit_quad_vao.bind().draw()
+            //         }
+            //     })
+            // }
 
             gl.disable(gl.BLEND)
             gl.depthMask(true)
@@ -688,6 +690,7 @@ class App extends Window {
             .uniform("u_tex_normal", 3)
             .uniform("u_wall_u", this.wall_U)
             .uniform("u_seconds", seconds)
+            .uniform("u_dt", dt)
             .uniformsFrom(sequence)
             //quad_vao.bind().draw()
             wall_vao.bind().draw()
@@ -722,7 +725,7 @@ class App extends Window {
         quad_vao.bind().draw()
         
         if (Math.floor(t+dt) > Math.floor(t)) {
-            console.log(`${this.title}: fps ${Math.round(1/dt)} seconds ${Math.round(seconds)} ${sequence._name} (${Math.round(100 * sequence._time/sequence._duration)}%)`)
+            console.log(`${this.title}: fps ${Math.round(1/dt)} ${dt/0.02} seconds ${Math.round(seconds)} ${sequence._name} (${Math.round(100 * sequence._time/sequence._duration)}%)`)
         }
 
         if (screenshot) {
