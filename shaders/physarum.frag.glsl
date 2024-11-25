@@ -321,4 +321,5 @@ void main() {
     out0.xyz = P.xyz;
 
     //if (u_init > 0.5 || t < 1) out0 = init(U);
+    //if (u_init > 0.5) out0 = vec4(0);
 }

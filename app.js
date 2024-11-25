@@ -465,7 +465,7 @@ class App extends Window {
             .uniform("u_random", [Math.random(), Math.random(), Math.random(), Math.random()])
             .uniform("u_unique", this.unique)
             .uniform("u_wall_u", this.wall_U)
-            .uniform("u_init", frame < 10 ? 1 : 0)
+            .uniform("u_init", seconds < 5 ? 1 : 0)
             .uniformsFrom(sequence)
 
             wall_vao.bind().draw()
