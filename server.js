@@ -256,6 +256,7 @@ function requestService(name, bytes) {
 }
 
 function requestJSON(name) {
+    console.log("connecting for Estate")
     const client = new net.Socket()
     const host = name2ip[name[0]]
 
