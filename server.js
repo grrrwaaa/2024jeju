@@ -260,6 +260,11 @@ function requestService(name, bytes) {
     })
     client.on('error', function(ex) {
         console.error("client error", ex);
+
+        // schedule a reconnection attempt:
+        setTimeout(function() {
+            requestService(name, bytes)
+        }, 3000)
     });
     client.on('close', () => {
         console.log('Connection closed')
@@ -306,12 +311,20 @@ function requestJSON(name) {
         }
     })
 
+    client.on('error', function(ex) {
+        console.error("client error", ex);
+
+        // schedule a reconnection attempt:
+        setTimeout(function() {
+            requestJSON(name)
+        }, 3000)
+    });
     client.on('close', () => {
         console.log('Connection closed', name)
 
         // schedule a reconnection attempt:
         setTimeout(function() {
-            requestService(name, bytes)
+            requestJSON(name)
         }, 1000)
     })
 }
