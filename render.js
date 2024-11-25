@@ -13,7 +13,7 @@ process.on('uncaughtException', function (err) {
 
 let overlap = 4
 let decorated = true
-let fullscreen = true
+let fullscreen = false
 let sync = false
 
 
