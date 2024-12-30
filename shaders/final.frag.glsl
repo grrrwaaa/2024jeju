@@ -138,7 +138,7 @@ void main() {
         caustic = pow(caustic, 0.6);
         out0.rgb = vec3(caustic);
 
-        out0.rgb = vec3(fluid.z) * u_final_pressure;
+        out0.rgb = vec3(fluid.z) * u_final_pressure * 2.;
     }
 
     // out0.rgb = vec3(sin(t)*0.45+0.55);
