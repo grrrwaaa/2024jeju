@@ -236,8 +236,8 @@ class App extends Window {
             vertexComponents: 2,
             vertices: new Float32Array([
                 1, 1,
-                1, 0,
-                0.3, 1
+                1, 0.2,
+                0.4, 1
             ]),
             indices: new Uint32Array([
                 0, 1, 2
