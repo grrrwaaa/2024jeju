@@ -239,10 +239,9 @@ class App extends Window {
                 1, 0.25,
                 0.45, 1,
 
-
                 1, -1,
-                1, -0.23,
-                0.43, -1,
+                1, -0.25,
+                0.45, -1,
             ]),
             indices: new Uint32Array([
                 0, 1, 2,
