@@ -194,8 +194,8 @@ return {
             u_final_creatures: 0.75,
 
             // colors:
-            u_creatures_hsl: [0.5, 0.7, 0.2],
-            u_creatures_hsl_inside: [0.6667, 1, 0.3],
+            u_creatures_hsl: [0.5, 0.3, 0.2],
+            u_creatures_hsl_inside: [0.6667, 0.6, 0.3],
             // base color of ocean (hue, sat, lightness in 0..1)
             u_ocean_hsl: [0.6, 0.5, 0.55],
             // how this varies by vertical 
@@ -279,7 +279,7 @@ return {
             u_final_creatures: 0.55,
 
             // colors:
-            u_creatures_hsl: [0,33, 0.5, 0.1],
+            u_creatures_hsl: [0.33, 0.5, 0.1],
             u_creatures_hsl_inside: [0.73, 0.9, 0.4],
             // base color of ocean (hue, sat, lightness in 0..1)
             u_ocean_hsl: [0.6, 0.5, 0.55],
