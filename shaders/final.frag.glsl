@@ -130,7 +130,7 @@ void main() {
         //out0.rgb = vec3(mod(v_uv.y * 10., 1.) );
     }
 
-    out0.rgb = sin(t)*0.5+0.5;
+    out0.rgb = vec3(sin(t)*0.5+0.5);
 
     out0.a = 1.0;
 }
