@@ -231,6 +231,14 @@ class App extends Window {
 
         wall_flat_geom = glutils.geomFromOBJ(fs.readFileSync(`models/${this.title}_flat.obj`, "utf8"))
         let wall_vao = glutils.createVao(gl, wall_flat_geom)
+
+        let black_geom = glutils.geomFromOBJ(`
+v -1 -1 0
+v -1 0 0
+v 0 -1 0
+f 1 2 3     
+        `)
+        let black_vao = glutils.createVao(gl, black_geom)
         
         shaderman = new Shaderman(gl)
         
@@ -338,7 +346,7 @@ class App extends Window {
     draw(gl) {
         let { t, dt, frame, dim, sequence } = this
         let [ width, height ] = dim
-        let { quad_vao, wall_vao, unit_quad_vao, fbo_coords, send_fbo, fbo, physarum_fbo, final_fbo } = this
+        let { quad_vao, wall_vao, unit_quad_vao, fbo_coords, send_fbo, fbo, physarum_fbo, final_fbo, black_vao } = this
         let { senders, receivers } = this
         let { lidar_stream, lidar_fbo, lidar_filter_fbo, lidar_vao } = this
 
@@ -695,6 +703,13 @@ class App extends Window {
             .uniformsFrom(sequence)
             //quad_vao.bind().draw()
             wall_vao.bind().draw()
+
+            if (isExit) {
+                // black off the two triangles:
+                shaderman.shaders.black.begin()
+
+                black_vao.bind().draw()
+            }
         }
         final_fbo.end()
 
