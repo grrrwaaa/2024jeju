@@ -369,6 +369,9 @@ class App extends Window {
         const isExit = (this.title == "E")
 
         seconds += dt
+
+        seconds = 60
+
         if (seconds > sequence._duration) seconds -= sequence._duration
 
         if (isExit) {
