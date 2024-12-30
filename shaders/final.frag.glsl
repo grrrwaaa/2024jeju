@@ -132,7 +132,8 @@ void main() {
 
         out0.rgb = vec3(0);
         out0.rgb = vec3(dots);
-        float caustic = abs(-0.25*(e.x - w.x + n.y - s.y) * 10.);
+        float caustic = ((e.x - w.x + n.y - s.y) * -5.);
+        if (mod(t, 3) < 1.5) caustic = abs(caustic);
         out0.rgb = vec3(caustic);
     }
 
