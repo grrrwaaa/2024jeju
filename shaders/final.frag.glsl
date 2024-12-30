@@ -156,7 +156,8 @@ void main() {
         vec3 aura_hsl = vec3(0.4, 0.8, 0.8);
         vec3 aura_hsl_variation = vec3(-0.5, 0., 0.);
         vec3 aura = hsl2rgb(aura_hsl + fluid.w*aura_hsl_variation)*matter*u_final_aura;
-        out0.rgb = max(out0.rgb, aura);
+        if (mod(t, 3) < 1.5)        out0.rgb = max(out0.rgb, aura);
+       else out0.rgb += aura;
     }
 
     // out0.rgb = vec3(sin(t)*0.45+0.55);
