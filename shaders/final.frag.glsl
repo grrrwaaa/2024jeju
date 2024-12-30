@@ -109,20 +109,20 @@ void main() {
     out0 += pow(physarum.w,1.5)*u_final_trails;
     
 
-    if (mod(t, 2) < 1.) {
-        // final pass:
-        out0.rgb = adjustSaturation(out0.rgb, u_saturation-1.);
-        out0.rgb = pow(out0.rgb, vec3(u_gamma));
-    }
+    // final pass:
+    out0.rgb = adjustSaturation(out0.rgb, u_saturation-1.);
+    out0.rgb = pow(out0.rgb, vec3(u_gamma));
 
     //out0.rgb = vec4(fluid.z) * u_final_pressure;
     //out0.rgb = vec3(1);
 
-    if (mod(t, 2) < 1.) {
+   // if (mod(t, 3) < 1.) {
+
+        out0.rgb = pow(out0.rgb, vec3(1 + sin(t)));
 
         //out0 = fluid;
         //out0 = physarum.wwww;
         //out0.rgb = vec3(mod(v_uv.y * 10., 1.) );
-    }
+  //  }
     out0.a = 1.0;
 }
