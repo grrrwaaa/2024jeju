@@ -314,7 +314,7 @@ void main() {
     OUT.w = clamp(OUT.w, 0., 1.);
 
     
-    vec3 target = normalize(vec3(sin(t/11), cos(t/13)*0.4, sin(t/7)+0.25));
+    vec3 target = normalize(vec3(-sin(t/11), cos(t/13)*0.4, sin(t/7)+0.25));
     vec3 dirxyz = target - sphnormal;
     vec2 diruv = (xyz2uv * dirxyz).xy;
     float g = exp(-250.*abs(length(dirxyz)-0.1*sin(t)));
