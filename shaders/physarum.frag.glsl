@@ -221,7 +221,7 @@ void main() {
         trail = mix(trail, avg, u_blur_rate);
 
         // decay:
-        trail *= u_decay_rate;
+        trail *= u_decay_rate * 0.9;
 
         // deposit from nearest particle:
         trail += (u_deposit_rate * exp(-dist*dist));
