@@ -122,7 +122,7 @@ void main() {
 
         //out0.rgb = pow(out0.rgb, vec3(0.5));
 
-        out0.rgb = adjustSaturation(out0.rgb, -1);
+        out0.rgb = adjustSaturation(out0.rgb, 1);
 
 
         //out0 = fluid;
