@@ -160,7 +160,7 @@ void main() {
 
         //out0.rgb = vec3(-spherical.y);
 
-        out0.rgb += vec3(caustic);
+        out0.rgb = max(out0.rgb, vec3(caustic));
 
     }
 
