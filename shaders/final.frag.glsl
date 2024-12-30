@@ -157,6 +157,8 @@ void main() {
         vec3 aura_hsl = vec3(0.4, 0.8, 0.8);
         vec3 aura_hsl_variation = vec3(-0.5, 0., 0.);
         vec3 aura = hsl2rgb(aura_hsl + fluid.w*aura_hsl_variation)*matter*u_final_aura;
+        // remove aura in floor:
+        aura *= max(spherical.y, 0.);
         out0.rgb = mix(out0.rgb + aura, max(out0.rgb, aura), -spherical.y);
 
         //out0.rgb = vec3(-spherical.y);
