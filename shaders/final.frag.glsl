@@ -116,13 +116,14 @@ void main() {
     //out0.rgb = vec4(fluid.z) * u_final_pressure;
     //out0.rgb = vec3(1);
 
-    adjustSaturation(out0.rgb, sin(t));
+    //adjustSaturation(out0.rgb, sin(t));
 
     if (mod(t, 3) < 2.) {
 
         //out0.rgb = pow(out0.rgb, vec3(0.5));
 
-        
+        adjustSaturation(out0.rgb, -1);
+
 
         //out0 = fluid;
         //out0 = physarum.wwww;
