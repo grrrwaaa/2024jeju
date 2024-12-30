@@ -119,7 +119,7 @@ void main() {
 
     //adjustSaturation(out0.rgb, sin(t));
 
-    if (mod(t, 3) < 3.) {
+    if (mod(t, 3) < 2.) {
 
         //out0.rgb = pow(out0.rgb, vec3(0.5));
 
