@@ -232,12 +232,17 @@ class App extends Window {
         wall_flat_geom = glutils.geomFromOBJ(fs.readFileSync(`models/${this.title}_flat.obj`, "utf8"))
         let wall_vao = glutils.createVao(gl, wall_flat_geom)
 
-        let black_geom = glutils.geomFromOBJ(`
-v -1 -1 0
-v -1 0 0
-v 0 -1 0
-f 1 2 3     
-        `)
+        let black_geom = {
+            vertexComponents: 2,
+            vertices: new Float32Array([
+                -1, -1,
+                -1, 0,
+                0, -1
+            ]),
+            indices: new Uint32Array([
+                0, 1, 2
+            ]),
+        }
         let black_vao = glutils.createVao(gl, black_geom)
         
         shaderman = new Shaderman(gl)
