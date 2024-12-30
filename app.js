@@ -107,6 +107,8 @@ class App extends Window {
                     }
                     wall_flat_geom = geom
                     this.wall_U = [0, 1, 0]
+
+                    this.final_gamma = [1.2, 1, 1]
                 } break;
                 case "L": {
                     let texmatrix = mat3.create()
