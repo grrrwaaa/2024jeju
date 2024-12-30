@@ -713,7 +713,7 @@ class App extends Window {
                 // black off the two triangles:
                 shaderman.shaders.black.begin()
 
-                black_vao.bind().draw()
+                //black_vao.bind().draw()
             }
         }
         final_fbo.end()
