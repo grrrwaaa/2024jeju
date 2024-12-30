@@ -237,10 +237,16 @@ class App extends Window {
             vertices: new Float32Array([
                 1, 1,
                 1, 0.2,
-                0.4, 1
+                0.4, 1,
+
+
+                1, -1,
+                1, -0.2,
+                0.4, -1,
             ]),
             indices: new Uint32Array([
-                0, 1, 2
+                0, 1, 2,
+                3, 4, 5
             ]),
         }
         let black_vao = glutils.createVao(gl, black_geom)
