@@ -810,6 +810,6 @@ if (require.main === module) {
         title: "window0"
     })
 
-    Window.syncfps = 60
+    //Window.syncfps = 60
     Window.animate()
 }
