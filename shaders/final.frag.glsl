@@ -158,7 +158,7 @@ void main() {
         vec3 aura = hsl2rgb(aura_hsl + fluid.w*aura_hsl_variation)*matter*u_final_aura;
         out0.rgb = mix(out0.rgb + aura, max(out0.rgb, aura), mod(t, 3)/3.);
 
-        out0.rgb = vec3(-spherical.y);
+        out0.rgb = vec3(spherical.y*0.5+0.5);
 
     }
 
