@@ -113,7 +113,8 @@ void main() {
     out0.rgb = pow(out0.rgb, vec3(u_gamma));
 
 
-    out0.rgb = vec4(fluid.z) * u_final_pressure;
+    //out0.rgb = vec4(fluid.z) * u_final_pressure;
+    out0.rgb = vec3(1);
 
     //out0 = fluid;
     //out0 = physarum.wwww;
