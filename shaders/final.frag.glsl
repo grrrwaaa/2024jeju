@@ -114,7 +114,7 @@ void main() {
 
 
     //out0.rgb = vec4(fluid.z) * u_final_pressure;
-    out0.rgb = vec3(1);
+    out0.rgb = vec3(0);
 
     //out0 = fluid;
     //out0 = physarum.wwww;
