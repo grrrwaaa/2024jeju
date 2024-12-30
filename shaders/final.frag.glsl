@@ -119,7 +119,7 @@ void main() {
 
     //adjustSaturation(out0.rgb, sin(t));
 
-    if (mod(t, 3) < 2.) {
+    if (mod(t, 3) < 3.) {
 
         //out0.rgb = pow(out0.rgb, vec3(0.5));
 
@@ -132,6 +132,7 @@ void main() {
 
         out0.rgb = vec3(0);
         out0.rgb = vec3(dots);
+        float caustic = abs(-0.25*(e.x - w.x + n.y - s.y) * 10.);
         out0.rgb = vec3(caustic);
     }
 
