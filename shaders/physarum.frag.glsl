@@ -226,7 +226,7 @@ void main() {
         // deposit from nearest particle:
         //trail += (u_deposit_rate * exp(-dist*dist));
 
-        trail = mix(trail, trail+exp(-dist*dist), u_deposit_rate);
+        trail = mix(trail, exp(-dist*dist), u_deposit_rate);
     }
     out0.w = trail;
 
