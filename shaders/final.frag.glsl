@@ -118,7 +118,7 @@ void main() {
 
     //out0 = fluid;
     //out0 = physarum.wwww;
-    out0.rgb = spherical;
+    out0.rgb = sphnormal;
 
     out0.a = 1.0;
 }
