@@ -135,7 +135,7 @@ void main() {
         float caustic = ((e.x - w.x + n.y - s.y) * -5.);
         //if (mod(t, 3) < 1.5) caustic = abs(caustic);
         caustic = max(caustic, 0.);
-        caustic = pow(caustic, 2.);
+        caustic = pow(caustic, 0.5);
         out0.rgb = vec3(caustic);
     }
 
