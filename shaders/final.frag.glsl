@@ -131,7 +131,7 @@ void main() {
         //out0.rgb = vec3(mod(v_uv.y * 10., 1.) );
     }
 
-    out0.rgb = vec3(sin(t)*0.4+0.6);
+    out0.rgb = vec3(sin(t)*0.45+0.55);
     out0.rgb = pow(out0.rgb, final_gamma);
 
     out0.a = 1.0;
