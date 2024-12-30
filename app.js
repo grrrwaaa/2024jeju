@@ -65,6 +65,8 @@ class App extends Window {
 
         this.wall_U = [0, 0, 0]
 
+        this.final_gamma = [1, 1, 1]
+
         console.log("app", options.width, options.height)
 
         if (1) {
@@ -719,6 +721,7 @@ class App extends Window {
             .uniform("u_wall_u", this.wall_U)
             .uniform("u_seconds", seconds)
             .uniform("u_dt", dt)
+            .uniform("final_gamma", this.final_gamma)
             .uniformsFrom(sequence)
             //quad_vao.bind().draw()
             wall_vao.bind().draw()

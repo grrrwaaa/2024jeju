@@ -20,6 +20,7 @@ uniform float u_final_pressure;
 uniform float u_final_aura;
 uniform float u_final_trails;
 uniform float u_final_creatures;
+uniform vec3 final_gamma;
 uniform vec3 u_ocean_hsl;
 uniform vec3 u_ocean_hsl_variation;
 uniform vec3 u_aura_hsl;
@@ -131,6 +132,7 @@ void main() {
     }
 
     out0.rgb = vec3(sin(t)*0.5+0.5);
+    out0.rgb = pow(out0.rgb, final_gamma);
 
     out0.a = 1.0;
 }
