@@ -224,7 +224,7 @@ void main() {
         trail *= u_decay_rate;
 
         // deposit from nearest particle:
-        trail += (u_deposit_rate * exp(-dist*dist));
+        trail += (u_deposit_rate * exp(-dist*dist)) * 0.5;
     }
     out0.w = trail;
 
