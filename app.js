@@ -688,6 +688,15 @@ class App extends Window {
             gl.clearColor(0, 0, 0, 0)
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+
+
+            if (isExit) {
+                // black off the two triangles:
+                shaderman.shaders.black.begin()
+
+                black_vao.bind().draw()
+            }
+
             fbo.bind()
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -708,13 +717,6 @@ class App extends Window {
             .uniformsFrom(sequence)
             //quad_vao.bind().draw()
             wall_vao.bind().draw()
-
-            if (isExit) {
-                // black off the two triangles:
-                shaderman.shaders.black.begin()
-
-                black_vao.bind().draw()
-            }
         }
         final_fbo.end()
 
