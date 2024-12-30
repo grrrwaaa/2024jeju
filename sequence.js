@@ -276,7 +276,7 @@ return {
             u_final_pressure: 0.5,
             u_final_aura: 0.5,
             u_final_trails: 0.27,
-            u_final_creatures: 0.55,
+            u_final_creatures: 0.75,
 
             // colors:
             u_creatures_hsl: [0.5, 0.5, 0.1],
@@ -360,7 +360,7 @@ return {
             u_final_pressure: 0.5,
             u_final_aura: 0.5,
             u_final_trails: 0.27,
-            u_final_creatures: 0.55,
+            u_final_creatures: 0.75,
         
             // colors:
             u_creatures_hsl: [0.6667, 0.5, 0.1],
@@ -444,7 +444,7 @@ return {
             u_final_pressure: 0.5,
             u_final_aura: 0.5,
             u_final_trails: 0.2,
-            u_final_creatures: 0.65,
+            u_final_creatures: 0.75,
 
             // colors:
             u_creatures_hsl: [0.6667, 0.4, 0.1],
@@ -528,7 +528,7 @@ return {
             u_final_pressure: 0.5,
             u_final_aura: 0.5,
             u_final_trails: 0.4,
-            u_final_creatures: 0.,
+            u_final_creatures: 0.75,
         
             // colors:
             u_creatures_hsl: [0.776, 0.4, 0.88],
@@ -612,7 +612,7 @@ return {
             u_final_pressure: 0.5,
             u_final_aura: 0.5,
             u_final_trails: 0.35,
-            u_final_creatures: 0.05,
+            u_final_creatures: 0.15,
         
             // colors:
             u_creatures_hsl: [0.5, 0.2, 0.12],
