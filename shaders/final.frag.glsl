@@ -164,8 +164,8 @@ void main() {
 
         //out0.rgb = vec3(-spherical.y);
 
-
-        out0.rgb = mix(max(out0.rgb, vec3(caustic)), out0.rgb + caustic, 0.);
+        
+        out0.rgb = mix(max(out0.rgb, vec3(caustic)), out0.rgb + caustic, 1.);
 
 
         //out0 += pow(physarum.w,1.5)*u_final_trails;
