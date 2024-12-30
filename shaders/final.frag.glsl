@@ -153,8 +153,7 @@ void main() {
         out0.rgb = adjustSaturation(out0.rgb, 2);
 
 
-        out0.rgb = max(out0.rgb, vec3(caustic));
-        
+
         vec3 aura_hsl = vec3(0.4, 0.8, 0.8);
         vec3 aura_hsl_variation = vec3(-0.5, 0., 0.);
         vec3 aura = hsl2rgb(aura_hsl + fluid.w*aura_hsl_variation)*matter*u_final_aura;
@@ -163,6 +162,7 @@ void main() {
         //out0.rgb = vec3(-spherical.y);
 
 
+        out0.rgb = max(out0.rgb, vec3(caustic));
     }
 
     // out0.rgb = vec3(sin(t)*0.45+0.55);
