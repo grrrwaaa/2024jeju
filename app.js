@@ -370,7 +370,7 @@ class App extends Window {
 
         seconds += dt
 
-        seconds = 60
+        seconds = 360
 
         if (seconds > sequence._duration) seconds -= sequence._duration
 
