@@ -76,43 +76,41 @@ void main() {
 
     float matter = fluid.w*fluid.w*fluid.w;
     float ink = pow(1.-fluid.w, 2.);
-
-
 	vec4 physarum = texture(u_tex_physarum, v_uv);
 
     // out0 = fluid;
     // out0.zw = vec2(fluid.w);
 
     // basic luminance paint using fluid pressure:
-    out0 = vec4(fluid.z) * u_final_pressure;
+//    out0 = vec4(fluid.z) * u_final_pressure;
     
     // color tone by vertical:
-    out0.rgb *= hsl2rgb(u_ocean_hsl + spherical.y*u_ocean_hsl_variation);
+//    out0.rgb *= hsl2rgb(u_ocean_hsl + spherical.y*u_ocean_hsl_variation);
 
-    vec3 aura = hsl2rgb(u_aura_hsl + fluid.w*u_aura_hsl_variation)*matter*u_final_aura;
-    out0.rgb += aura;
+//    vec3 aura = hsl2rgb(u_aura_hsl + fluid.w*u_aura_hsl_variation)*matter*u_final_aura;
+//    out0.rgb += aura;
 
 
-    out0 += caustic;
+//    out0 += caustic;
     // more phys: 
     // debug: out0 = vec4(physarum.xy/dim, physarum.z, 1.);
 
 
 
-    float dots = exp(-0.9*length(gl_FragCoord.xy - physarum.xy));
-    vec3 creature_color = hsl2rgb(mix(u_creatures_hsl, u_creatures_hsl_inside, pow(physarum.w, 2.)));
-    out0.rgb += creature_color*dots*u_final_creatures;//(0.7, 1, 0.9, 0,) (0.3, 0.7, 0.5, 0), alien shrimp (0.8, 0.01, 0.01, 0)
+//    float dots = exp(-0.9*length(gl_FragCoord.xy - physarum.xy));
+//    vec3 creature_color = hsl2rgb(mix(u_creatures_hsl, u_creatures_hsl_inside, pow(physarum.w, 2.)));
+//    out0.rgb += creature_color*dots*u_final_creatures;//(0.7, 1, 0.9, 0,) (0.3, 0.7, 0.5, 0), alien shrimp (0.8, 0.01, 0.01, 0)
 
-    vec3 oldstyle = ink*hsl2rgb(vec3(0.3+0.4*dot(fluid.xy, vec2(1,0)), 0.8*abs(fluid.z), 0.95));
-    out0.rgb = mix(out0.rgb, oldstyle, u_ink_mode);
+//    vec3 oldstyle = ink*hsl2rgb(vec3(0.3+0.4*dot(fluid.xy, vec2(1,0)), 0.8*abs(fluid.z), 0.95));
+//    out0.rgb = mix(out0.rgb, oldstyle, u_ink_mode);
     //vec3(0.8+(fluid.xyz)*0.2);//mix(out0*vec4(1.-fluid.w), out0+vec4(1.-fluid.w), 0.5);
 
-    out0 += pow(physarum.w,1.5)*u_final_trails;
+//    out0 += pow(physarum.w,1.5)*u_final_trails;
     
 
     // final pass:
-    out0.rgb = adjustSaturation(out0.rgb, u_saturation*1.5);
-    out0.rgb = pow(out0.rgb, vec3(u_gamma * 0.7));
+//    out0.rgb = adjustSaturation(out0.rgb, u_saturation*1.5);
+//   out0.rgb = pow(out0.rgb, vec3(u_gamma * 0.7));
 
     //out0.rgb = vec4(fluid.z) * u_final_pressure;
     //out0.rgb = vec3(1);
@@ -167,6 +165,8 @@ void main() {
         // turn this up to get the dark immersive noisy caustic world:
         out0.rgb = mix(max(out0.rgb, vec3(caustic)), out0.rgb + caustic, 0.);
 
+        vec3 oldstyle = ink*hsl2rgb(vec3(0.3+0.4*dot(fluid.xy, vec2(1,0)), 0.8*abs(fluid.z), 0.95));
+        out0.rgb = mix(out0.rgb, oldstyle, u_ink_mode);
 
         //out0 += pow(physarum.w,1.5)*u_final_trails;
         out0.rgb += vec3(pow(physarum.w, 1.5))*u_final_trails*2.;
