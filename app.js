@@ -308,7 +308,7 @@ class App extends Window {
 
         // VAOs can't be shared between windows, so we have to create one per window:
         Object.assign(this, { 
-            wall_vao,
+            wall_vao, black_vao,
             quad_vao: glutils.createVao(gl, glutils.makeQuad()),
             unit_quad_vao: glutils.createVao(gl, glutils.makeQuad({ min: 0, max: 1 })),
             fbo_coords, send_fbo, fbo, physarum_fbo, final_fbo, 
@@ -713,7 +713,7 @@ class App extends Window {
                 // black off the two triangles:
                 shaderman.shaders.black.begin()
 
-                //black_vao.bind().draw()
+                black_vao.bind().draw()
             }
         }
         final_fbo.end()
