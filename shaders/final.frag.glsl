@@ -118,7 +118,7 @@ void main() {
 
     //out0 = fluid;
     //out0 = physarum.wwww;
-    out0.rgb = vec3(mod(v_uv.x * 10., 1.) );
+    out0.rgb = vec3(mod(v_uv.y * 10., 1.) );
 
     out0.a = 1.0;
 }
