@@ -279,7 +279,7 @@ return {
             u_final_creatures: 0.75,
 
             // colors:
-            u_creatures_hsl: [0,33 0.7, 0.7],
+            u_creatures_hsl: [0,33, 0.7, 0.7],
             u_creatures_hsl_inside: [0.73, 0.9, 0.8],
             // base color of ocean (hue, sat, lightness in 0..1)
             u_ocean_hsl: [0.6, 0.5, 0.55],
