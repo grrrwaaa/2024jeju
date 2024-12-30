@@ -177,8 +177,9 @@ void main() {
         vec3 creature_color = hsl2rgb(mix(u_creatures_hsl, u_creatures_hsl_inside, pow(physarum.w*0.5, 2.)));
         out0.rgb += creature_color*dots*u_final_creatures * 2.;//(0.7, 1, 0.9, 0,) (0.3, 0.7, 0.5, 0), alien shrimp (0.8, 0.01, 0.01, 0)
 
-        //out0.rgb = creature_color*vec3(dots)*2.;
     }
+
+    out0.rgb = vec3(sin(spherical.y * 10.));
 
     // out0.rgb = vec3(sin(t)*0.45+0.55);
     // out0.rgb = pow(out0.rgb, final_gamma);
