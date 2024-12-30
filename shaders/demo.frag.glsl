@@ -302,8 +302,8 @@ void main() {
         vec4 lidar = texture(u_tex_lidar, v_uv);
         OUT.xy += lidar.xy * cos(lidar.z * 6.2 + iTime);
         OUT.xy = mix(OUT.xy, XYo + 10.*lidar.xy * cos(lidar.z * 6.2 + iTime), pow(lidar.w, 4.));
-        OUT.z += lidar.z * 2.; // * lidar.w;
-        OUT.w += lidar.z * lidar.w * rnd.w * 2.;
+        OUT.z += lidar.z * 4.; // * lidar.w;
+        OUT.w += lidar.z * lidar.w * rnd.w * 4.;
     }
     
     // add some noise
