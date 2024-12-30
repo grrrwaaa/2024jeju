@@ -166,7 +166,7 @@ void main() {
 
 
         //out0 += pow(physarum.w,1.5)*u_final_trails;
-        out0.rgb += vec3(physarum.w); //*u_final_trails;
+        out0.rgb += vec3(pow(physarum.w, 1.5)); //*u_final_trails;
 
         float dots = exp(-0.9*length(gl_FragCoord.xy - physarum.xy));
         vec3 creature_color = hsl2rgb(mix(u_creatures_hsl, u_creatures_hsl_inside, pow(physarum.w, 2.)));
