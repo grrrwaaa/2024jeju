@@ -235,8 +235,8 @@ class App extends Window {
         let black_geom = {
             vertexComponents: 2,
             vertices: new Float32Array([
-                -1, 1,
-                -1, 0,
+                1, 1,
+                1, 0,
                 0, 1
             ]),
             indices: new Uint32Array([
