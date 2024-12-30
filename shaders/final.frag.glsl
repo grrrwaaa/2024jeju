@@ -116,9 +116,11 @@ void main() {
     //out0.rgb = vec4(fluid.z) * u_final_pressure;
     //out0.rgb = vec3(1);
 
-    //out0 = fluid;
-    //out0 = physarum.wwww;
-    out0.rgb = vec3(mod(v_uv.y * 10., 1.) );
+    if (mod(t, 2) < 1.) {
 
+        //out0 = fluid;
+        //out0 = physarum.wwww;
+        out0.rgb = vec3(mod(v_uv.y * 10., 1.) );
+    }
     out0.a = 1.0;
 }
