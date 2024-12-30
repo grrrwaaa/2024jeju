@@ -139,6 +139,8 @@ void main() {
         out0.rgb = vec3(caustic);
 
         out0.rgb = vec3(fluid.z) * u_final_pressure * 2.;
+
+        out0.rgb = oldstyle;
     }
 
     // out0.rgb = vec3(sin(t)*0.45+0.55);
