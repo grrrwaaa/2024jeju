@@ -145,16 +145,18 @@ void main() {
 
         //out0.rgb = vec3(physarum.w);
 
-        vec3 aura_hsl = vec3(0.4, 0.8, 0.8);
-        vec3 aura_hsl_variation = vec3(-0.5, 0., 0.);
-        vec3 aura = hsl2rgb(aura_hsl + fluid.w*aura_hsl_variation)*matter*u_final_aura;
-        out0.rgb = aura;
 
         out0 = vec4(fluid.z) * u_final_pressure;
         // color tone by vertical:
         out0.rgb *= hsl2rgb(u_ocean_hsl + spherical.y*u_ocean_hsl_variation);
         out0.rgb = pow(out0.rgb, vec3(0.5));
         out0.rgb = adjustSaturation(out0.rgb, 2);
+
+
+        vec3 aura_hsl = vec3(0.4, 0.8, 0.8);
+        vec3 aura_hsl_variation = vec3(-0.5, 0., 0.);
+        vec3 aura = hsl2rgb(aura_hsl + fluid.w*aura_hsl_variation)*matter*u_final_aura;
+        out0.rgb = aura;
     }
 
     // out0.rgb = vec3(sin(t)*0.45+0.55);
