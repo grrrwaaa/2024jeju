@@ -110,15 +110,17 @@ void main() {
     
 
     // final pass:
-    out0.rgb = adjustSaturation(out0.rgb, u_saturation-1.);
-    out0.rgb = pow(out0.rgb, vec3(u_gamma));
+    // out0.rgb = adjustSaturation(out0.rgb, u_saturation-1.);
+    // out0.rgb = pow(out0.rgb, vec3(u_gamma));
 
     //out0.rgb = vec4(fluid.z) * u_final_pressure;
     //out0.rgb = vec3(1);
 
     if (mod(t, 3) < 2.) {
 
-        out0.rgb = pow(out0.rgb, vec3(0.5));
+        //out0.rgb = pow(out0.rgb, vec3(0.5));
+
+        adjustSaturation(out0.rgb, sin(t));
 
         //out0 = fluid;
         //out0 = physarum.wwww;
