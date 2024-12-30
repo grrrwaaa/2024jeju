@@ -179,7 +179,7 @@ void main() {
 
     }
 
-    out0.rgb = vec3(sin(10.*atan(spherical.x, spherical.z)));
+    //out0.rgb = vec3(sin(10.*atan(spherical.x, spherical.z)));
 
     // out0.rgb = vec3(sin(t)*0.45+0.55);
     // out0.rgb = pow(out0.rgb, final_gamma);
