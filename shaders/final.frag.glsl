@@ -149,6 +149,10 @@ void main() {
         out0 = vec4(fluid.z) * u_final_pressure;
         // color tone by vertical:
         out0.rgb *= hsl2rgb(u_ocean_hsl + spherical.y*u_ocean_hsl_variation);
+
+
+        out0.rgb = max(out0.rgb, vec3(caustic));
+        
         out0.rgb = pow(out0.rgb, vec3(0.5));
         out0.rgb = adjustSaturation(out0.rgb, 2);
 
@@ -162,7 +166,6 @@ void main() {
         //out0.rgb = vec3(-spherical.y);
 
 
-        out0.rgb = max(out0.rgb, vec3(caustic));
     }
 
     // out0.rgb = vec3(sin(t)*0.45+0.55);
