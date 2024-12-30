@@ -129,10 +129,13 @@ void main() {
         //out0 = fluid;
         //out0 = physarum.wwww;
         //out0.rgb = vec3(mod(v_uv.y * 10., 1.) );
+
+        out0.rgb = vec3(0);
+        out0.rgb += creature_color*dots*u_final_creatures;
     }
 
-    out0.rgb = vec3(sin(t)*0.45+0.55);
-    out0.rgb = pow(out0.rgb, final_gamma);
+    // out0.rgb = vec3(sin(t)*0.45+0.55);
+    // out0.rgb = pow(out0.rgb, final_gamma);
 
     out0.a = 1.0;
 }
