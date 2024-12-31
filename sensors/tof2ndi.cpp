@@ -316,7 +316,7 @@ TofManager tofm;
 
 int main(int ac, char * av) {
 	
-    printf("hello\n");
+    printf("anyong\n");
 
 	bool run = 1;
     bool berror = false;
