@@ -395,7 +395,7 @@ class App extends Window {
         sequence.step(seconds)
 
         // special case for floor:
-        if (false && isFloor) {
+        if (isFloor) {
             // only process lidar input if we received data:
             if (lidar_stream.frame) 
             {
