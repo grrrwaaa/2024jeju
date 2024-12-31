@@ -370,12 +370,16 @@ int main(int ac, char * av) {
 		sensors[tofno].create(tofno, ptofinfo, config);
 	}
 
+	printf("created all sensors\n");
+
 	// Once Tof instances are started, TofManager is not necessary and closed
 	if (tofm.Close() != Result::OK){
 		std::cout << "TofManager Close Error" << endl;
 		system("pause");
 		return -1;
 	}
+
+	printf("begin\n");
 
 	try {
 
