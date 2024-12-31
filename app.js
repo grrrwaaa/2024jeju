@@ -761,9 +761,9 @@ class App extends Window {
         .uniform("u_rotate", this.final_rotate)
         quad_vao.bind().draw()
         
-        if (Math.floor(t+dt) > Math.floor(t)) {
-            console.log(`${this.title}: fps ${Math.round(1/dt)} ${dt/0.02} seconds ${Math.round(seconds)} ${sequence._name} (${Math.round(100 * sequence._time/sequence._duration)}%)`)
-        }
+        // if (Math.floor(t+dt) > Math.floor(t)) {
+        //     console.log(`${this.title}: fps ${Math.round(1/dt)} ${dt/0.02} seconds ${Math.round(seconds)} ${sequence._name} (${Math.round(100 * sequence._time/sequence._duration)}%)`)
+        // }
 
         if (screenshot) {
             let x = 0, y = 0
