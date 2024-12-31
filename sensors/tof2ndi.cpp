@@ -282,7 +282,7 @@ struct Sensor {
 			}
 		}
 
-		printf("_")
+		printf("_");
 
 		return 0;
 	}
