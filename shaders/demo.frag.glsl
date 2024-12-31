@@ -187,7 +187,7 @@ float sdRoundBox( vec3 p, vec3 b, float r )
 
 void main() {
     float t = u_seconds;
-    float dt = 1./45.; //u_dt;
+    float dt = 1./30.; //u_dt;
     float frame = t*60.;
 
     vec3 normal = texture(u_tex_normal, v_uv).xyz; //normalize(v_normal);
