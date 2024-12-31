@@ -741,8 +741,8 @@ class App extends Window {
 
         if (isFloor) {
             
-            lidar_fbo.bind()
-            lidar_filter_fbo.bind()
+            // lidar_fbo.bind()
+            // lidar_filter_fbo.bind()
         }
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
