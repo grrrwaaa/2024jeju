@@ -369,9 +369,7 @@ class App extends Window {
         const isFloor = (this.title == "F");
         const isExit = (this.title == "E")
 
-        seconds += dt * 60
-
-       // seconds = 360
+        seconds += dt
 
         if (seconds > sequence._duration) seconds -= sequence._duration
 
