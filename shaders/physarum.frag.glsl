@@ -140,6 +140,8 @@ void main() {
 
     vec2 dv = duv*u_drift_effect_speed + (fluid.xy - XYo)*u_fluid_effect_speed;
 
+    bool isFloor = u_wall_u.z < 0.;
+
 
     // u_sensor_distance *= (1 + 0.8*spherical.y);
     // spawn_distance *= (1 + 0.5*spherical.y);
@@ -224,9 +226,11 @@ void main() {
         trail *= u_decay_rate;
 
         // deposit from nearest particle:
-        //trail += (u_deposit_rate * exp(-dist*dist));
-
-        trail = mix(trail, exp(-dist*dist), u_deposit_rate);
+        if (isFloor) {
+            trail = mix(trail, exp(-dist*dist), u_deposit_rate);
+        } else {
+            trail += (u_deposit_rate * exp(-dist*dist));
+        }
     }
     out0.w = trail;
 
