@@ -230,7 +230,7 @@ void main() {
         if (false) {
             trail = mix(trail, exp(-dist*dist), u_deposit_rate);
         } else {
-            trail += (u_deposit_rate*0.5 * exp(-dist*dist));
+            trail += (u_deposit_rate*0.75 * exp(-dist*dist));
         }
     }
     out0.w = trail;
