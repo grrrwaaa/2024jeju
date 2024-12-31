@@ -187,6 +187,7 @@ float sdRoundBox( vec3 p, vec3 b, float r )
 
 void main() {
     float t = u_seconds;
+    float dt = 1./45.; //u_dt;
     float frame = t*60.;
 
     vec3 normal = texture(u_tex_normal, v_uv).xyz; //normalize(v_normal);
@@ -195,7 +196,7 @@ void main() {
     mat3 uv2xyz, xyz2uv;
     coordinates1(normal, spherical, u_wall_u, uv2xyz, xyz2uv);
     vec3 drift;
-    vec2 duv = getDrift(u_seconds, u_dt, u_descend, u_drift_amount, spherical, xyz2uv, drift);
+    vec2 duv = getDrift(u_seconds, dt, u_descend, u_drift_amount, spherical, xyz2uv, drift);
 
 
     vec4 OUT = vec4(0);

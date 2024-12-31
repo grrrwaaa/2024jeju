@@ -127,6 +127,7 @@ void swap (inout vec4 Q, vec2 U, vec2 r) {
 
 void main() {
     float t = u_seconds;
+    float dt = 1./45.; //u_dt;
     float frame = t*60.;
     vec3 normal = texture(u_tex_normal, v_uv).xyz; //normalize(v_normal);
     vec3 spherical = texture(u_tex_spherical, v_uv).xyz;
@@ -135,7 +136,7 @@ void main() {
     coordinates1(normal, spherical, u_wall_u, uv2xyz, xyz2uv);
 
     vec3 drift;
-    vec2 duv = getDrift(u_seconds, u_dt, u_descend, u_drift_amount, spherical, xyz2uv, drift);
+    vec2 duv = getDrift(u_seconds, dt, u_descend, u_drift_amount, spherical, xyz2uv, drift);
     vec4 fluid = texture(u_tex_fluid, v_uv);
 
     vec2 dv = duv*u_drift_effect_speed + (fluid.xy - XYo)*u_fluid_effect_speed;
@@ -316,11 +317,11 @@ void main() {
     mat3 Puv2xyz, Pxyz2uv;
     coordinates1(Pnormal, -Pspherical, u_wall_u, Puv2xyz, Pxyz2uv);
     vec3 Pdrift;
-    vec2 Pduv = getDrift(t, u_dt, u_descend, u_drift_amount, Pspherical, Pxyz2uv, drift);
+    vec2 Pduv = getDrift(t, dt, u_descend, u_drift_amount, Pspherical, Pxyz2uv, drift);
     P.xy += Pduv * vec2(1, -1) * u_drift_effect_speed;
 
     
-    P.xy += vel * u_dt/0.02;
+    P.xy += vel * dt/0.02;
     // get new z:
     P.z = mod((atan(vel.y, vel.x))/twopi, 1);
     
