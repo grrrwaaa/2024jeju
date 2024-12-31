@@ -447,8 +447,8 @@ return {
             u_final_creatures: 0.75,
 
             // colors:
-            u_creatures_hsl: [0.56, 0.4, 0.1],
-            u_creatures_hsl_inside: [0.6667, 0.7, 0.5],
+            u_creatures_hsl: [0.56, 0.4, 0.5],
+            u_creatures_hsl_inside: [0.6667, 0.7, 0.8],
             // base color of ocean (hue, sat, lightness in 0..1)
             u_ocean_hsl: [0.6, 0.5, 0.6],
             // how this varies by vertical 
@@ -531,8 +531,8 @@ return {
             u_final_creatures: 0.75,
         
             // colors:
-            u_creatures_hsl: [0.776, 0.4, 0.88],
-            u_creatures_hsl_inside: [0.886, 0.3, 1],
+            u_creatures_hsl: [0.6667, 0.4, 0.88],
+            u_creatures_hsl_inside: [0.333, 0.3, 1],
             // base color of ocean (hue, sat, lightness in 0..1)
             u_ocean_hsl: [0.6, 0.5, 0.6],
             // how this varies by vertical 
@@ -615,8 +615,8 @@ return {
             u_final_creatures: 0.15,
         
             // colors:
-            u_creatures_hsl: [0.5, 0.2, 0.12],
-            u_creatures_hsl_inside: [0.667, 0.3, 0.7],
+            u_creatures_hsl: [0.6667, 0.2, 0.5],
+            u_creatures_hsl_inside: [0.333, 0.3, 0.7],
             // base color of ocean (hue, sat, lightness in 0..1)
             u_ocean_hsl: [0.6, 0.5, 0.6],
             // how this varies by vertical 
@@ -699,8 +699,8 @@ return {
             u_final_creatures: 0.1,
         
             // colors:
-            u_creatures_hsl: [0.5, 0.3, 0.4],
-            u_creatures_hsl_inside: [0.667, 0.8, 0.6],
+            u_creatures_hsl: [0.5, 0.7, 0.7],
+            u_creatures_hsl_inside: [0.334, 0.8, 0.9],
             // base color of ocean (hue, sat, lightness in 0..1)
             u_ocean_hsl: [0.6, 0.5, 0.6],
             // how this varies by vertical 
@@ -783,7 +783,7 @@ return {
         
             // colors:
             u_creatures_hsl: [0.5, 0.4, 0.3],
-            u_creatures_hsl_inside: [0.6667, 0.5, 0.5],
+            u_creatures_hsl_inside: [0.333, 0.5, 0.5],
             // base color of ocean (hue, sat, lightness in 0..1)
             u_ocean_hsl: [0.6, 0.5, 0.6],
             // how this varies by vertical 

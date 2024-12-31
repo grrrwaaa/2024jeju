@@ -227,7 +227,7 @@ struct Sensor {
 		TimeStamp timestamp;
 		tof->GetFrameStatus(&frameno, &timestamp);
 
-		if (frameno != frame_depth->framenumber){
+		if (frameno != frame_depth->framenumber) {
 			// Read a new frame only if frame number is changed(Old data is shown if it is not changed.)
 			// Read a frame of depth data
 			if (tof->ReadFrame(frame_depth) != Result::OK){
@@ -281,6 +281,8 @@ struct Sensor {
 				sender.ndi_frame_data[i + 3] = 255;
 			}
 		}
+
+		printf("_")
 
 		return 0;
 	}
@@ -387,6 +389,8 @@ int main(int ac, char * av) {
 				if (sensor.getFrame(sender, tofno)) break;
 
 			}
+
+			printf(".\n");
 			
 			NDIlib_send_send_video_v2(sender.sender, &sender.frame);
 		}
