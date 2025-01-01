@@ -85,7 +85,7 @@ return {
             u_deposit_rate : 0.2,
             // 0..0.2? how much the trails spread in space
             // increasing this well tend to make them decay more quickly, so increase deposit_rate or decay_rate to compensate?
-            u_blur_rate : 0.7,
+            u_blur_rate : 0.4, //0.7,
             // 0..1, but usually 0.95+
             // how much their trails decay over time
             // if it is very close to 1 the trails tend to persist as large patterns
