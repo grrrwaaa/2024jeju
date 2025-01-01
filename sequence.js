@@ -711,6 +711,7 @@ return {
             // how this varies by aura intensity:
             u_aura_hsl_variation: [-0.5, 0., 0.],
             
+            
             // behaviours:
         
             // -8 to 8? if we are descending or rising in the ocean. 0 means neither, negative is descending
