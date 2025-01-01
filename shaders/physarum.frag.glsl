@@ -229,7 +229,7 @@ void main() {
         // deposit from nearest particle:
         if (isFloor) {
             //trail = mix(trail, exp(-dist*dist), u_deposit_rate);
-            trail += (u_deposit_rate*0.5 * exp(-dist*dist));
+            trail += (u_deposit_rate*0.25 * exp(-dist*dist));
         } else {
             trail += (u_deposit_rate*0.75 * exp(-dist*dist));
         }
