@@ -19,7 +19,7 @@ using namespace hlds;
 
 #define XRES 320
 #define YRES 240
-#define NUM_CAMERAS 3
+#define NUM_CAMERAS 2
 
 struct Sender {
 	NDIlib_send_create_t settings;
@@ -141,7 +141,7 @@ struct Sensor {
 				bool edgecutoff = config.GetBoolean("camera", "edgecutoff", true);
 				bool impulsecutoff = config.GetBoolean("camera", "implusecutoff", true);
 				mm_min = config.GetReal("camera", "mm_min", 0);
-				mm_min = config.GetReal("camera", "mm_max", 10000);
+				mm_max = config.GetReal("camera", "mm_max", 10000);
 
 				if (tof->SetIrGain(irgain) != Result::OK){
 					std::cout << "TOF ID " << tof->tofinfo.tofid << " Edge Noise Reduction Error" << endl;

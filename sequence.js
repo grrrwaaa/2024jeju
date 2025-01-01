@@ -16,21 +16,21 @@ return {
             u_saturation: 1,
             u_ink_mode: 1,
         
-            // visual intensities:
+            // visual intensities: 
             u_final_pressure: 0.5, //88,
             u_final_aura: 0.5,
             u_final_trails: 0.3,
             u_final_creatures: 0.0,
         
             // colors:
-            u_creatures_hsl: [0.6, 0.7, -0.3],
+            u_creatures_hsl: [0.5, 0.7, -0.3],
             u_creatures_hsl_inside: [0.6667, 0.6, -0.2],
             // base color of ocean (hue, sat, lightness in 0..1)
-            u_ocean_hsl: [0.6, 0.5, 0.6],
+            u_ocean_hsl: [0.5, 0.5, 0.6],
             // how this varies by vertical 
             u_ocean_hsl_variation: [0., 0.5, 0.2],
             // base color of aura (hue, sat, lightness in 0..1)
-            u_aura_hsl: [0.6, 0.8, 0.7],
+            u_aura_hsl: [0.677, 0.8, 0.7],
             // how this varies by aura intensity:
             u_aura_hsl_variation: [-0.5, 0., 0.],
             
@@ -531,10 +531,10 @@ return {
             u_final_creatures: 0.75,
         
             // colors:
-            u_creatures_hsl: [0.6667, 0.4, 0.88],
-            u_creatures_hsl_inside: [0.333, 0.3, 1],
+            u_creatures_hsl: [0.833, 0.4, 0.88],
+            u_creatures_hsl_inside: [0.955, 0.3, 1],
             // base color of ocean (hue, sat, lightness in 0..1)
-            u_ocean_hsl: [0.6, 0.5, 0.6],
+            u_ocean_hsl: [0.678, 0.5, 0.6],
             // how this varies by vertical 
             u_ocean_hsl_variation: [0., 0.5, 0.2],
             // base color of aura (hue, sat, lightness in 0..1)
