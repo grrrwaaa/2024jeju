@@ -9,7 +9,7 @@ return {
     _seq: [
         {
             _name: "pink blobs masses with fingers",
-            _time: 180, // 3 min, B to Chanllenge
+            _time: 240, // 4 min Challenge to Owe
             
             // overall contrast -- 1 is no change, >1 is deeper contrast (darker darks), <1 is softer (lighter)
             u_gamma: 1.1,
@@ -24,8 +24,8 @@ return {
             u_final_creatures: 0.75,
 
             // colors:
-            u_creatures_hsl: [0.556, 0.5, 0.3],
-            u_creatures_hsl_inside: [0.633, 0.8, 0.5],
+            u_creatures_hsl: [0.6, 0.5, 0.4],
+            u_creatures_hsl_inside: [0.677, 0.6, 0.6],
             // base color of ocean (hue, sat, lightness in 0..1)
             u_ocean_hsl: [0.6, 0.5, 0.55],
             // how this varies by vertical 
@@ -54,12 +54,12 @@ return {
             // creatures:
             // 0..1
             // higher values make it more likely to spawn on (caustics/auras)
-            u_caustic_spawn : 0.98, // 0.96
+            u_caustic_spawn : 0.96, 
             u_aura_spawn : 0.75,
             // 0..1
             // if > 0, limits new spawns to be near older ones
             // this will tend to reduce their population
-            u_spawn_threshold : 0.1, // 0.2
+            u_spawn_threshold : 0.2,
         
             // how they sense:
             // smaller makes their trails narrower
