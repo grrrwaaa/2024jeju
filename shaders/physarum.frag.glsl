@@ -253,7 +253,7 @@ void main() {
     }
 
     // always some random spawning:
-    if (rnd.y > 0.999) {
+    if (rnd.y > 0.9999) {
         P.xy = U;
         P.z = rand(P.xy);
         P.w = rand(P.yx);
