@@ -19,7 +19,7 @@ using namespace hlds;
 
 #define XRES 320
 #define YRES 240
-#define NUM_CAMERAS 2
+#define NUM_CAMERAS 3
 
 struct Sender {
 	NDIlib_send_create_t settings;
