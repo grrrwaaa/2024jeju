@@ -156,7 +156,7 @@ void main() {
 
         vec3 aura_hsl = u_aura_hsl; //vec3(0.4, 0.8, 0.8);
         vec3 aura_hsl_variation = u_aura_hsl_variation; //vec3(-0.5, 0., 0.);
-        vec3 aura = hsl2rgb(aura_hsl + fluid.w*aura_hsl_variation)*matter*u_final_aura;
+        vec3 aura = hsl2rgb(aura_hsl + fluid.w*aura_hsl_variation + spherical.y*aura_hsl_variation)*matter*u_final_aura;
         // remove aura in floor:
         //aura *= max(spherical.y, 0.);
         aura = adjustSaturation(aura, spherical.y-0.25);
