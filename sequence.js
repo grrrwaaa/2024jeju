@@ -89,7 +89,7 @@ return {
             // 0..1, but usually 0.95+
             // how much their trails decay over time
             // if it is very close to 1 the trails tend to persist as large patterns
-            u_decay_rate : 0.97,
+            u_decay_rate : 0.9,
         },
     ]
 }
