@@ -156,6 +156,8 @@ void main() {
 
         if (isFloor) {
             out0.rgb = vec3(0);
+        } else if (mod(t, 2.) < 1.) {
+            out0.rgb = vec3(0);
         }
 
         
