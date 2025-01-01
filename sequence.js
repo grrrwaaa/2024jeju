@@ -33,7 +33,7 @@ return {
             // base color of aura (hue, sat, lightness in 0..1)
             u_aura_hsl: [0.4, 0.8, 0.4],
             // how this varies by aura intensity:
-            u_aura_hsl_variation: [-0.5, 0.5, 0.75],
+            u_aura_hsl_variation: [-0.5, 0.2, 0.75],
             
             // behaviours:
         
