@@ -21,7 +21,7 @@ return {
             u_final_pressure: 0.5,
             u_final_aura: 0.5,
             u_final_trails: 0.35,
-            u_final_creatures: 0.15,
+            u_final_creatures: 0.5,
         
             // colors:
             u_creatures_hsl: [0.955, 0.55, 0.4],
