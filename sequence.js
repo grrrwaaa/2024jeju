@@ -70,7 +70,7 @@ return {
             // 0 to about 0.3? how much they follow trails, 0 makes them senseless dust, about 0.1-0.2 they organize well, above that it gets messier
             u_turn_angle : 0.01,
             // 0 to about 0.5? how much they randomly wander. 0.2 feels good, 0.5 is messier
-            u_wander_angle : 0.001,
+            u_wander_angle : 0, //0.001,
         
             // how fast they move by different stimuli:
             // too high and they will die off. 
