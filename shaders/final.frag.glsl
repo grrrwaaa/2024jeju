@@ -158,7 +158,7 @@ void main() {
         //     out0.rgb = vec3(0);
         // }
 
-        out0.rgb = u_wall_u;
+        out0.rgb = -u_wall_u;
 
       
 
