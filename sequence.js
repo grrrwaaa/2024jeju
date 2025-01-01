@@ -43,7 +43,7 @@ return {
         
             // 0-0.03: amount of sandy dust in the fluid currents
             // setting to 0 will create more glassy smooth surface but also let human currents travel farther; feels more deep oceah
-            u_grain: 0.015,
+            u_grain: 0, //0.015,
             // 0 or 1, changes how the fluid currents travel; subtle effect but I like 1 better than 0
             u_fluid_mode: 1.0,
             // should be 1 or very slightly less than 1. Probably 1 is ok. 
@@ -55,7 +55,7 @@ return {
             // 0..1
             // higher values make it more likely to spawn on (caustics/auras)
             u_caustic_spawn : 0.99, 
-            u_aura_spawn : 0.1,
+            u_aura_spawn : 0.9,
             // 0..1
             // if > 0, limits new spawns to be near older ones
             // this will tend to reduce their population
