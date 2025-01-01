@@ -24,7 +24,7 @@ return {
             u_final_creatures: 0.75,
         
             // colors:
-            u_creatures_hsl: [0.03, 0.6, 0.5],
+            u_creatures_hsl: [0.08, 0.6, 0.5],
             u_creatures_hsl_inside: [0.167, 0.5, 0.6],
             // base color of ocean (hue, sat, lightness in 0..1)
             u_ocean_hsl: [0.678, 0.5, 0.6],
@@ -33,7 +33,7 @@ return {
             // base color of aura (hue, sat, lightness in 0..1)
             u_aura_hsl: [0.4, 0.8, 0.8],
             // how this varies by aura intensity:
-            u_aura_hsl_variation: [-0.5, 0., 0.],
+            u_aura_hsl_variation: [0.1, 0., 0.],
             
             // behaviours:
         
