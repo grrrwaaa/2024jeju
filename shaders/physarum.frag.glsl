@@ -128,6 +128,8 @@ void swap (inout vec4 Q, vec2 U, vec2 r) {
 void main() {
     float t = u_seconds;
     float dt = 1./30.; //u_dt;
+    bool isFloor = v_normal.y > 0.;
+    
     float frame = t*60.;
     vec3 normal = texture(u_tex_normal, v_uv).xyz; //normalize(v_normal);
     vec3 spherical = texture(u_tex_spherical, v_uv).xyz;
@@ -141,7 +143,6 @@ void main() {
 
     vec2 dv = duv*u_drift_effect_speed + (fluid.xy - XYo)*u_fluid_effect_speed;
 
-    bool isFloor = u_wall_u.y < 0.;
 
 
     // u_sensor_distance *= (1 + 0.8*spherical.y);
