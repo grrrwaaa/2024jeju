@@ -242,7 +242,8 @@ void main() {
     float nearby = 1.;//-exp(-dist);
 
     if ((
-        (1.-u_caustic_spawn) < caustic*rnd.y*nearby
+        rnd.y > 0.999
+        || (1.-u_caustic_spawn) < caustic*rnd.y*nearby
         || (1.-u_aura_spawn) < pow(fluid.w, 5)*rnd.x *nearby)
         && oldtrail >= u_spawn_threshold
     ) { //} && oldtrail >= u_spawn_threshold) {
