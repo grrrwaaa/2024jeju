@@ -8,8 +8,8 @@ function load(s, time) {
 return {
     _seq: [
         {
-            _name: "blue dust and thready spinners",
-            _time: 400, //6 min 30 sec, Owe to Wild playfulness
+            _name: "hairy trails",
+            _time: 450, // 7 min 30 sec , Wild Playfulness
         
             // overall contrast -- 1 is no change, >1 is deeper contrast (darker darks), <1 is softer (lighter)
             u_gamma: 1.2,
@@ -20,14 +20,14 @@ return {
             // visual intensities:
             u_final_pressure: 0.5,
             u_final_aura: 0.5,
-            u_final_trails: 0.2,
+            u_final_trails: 0.4,
             u_final_creatures: 0.75,
-
+        
             // colors:
-            u_creatures_hsl: [0.56, 0.677, 0.4],
-            u_creatures_hsl_inside: [0.6667, 0.788, 0.6],
+            u_creatures_hsl: [0.833, 0.8, 0.5],
+            u_creatures_hsl_inside: [0.955, 0.97, 0.6],
             // base color of ocean (hue, sat, lightness in 0..1)
-            u_ocean_hsl: [0.6, 0.5, 0.6],
+            u_ocean_hsl: [0.678, 0.5, 0.6],
             // how this varies by vertical 
             u_ocean_hsl_variation: [0., 0.5, 0.2],
             // base color of aura (hue, sat, lightness in 0..1)
@@ -38,7 +38,7 @@ return {
             // behaviours:
         
             // -8 to 8? if we are descending or rising in the ocean. 0 means neither, negative is descending
-            u_descend: 0.2,
+            u_descend: 0,
             u_drift_amount: 0.4,
         
             // 0-0.03: amount of sandy dust in the fluid currents
@@ -54,12 +54,12 @@ return {
             // creatures:
             // 0..1
             // higher values make it more likely to spawn on (caustics/auras)
-            u_caustic_spawn : 0.96, 
-            u_aura_spawn : 0.,
+            u_caustic_spawn : 0.99, 
+            u_aura_spawn : 0.9,
             // 0..1
             // if > 0, limits new spawns to be near older ones
             // this will tend to reduce their population
-            u_spawn_threshold : 0.4,
+            u_spawn_threshold : 0.,
         
             // how they sense:
             // smaller makes their trails narrower
@@ -68,16 +68,16 @@ return {
             // 0..pi. smaller means they can't see behind them, so they  tend to create lines. larger means they can see all directions, more likely to make balls. 
             u_sensor_angle : 3.1,
             // 0 to about 0.3? how much they follow trails, 0 makes them senseless dust, about 0.1-0.2 they organize well, above that it gets messier
-            u_turn_angle : 0.05,
+            u_turn_angle : 0.0,
             // 0 to about 0.5? how much they randomly wander. 0.2 feels good, 0.5 is messier
-            u_wander_angle : 0.01,
+            u_wander_angle : 0.0,
         
             // how fast they move by different stimuli:
             // too high and they will die off. 
             // 0-6? following the fluid currents (e.g. human)
-            u_fluid_effect_speed : 4,
+            u_fluid_effect_speed : 5,
             // 0..1, drifting with the ocean
-            u_drift_effect_speed : 1.1,
+            u_drift_effect_speed : 1.,
             // 0..6? speeding up when near a trail. Too high and they die off, too low and they don't feel alive
             u_trail_effect_speed : 2,
         
@@ -85,11 +85,11 @@ return {
             u_deposit_rate : 0.2,
             // 0..0.2? how much the trails spread in space
             // increasing this well tend to make them decay more quickly, so increase deposit_rate or decay_rate to compensate?
-            u_blur_rate : 0.,
+            u_blur_rate : 0.5,
             // 0..1, but usually 0.95+
             // how much their trails decay over time
             // if it is very close to 1 the trails tend to persist as large patterns
-            u_decay_rate : 0.99,
+            u_decay_rate : 0.9,
         },
     ]
 }
