@@ -177,7 +177,7 @@ void main() {
 
         float dots = exp(-2.*length(gl_FragCoord.xy - physarum.xy));
         vec3 creature_color = hsl2rgb(0.1*vec3(0, duv) + mix(u_creatures_hsl, u_creatures_hsl_inside, pow(clamp(physarum.w*0.5, 0., 1.), 2.)));
-        out0.rgb += creature_color*dots*u_final_creatures * 5.;//(0.7, 1, 0.9, 0,) (0.3, 0.7, 0.5, 0), alien shrimp (0.8, 0.01, 0.01, 0)
+        out0.rgb += creature_color*dots*u_final_creatures * 10.;//(0.7, 1, 0.9, 0,) (0.3, 0.7, 0.5, 0), alien shrimp (0.8, 0.01, 0.01, 0)
 
     }
 
