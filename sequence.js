@@ -8,8 +8,8 @@ function load(s, time) {
 return {
     _seq: [
         {
-            _name: "pink blobs masses with fingers",
-            _time: 240, // 4 min Challenge to Owe
+            _name: "wild pink blobs",
+            _time: 330, //5 min 30 secons, owe
             
             // overall contrast -- 1 is no change, >1 is deeper contrast (darker darks), <1 is softer (lighter)
             u_gamma: 1.1,
@@ -22,10 +22,10 @@ return {
             u_final_aura: 0.5,
             u_final_trails: 0.27,
             u_final_creatures: 0.75,
-
+        
             // colors:
-            u_creatures_hsl: [0.6, 0.5, 0.4],
-            u_creatures_hsl_inside: [0.677, 0.6, 0.6],
+            u_creatures_hsl: [0.8333, 0.6777, 0.5],
+            u_creatures_hsl_inside: [0.916, 0.7, 0.6],
             // base color of ocean (hue, sat, lightness in 0..1)
             u_ocean_hsl: [0.6, 0.5, 0.55],
             // how this varies by vertical 
@@ -55,11 +55,11 @@ return {
             // 0..1
             // higher values make it more likely to spawn on (caustics/auras)
             u_caustic_spawn : 0.96, 
-            u_aura_spawn : 0.75,
+            u_aura_spawn : 0.8,
             // 0..1
             // if > 0, limits new spawns to be near older ones
             // this will tend to reduce their population
-            u_spawn_threshold : 0.2,
+            u_spawn_threshold : 0.05,
         
             // how they sense:
             // smaller makes their trails narrower
@@ -70,7 +70,7 @@ return {
             // 0 to about 0.3? how much they follow trails, 0 makes them senseless dust, about 0.1-0.2 they organize well, above that it gets messier
             u_turn_angle : 0.1,
             // 0 to about 0.5? how much they randomly wander. 0.2 feels good, 0.5 is messier
-            u_wander_angle : 0.18,
+            u_wander_angle : 0.2,
         
             // how fast they move by different stimuli:
             // too high and they will die off. 
@@ -89,7 +89,7 @@ return {
             // 0..1, but usually 0.95+
             // how much their trails decay over time
             // if it is very close to 1 the trails tend to persist as large patterns
-            u_decay_rate : 0.93,
+            u_decay_rate : 0.94,
         },
     ]
 }
