@@ -141,7 +141,7 @@ void main() {
 
     vec2 dv = duv*u_drift_effect_speed + (fluid.xy - XYo)*u_fluid_effect_speed;
 
-    bool isFloor = u_wall_u.z < 0.;
+    bool isFloor = u_wall_u.y < 0.;
 
 
     // u_sensor_distance *= (1 + 0.8*spherical.y);
