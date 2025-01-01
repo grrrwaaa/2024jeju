@@ -75,7 +75,7 @@ return {
             // how fast they move by different stimuli:
             // too high and they will die off. 
             // 0-6? following the fluid currents (e.g. human)
-            u_fluid_effect_speed : 3,
+            u_fluid_effect_speed : 1,
             // 0..1, drifting with the ocean
             u_drift_effect_speed : 1.4,
             // 0..6? speeding up when near a trail. Too high and they die off, too low and they don't feel alive
