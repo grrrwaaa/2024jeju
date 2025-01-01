@@ -153,7 +153,9 @@ void main() {
         out0.rgb *= 1. + spherical.y;
         out0.rgb = adjustSaturation(out0.rgb, 1.0 + spherical.y);
 
-        //if (isFloor) out0.rgb = vec3(0);
+        if (isFloor) {
+            out0.rgb = vec3(0);
+        }
 
       
 
