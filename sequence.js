@@ -448,7 +448,7 @@ return {
 
             // colors:
             u_creatures_hsl: [0.56, 0.677, 0.4],
-            u_creatures_hsl_inside: [0.6667, 0.788, 0.5],
+            u_creatures_hsl_inside: [0.6667, 0.788, 0.6],
             // base color of ocean (hue, sat, lightness in 0..1)
             u_ocean_hsl: [0.6, 0.5, 0.6],
             // how this varies by vertical 
