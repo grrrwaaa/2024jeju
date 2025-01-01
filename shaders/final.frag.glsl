@@ -160,7 +160,7 @@ void main() {
         // remove aura in floor:
         //aura *= max(spherical.y, 0.);
         aura = adjustSaturation(aura, spherical.y-0.25);
-        out0.rgb = mix(out0.rgb + aura, max(out0.rgb, aura), -spherical.y-0.5);
+        //out0.rgb = mix(out0.rgb + aura, max(out0.rgb, aura), -spherical.y-0.5);
 
         //out0.rgb = vec3(-spherical.y);
 
