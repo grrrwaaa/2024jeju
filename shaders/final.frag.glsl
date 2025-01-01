@@ -47,7 +47,7 @@ vec2 dim = textureSize(u_tex_fluid, 0);
 void main() {
     float t = u_seconds;
     float frame = t*60.;
-    bool isFloor = u_wall_u.z < 0.;
+    bool isFloor = u_wall_u.y < 0.;
 
     vec3 normal = texture(u_tex_normal, v_uv).xyz; //normalize(v_normal);
     vec3 spherical = texture(u_tex_spherical, v_uv).xyz;
