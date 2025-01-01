@@ -152,6 +152,7 @@ void main() {
         out0.rgb = pow(out0.rgb, vec3(0.75));
         out0.rgb = adjustSaturation(out0.rgb, 1.0 + spherical.y);
 
+        out0.rgb = hsl2rgb(u_ocean_hsl);
 
 
         // vec3 aura_hsl = u_aura_hsl; //vec3(0.4, 0.8, 0.8);
