@@ -151,7 +151,7 @@ void main() {
         // color tone by vertical:
         out0.rgb *= hsl2rgb(u_ocean_hsl + (spherical.y*0.1 + 0.5)*u_ocean_hsl_variation);
         out0.rgb = pow(out0.rgb, vec3(0.75));
-        out0.rgb *= clamp(1. + spherical.y, 0., 1.);
+      //  out0.rgb *= clamp(1. + spherical.y, 0., 1.);
         out0.rgb = adjustSaturation(out0.rgb, 1.0 + spherical.y);
 
 
