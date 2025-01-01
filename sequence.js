@@ -711,7 +711,7 @@ return {
             // how this varies by aura intensity:
             u_aura_hsl_variation: [-0.5, 0., 0.],
             
-            
+
             // behaviours:
         
             // -8 to 8? if we are descending or rising in the ocean. 0 means neither, negative is descending
@@ -770,7 +770,7 @@ return {
         },
         {
             _name: "storm!",
-            _time: 580, // 9 min 40 cm, homecoming
+            _time: 540, // 9 min 40 cm, homecoming
         
             // overall contrast -- 1 is no change, >1 is deeper contrast (darker darks), <1 is softer (lighter)
             u_gamma: 1.2,
