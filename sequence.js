@@ -59,7 +59,7 @@ return {
             // 0..1
             // if > 0, limits new spawns to be near older ones
             // this will tend to reduce their population
-            u_spawn_threshold : 0.2,
+            u_spawn_threshold : 0.1,
         
             // how they sense:
             // smaller makes their trails narrower
