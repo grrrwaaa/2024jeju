@@ -154,13 +154,6 @@ void main() {
         out0.rgb *= 1. + spherical.y;
         out0.rgb = adjustSaturation(out0.rgb, 1.0 + spherical.y);
 
-        if (isFloor) {
-            out0.rgb = vec3(0);
-        } else if (mod(t, 2.) < 1.) {
-            out0.rgb = vec3(0);
-        }
-
-        
       
 
         // vec3 aura_hsl = u_aura_hsl; //vec3(0.4, 0.8, 0.8);
