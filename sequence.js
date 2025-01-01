@@ -54,7 +54,7 @@ return {
             // creatures:
             // 0..1
             // higher values make it more likely to spawn on (caustics/auras)
-            u_caustic_spawn : 0.97, 
+            u_caustic_spawn : 0.7, 
             u_aura_spawn : 0.3,
             // 0..1
             // if > 0, limits new spawns to be near older ones
