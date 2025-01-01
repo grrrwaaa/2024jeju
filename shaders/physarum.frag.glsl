@@ -242,8 +242,7 @@ void main() {
     float nearby = 1.;//-exp(-dist);
 
     if ((
-        rnd.y > 0.9
-        || (1.-u_caustic_spawn) < caustic*rnd.y*nearby
+        (1.-u_caustic_spawn) < caustic*rnd.y*nearby
         || (1.-u_aura_spawn) < pow(fluid.w, 5)*rnd.x *nearby)
         && oldtrail >= u_spawn_threshold
     ) { //} && oldtrail >= u_spawn_threshold) {
@@ -252,6 +251,14 @@ void main() {
         P.xy = mix(P.xy, U, u_spawn_mix);
         P.z = rand(P.xy);
     }
+
+    // always some random spawning:
+    if (rnd.y > 0.9) {
+        P.xy = U;
+        P.z = rand(P.xy);
+        P.w = rand(P.yx);
+    }
+
     //P.xy = mix(P.xy, U, 0.00001*rnd.z*rnd.z);
 
     // now we have our nearest particle
