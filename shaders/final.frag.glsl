@@ -165,7 +165,7 @@ void main() {
         //out0.rgb = vec3(-spherical.y);
 
         // turn this up to get the dark immersive noisy caustic world:
-        out0.rgb = mix(max(out0.rgb, vec3(caustic)), out0.rgb + caustic, 0.);
+    //    out0.rgb = mix(max(out0.rgb, vec3(caustic)), out0.rgb + caustic, 0.);
 
         vec3 oldstyle = ink*hsl2rgb(vec3(0.3+0.4*dot(fluid.xy, vec2(1,0)), 0.8*abs(fluid.z), 0.95));
     //    out0.rgb = mix(out0.rgb, oldstyle, u_ink_mode);
