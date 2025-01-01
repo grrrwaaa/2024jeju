@@ -68,7 +68,7 @@ return {
             // 0..pi. smaller means they can't see behind them, so they  tend to create lines. larger means they can see all directions, more likely to make balls. 
             u_sensor_angle : 3.1,
             // 0 to about 0.3? how much they follow trails, 0 makes them senseless dust, about 0.1-0.2 they organize well, above that it gets messier
-            u_turn_angle : 0.1,
+            u_turn_angle : 0.01,
             // 0 to about 0.5? how much they randomly wander. 0.2 feels good, 0.5 is messier
             u_wander_angle : 0.001,
         
