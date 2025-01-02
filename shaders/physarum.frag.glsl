@@ -253,12 +253,12 @@ void main() {
         P.z = rand(P.xy);
     }
 
-    // always some random spawning:
-    if (rnd.y > 0.9999) {
-        P.xy = U;
-        P.z = rand(P.xy);
-        P.w = rand(P.yx);
-    }
+    // // always some random spawning:
+    // if (rnd.y > 0.9999) {
+    //     P.xy = U;
+    //     P.z = rand(P.xy);
+    //     P.w = rand(P.yx);
+    // }
 
     //P.xy = mix(P.xy, U, 0.00001*rnd.z*rnd.z);
 
@@ -289,22 +289,22 @@ void main() {
         float f1 = getfield(s1);
         float f2 = getfield(s2);
 
-        // if (true) {
-        //     // Jeff Jones version
-        //     if (f0 > f2 && f0 > f1) {
-        //         // turn left:
-        //         P.z = mod(P.z - u_turn_angle, 1.);
-        //     } else if (f2 > f0 && f2 > f1) {
-        //         // turn right:
-        //         P.z = mod(P.z + u_turn_angle, 1.);
-        //     } else if (f0 > f1 && f2 > f1) {
-        //         // turn randomly
-        //         //wander
-        //     } else {
-        //         // no turn
-        //     }
-        //         P.z = mod(P.z + u_wander_angle*(rand(vec3(P.xy, t))-0.5), 1.);
-        // } 
+        if (true) {
+            // Jeff Jones version
+            if (f0 > f2 && f0 > f1) {
+                // turn left:
+                P.z = mod(P.z - u_turn_angle, 1.);
+            } else if (f2 > f0 && f2 > f1) {
+                // turn right:
+                P.z = mod(P.z + u_turn_angle, 1.);
+            } else if (f0 > f1 && f2 > f1) {
+                // turn randomly
+                //wander
+            } else {
+                // no turn
+            }
+                P.z = mod(P.z + u_wander_angle*(rand(vec3(P.xy, t))-0.5), 1.);
+        } 
     }
 
     // move it:
