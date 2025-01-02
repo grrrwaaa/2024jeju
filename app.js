@@ -572,8 +572,8 @@ class App extends Window {
                     if (recv.name[2] == null && server.getData(recv.name).frame) 
                     {
                         
-                        let [w, h] = recv.dim
-                        let [x, y] = recv.pos
+                        let [w, h] = recv.draw_dim
+                        let [x, y] = recv.draw_pos
                         let a = recv.angle
 
                         recv.tex.bind().submit()
