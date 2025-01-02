@@ -171,7 +171,8 @@ void main() {
         // turn this up to get the dark immersive noisy caustic world:
         out0.rgb = mix(max(out0.rgb, vec3(caustic)), out0.rgb + caustic, 0.);
 
-        out0 = mix(vec4(0), out0, sin(t*0.1 + spherical.y)*0.4+0.6);
+        // day night
+        out0 = mix(vec4(0), out0, sin(t*0.1 + spherical.z)*0.45+0.55);
 
         vec3 oldstyle = ink*hsl2rgb(vec3(0.3+0.4*dot(fluid.xy, vec2(1,0)), 0.8*abs(fluid.z), 0.95));
         out0.rgb = mix(out0.rgb, oldstyle, u_ink_mode);
@@ -179,7 +180,7 @@ void main() {
         //out0 += pow(physarum.w,1.5)*u_final_trails;
         out0.rgb += vec3(pow(physarum.w, 1.5))*u_final_trails*1.5;
 
-        float dots = exp(-5.*length(gl_FragCoord.xy - physarum.xy)) * 70.;
+        float dots = exp(-3.*length(gl_FragCoord.xy - physarum.xy)) * 70.;
         vec3 creature_color = hsl2rgb(0.1*vec3(0, duv) + mix(u_creatures_hsl, u_creatures_hsl_inside, pow(clamp(physarum.w*0.5, 0., 1.), 2.)));
         out0.rgb += creature_color*dots*u_final_creatures;//(0.7, 1, 0.9, 0,) (0.3, 0.7, 0.5, 0), alien shrimp (0.8, 0.01, 0.01, 0)
 
