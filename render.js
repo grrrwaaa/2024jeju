@@ -129,10 +129,11 @@ switch (title) {
                     dim: [Math.floor(common.machines.E.content_res[0]*1272/1752), overlap], 
                     pos: [0, 0] 
                 },
-                { name: "ET", 
-                    dim: [overlap, Math.floor(common.machines.E.content_res[1]*406/1872)], 
-                    pos: [common.machines.E.content_res[0]-overlap, Math.floor(common.machines.E.content_res[1]*(1872 - 406)/(1872*2))] 
-                },
+                // top:
+                // { name: "ET", 
+                //     dim: [overlap, Math.floor(common.machines.E.content_res[1]*406/1872)], 
+                //     pos: [common.machines.E.content_res[0]-overlap, Math.floor(common.machines.E.content_res[1]*(1872 - 406)/(1872*2))] 
+                // },
             ],
             receivers: [
                 { name: "FE", 
@@ -149,20 +150,6 @@ switch (title) {
                     draw_pos: [0, common.machines.E.content_res[1]],
                     angle: -Math.PI/2 
                 },
-                // { name: "LE", 
-                //     dim: [overlap, common.machines.L.content_res[1]], 
-                //     //pos: [590, 2970], 
-                //     draw_dim: [overlap, Math.floor(common.machines.E.content_res[0]*2582/1752)],
-                //     draw_pos: [Math.floor(common.machines.E.content_res[1]*590/1872), Math.floor(common.machines.E.content_res[0]*2970/1752)],
-                //     angle: -2.57 
-                // },
-                { name: "LE", 
-                    dim: [overlap, common.machines.L.content_res[1]], 
-                    //pos: [1752, 3305], 
-                    draw_dim: [overlap, Math.floor(common.machines.E.content_res[0]*2582/1752)],
-                    draw_pos: [common.machines.E.content_res[0], Math.floor(common.machines.E.content_res[1] * 3305/1872)],
-                    angle: -Math.PI 
-                },
                 { name: "RE", 
                     dim: [overlap, common.machines.R.content_res[1]], 
                     //pos: [2582, 0], 
@@ -170,12 +157,31 @@ switch (title) {
                     draw_pos: [Math.floor(common.machines.E.content_res[0]*2582/1752), 0],
                     angle: Math.PI/2 
                 },
+                
+                // top:
+                // { name: "LE", 
+                //     dim: [overlap, common.machines.L.content_res[1]], 
+                //     //pos: [1752, 3305], 
+                //     draw_dim: [overlap, Math.floor(common.machines.E.content_res[0]*2582/1752)],
+                //     draw_pos: [common.machines.E.content_res[0], Math.floor(common.machines.E.content_res[1] * 3305/1872)],
+                //     angle: -Math.PI 
+                // },
+
+                // gables:
                 // { name: "RE", 
                 //     dim: [overlap, common.machines.R.content_res[1]], 
                 //     //pos: [1985, 1070],  
                 //     draw_dim: [overlap, Math.floor(common.machines.E.content_res[0]*2582/1752)],
                 //     draw_pos: [0, 0],
                 //     angle: 2.57 
+                // },
+
+                // { name: "LE", 
+                //     dim: [overlap, common.machines.L.content_res[1]], 
+                //     //pos: [590, 2970], 
+                //     draw_dim: [overlap, Math.floor(common.machines.E.content_res[0]*2582/1752)],
+                //     draw_pos: [Math.floor(common.machines.E.content_res[1]*590/1872), Math.floor(common.machines.E.content_res[0]*2970/1752)],
+                //     angle: -2.57 
                 // },
             ],
             // senders: [
@@ -204,14 +210,14 @@ switch (title) {
                     dim: [common.machines.L.content_res[0], overlap], 
                     pos: [0, 0] 
                 },
-                { name: "LR", 
-                    dim: [common.machines.L.content_res[0], overlap], 
-                    pos: [0, common.machines.L.content_res[1]-overlap] 
-                },
-                { name: "LE", 
-                    dim: [overlap, common.machines.L.content_res[1]], 
-                    pos: [common.machines.L.content_res[0]-overlap, 0] 
-                },
+                // { name: "LR", 
+                //     dim: [common.machines.L.content_res[0], overlap], 
+                //     pos: [0, common.machines.L.content_res[1]-overlap] 
+                // },
+                // { name: "LE", 
+                //     dim: [overlap, common.machines.L.content_res[1]], 
+                //     pos: [common.machines.L.content_res[0]-overlap, 0] 
+                // },
              ],
              receivers: [
                 { name: "FL", 
@@ -221,27 +227,28 @@ switch (title) {
                     draw_pos: [0, 0],
                     angle: 0 
                 },
-                { name: "EL", 
-                    dim: [Math.floor(common.machines.E.content_res[0]*1272/1752), overlap], 
-                    //pos: [3840, 0], 
-                    draw_dim: [Math.floor(common.machines.L.content_res[1]*1272/2582), overlap],
-                    draw_pos: [common.machines.L.content_res[0], 0],
-                    angle: Math.PI/2 
-                },
-                { name: "ET", 
-                    dim: [overlap, Math.floor(common.machines.E.content_res[1]*406/1872)], 
-                    //pos: [3840, 2582], 
-                    draw_dim: [overlap, Math.floor(common.machines.L.content_res[1] * 406/2582)],
-                    draw_pos: [common.machines.L.content_res[0], common.machines.L.content_res[1]],
-                    angle: Math.PI 
-                },
-                { name: "RL", 
-                    dim: [common.machines.R.content_res[0], overlap], 
-                    //pos: [0, 2582-overlap], 
-                    draw_dim: [common.machines.L.content_res[0], overlap],
-                    draw_pos: [0, common.machines.L.content_res[1]-overlap],
-                    angle: 0
-                },
+                // { name: "EL", 
+                //     dim: [Math.floor(common.machines.E.content_res[0]*1272/1752), overlap], 
+                //     //pos: [3840, 0], 
+                //     draw_dim: [Math.floor(common.machines.L.content_res[1]*1272/2582), overlap],
+                //     draw_pos: [common.machines.L.content_res[0], 0],
+                //     angle: Math.PI/2 
+                // },
+                // { name: "RL", 
+                //     dim: [common.machines.R.content_res[0], overlap], 
+                //     //pos: [0, 2582-overlap], 
+                //     draw_dim: [common.machines.L.content_res[0], overlap],
+                //     draw_pos: [0, common.machines.L.content_res[1]-overlap],
+                //     angle: 0
+                // },
+                // top:
+                // { name: "ET", 
+                //     dim: [overlap, Math.floor(common.machines.E.content_res[1]*406/1872)], 
+                //     //pos: [3840, 2582], 
+                //     draw_dim: [overlap, Math.floor(common.machines.L.content_res[1] * 406/2582)],
+                //     draw_pos: [common.machines.L.content_res[0], common.machines.L.content_res[1]],
+                //     angle: Math.PI 
+                // },
              ],
             // senders: [
             //     { name: "LF", dim: [common.machines.L.content_res[0], 16], pos: [0, 0] },
@@ -270,14 +277,14 @@ switch (title) {
                     dim: [common.machines.R.content_res[0], overlap], 
                     pos: [0, common.machines.R.content_res[1]-overlap] 
                 },
-                { name: "RE", 
-                    dim: [overlap, common.machines.R.content_res[1]], 
-                    pos: [common.machines.R.content_res[0]-overlap, 0] 
-                },
-                { name: "RL", 
-                    dim: [common.machines.R.content_res[0], overlap], 
-                    pos: [0, Math.floor(common.machines.R.content_res[1]*(406/2582))+overlap] 
-                },
+                // { name: "RE", 
+                //     dim: [overlap, common.machines.R.content_res[1]], 
+                //     pos: [common.machines.R.content_res[0]-overlap, 0] 
+                // },
+                // { name: "RL", 
+                //     dim: [common.machines.R.content_res[0], overlap], 
+                //     pos: [0, Math.floor(common.machines.R.content_res[1]*(406/2582))+overlap] 
+                // },
             ],
             receivers: [
                 { name: "FR", 
@@ -287,27 +294,28 @@ switch (title) {
                     draw_pos: [0, common.machines.R.content_res[1]-overlap],
                     angle: 0 
                 },
-                { name: "ER", 
-                    dim: [Math.floor(common.machines.E.content_res[0]*1272/1752), overlap], 
-                    //pos: [3840-overlap, 2582], 
-                    draw_dim: [Math.floor(common.machines.R.content_res[1]*1272/2582), overlap],
-                    draw_pos: [common.machines.R.content_res[0]-overlap, common.machines.R.content_res[1]],
-                    angle: -Math.PI/2 
-                },
-                { name: "ET", 
-                    dim: [overlap, Math.floor(common.machines.E.content_res[1]*406/1872)], 
-                    //pos: [3840-overlap, 0], 
-                    draw_dim: [overlap, Math.floor(common.machines.R.content_res[1]*406/2582)],
-                    draw_pos: [common.machines.R.content_res[0]-overlap, 0],
-                    angle: 0 
-                },
-                { name: "LR", 
-                    dim: [common.machines.L.content_res[0], overlap], 
-                    //pos: [0, 406+overlap], 
-                    draw_dim: [common.machines.R.content_res[0], overlap],
-                    draw_pos: [0, Math.floor(common.machines.R.content_res[1]*406/2582)+overlap],
-                    angle: 0
-                },
+                // { name: "ER", 
+                //     dim: [Math.floor(common.machines.E.content_res[0]*1272/1752), overlap], 
+                //     //pos: [3840-overlap, 2582], 
+                //     draw_dim: [Math.floor(common.machines.R.content_res[1]*1272/2582), overlap],
+                //     draw_pos: [common.machines.R.content_res[0]-overlap, common.machines.R.content_res[1]],
+                //     angle: -Math.PI/2 
+                // },
+                // { name: "LR", 
+                //     dim: [common.machines.L.content_res[0], overlap], 
+                //     //pos: [0, 406+overlap], 
+                //     draw_dim: [common.machines.R.content_res[0], overlap],
+                //     draw_pos: [0, Math.floor(common.machines.R.content_res[1]*406/2582)+overlap],
+                //     angle: 0
+                // },
+                // top:
+                // { name: "ET", 
+                //     dim: [overlap, Math.floor(common.machines.E.content_res[1]*406/1872)], 
+                //     //pos: [3840-overlap, 0], 
+                //     draw_dim: [overlap, Math.floor(common.machines.R.content_res[1]*406/2582)],
+                //     draw_pos: [common.machines.R.content_res[0]-overlap, 0],
+                //     angle: 0 
+                // },
             ],
             // senders: [
             //     { name: "RF", dim: [3840, 16], pos: [0, 2582-16] },
