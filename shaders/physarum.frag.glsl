@@ -129,7 +129,7 @@ void main() {
     float t = u_seconds;
     float dt = 1./30.; //u_dt;
     bool isFloor = v_normal.y > 0.;
-    
+
     float frame = t*60.;
     vec3 normal = texture(u_tex_normal, v_uv).xyz; //normalize(v_normal);
     vec3 spherical = texture(u_tex_spherical, v_uv).xyz;
@@ -303,7 +303,7 @@ void main() {
             } else {
                 // no turn
             }
-                P.z = mod(P.z + u_wander_angle*(rand(vec3(P.xy, t))-0.5), 1.);
+            //    P.z = mod(P.z + u_wander_angle*(rand(vec3(P.xy, t))-0.5), 1.);
         } 
     }
 
