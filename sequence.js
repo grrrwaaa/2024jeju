@@ -73,6 +73,7 @@ return {
             // 0 to about 0.5? how much they randomly wander. 0.2 feels good, 0.5 is messier
             u_wander_angle : 0.001,
         
+        
             // how fast they move by different stimuli:
             // too high and they will die off. 
             // 0-6? following the fluid currents (e.g. human)
