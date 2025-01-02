@@ -129,7 +129,7 @@ void main() {
     float t = u_seconds;
     float dt = 1./30.; //u_dt;
     bool isFloor = v_normal.y > 0.;
-
+    
     float frame = t*60.;
     vec3 normal = texture(u_tex_normal, v_uv).xyz; //normalize(v_normal);
     vec3 spherical = texture(u_tex_spherical, v_uv).xyz;
@@ -289,22 +289,22 @@ void main() {
         float f1 = getfield(s1);
         float f2 = getfield(s2);
 
-        if (true) {
-            // Jeff Jones version
-            if (f0 > f2 && f0 > f1) {
-                // turn left:
-                P.z = mod(P.z - u_turn_angle, 1.);
-            } else if (f2 > f0 && f2 > f1) {
-                // turn right:
-                P.z = mod(P.z + u_turn_angle, 1.);
-            } else if (f0 > f1 && f2 > f1) {
-                // turn randomly
-                //wander
-            } else {
-                // no turn
-            }
-            //    P.z = mod(P.z + u_wander_angle*(rand(vec3(P.xy, t))-0.5), 1.);
-        } 
+        // if (true) {
+        //     // Jeff Jones version
+        //     if (f0 > f2 && f0 > f1) {
+        //         // turn left:
+        //         P.z = mod(P.z - u_turn_angle, 1.);
+        //     } else if (f2 > f0 && f2 > f1) {
+        //         // turn right:
+        //         P.z = mod(P.z + u_turn_angle, 1.);
+        //     } else if (f0 > f1 && f2 > f1) {
+        //         // turn randomly
+        //         //wander
+        //     } else {
+        //         // no turn
+        //     }
+        //         P.z = mod(P.z + u_wander_angle*(rand(vec3(P.xy, t))-0.5), 1.);
+        // } 
     }
 
     // move it:
