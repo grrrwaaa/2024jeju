@@ -308,7 +308,7 @@ void main() {
     }
     
     // add some noise
-    OUT.xy += u_grain * (hash23(vec3(texel + dim*u_random.xy, frame))-0.5);
+//    OUT.xy += u_grain * (hash23(vec3(texel + dim*u_random.xy, frame))-0.5);
 
     
     OUT.z = clamp(OUT.z, 0., 1.);
