@@ -859,13 +859,13 @@ return {
             // overall contrast -- 1 is no change, >1 is deeper contrast (darker darks), <1 is softer (lighter)
             u_gamma: 1.2,            // color intensity; 1 is no change, 0 is greyscale, 2 is oversaturated
             u_saturation: 1,
-            u_ink_mode: 1,
+            u_ink_mode: 0,
         
             // visual intensities:
-            u_final_pressure: 0.5, //88,
-            u_final_aura: 0.5,
+            u_final_pressure: 0.0, //88,
+            u_final_aura: 0.0,
             u_final_trails: 0.3,
-            u_final_creatures: 0.0,
+            u_final_creatures: 0.3,
         
             // colors:
             u_creatures_hsl: [0.5, 0.4, 0.3],
