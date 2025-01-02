@@ -242,16 +242,16 @@ void main() {
     
     float nearby = 1.;//-exp(-dist);
 
-    // if ((
-    //     (1.-u_caustic_spawn) < caustic*rnd.y*nearby
-    //     || (1.-u_aura_spawn) < pow(fluid.w, 5)*rnd.x *nearby)
-    //     && oldtrail >= u_spawn_threshold
-    // ) { //} && oldtrail >= u_spawn_threshold) {
+    if ((
+        (1.-u_caustic_spawn) < caustic*rnd.y*nearby
+        || (1.-u_aura_spawn) < pow(fluid.w, 5)*rnd.x *nearby)
+        && oldtrail >= u_spawn_threshold
+    ) { //} && oldtrail >= u_spawn_threshold) {
     
-    //     float u_spawn_mix = 0.1;
-    //     P.xy = mix(P.xy, U, u_spawn_mix);
-    //     P.z = rand(P.xy);
-    // }
+        float u_spawn_mix = 0.1;
+        P.xy = mix(P.xy, U, u_spawn_mix);
+        //P.z = rand(P.xy);
+    }
 
     // always some random spawning:
     if (rnd.y > 0.9999) {
